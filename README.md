@@ -52,15 +52,26 @@ Di produksi, kalau `PAYMENT_PROVIDER` kosong dan tidak ada kunci Midtrans, pembu
 - **Teks halaman awal**: `src/app/page.tsx`.
 - **Syarat dan privasi**: `src/app/syarat`, `src/app/privasi`.
 
+## Gaya visual
+
+Semua ilustrasi floa dilukis (gaya gouache), bukan vektor datar: flora tropis, langit lukisan, kertas bertekstur, motif kawung, dan tulisan tangan. Lukisannya dibuat oleh mesin lukis prosedural di `art/` lalu dirender sekali jadi WebP di `public/art/`, jadi situsnya ringan di HP. Cara kerja dan aturan gayanya ada di `art/README.md`.
+
 ## Menambah template
 
 Tiap template adalah satu folder di `src/templates/<id>/`:
 
 - `meta.ts` — nama, momen, warna, kolom editor, dan isi contoh.
 - `index.tsx` — pengalaman interaktifnya, dibungkus `<Stage>` dan diakhiri `<Finale>` dari `src/templates/kit`.
-- `Cover.tsx` — ilustrasi kartu katalog.
+- `Cover.tsx` — kartu katalog, cukup `<CoverImage id="…" />`.
 
-Daftarkan di `registry.ts`, `covers.tsx`, dan `Player.tsx`. Semua template memakai bentuk data yang sama (`GiftData` di `types.ts`), jadi editor dan checkout tidak perlu diubah.
+Lukisannya ditulis di `art/sprites/<nomor>-<id>.js`, lalu:
+
+```bash
+node art/render.js <id>
+python3 art/webp.py <id>
+```
+
+Daftarkan template di `registry.ts`, `covers.tsx`, dan `Player.tsx`. Semua template memakai bentuk data yang sama (`GiftData` di `types.ts`), jadi editor dan checkout tidak perlu diubah.
 
 ## Struktur
 
@@ -69,5 +80,7 @@ src/app            halaman dan API
 src/components     katalog, editor, sheet checkout
 src/lib            pesanan, pembayaran, penyimpanan, aturan alamat
 src/templates      kit bersama + satu folder per template
+art                mesin lukis + sumber lukisan (alat desain)
+public/art         hasil lukisan (WebP) yang dipakai situs
 supabase           skema database
 ```
