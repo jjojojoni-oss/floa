@@ -24,15 +24,10 @@ export const meta: TemplateMeta = {
     { key: 'photos', label: 'Foto', hint: 'Opsional, sampai 3 foto.', count: 3 },
   ],
   sample: {
-    to: 'Bima',
-    from: 'Sasa',
-    title: 'Sampai ketemu, ya.',
-    notes: [
-      'Semoga jarak cepat jadi cerita lama.',
-      'Semoga kerjaanmu di sana lancar.',
-      'Semoga sinyal bagus tiap video call.',
-      'Semoga pulangmu nanti lebih lama.',
-    ],
+    to: 'Maharani Kusumawati',
+    from: 'Bagaskara Aditya Pr',
+    title: 'Sampai kita ketemu lagi di kota itu, ya.',
+    notes: ['Semoga jarak yang jauh ini cepat jadi cerita lama buat kita.', 'Semoga jarak yang jauh ini cepat jadi cerita lama buat kita.', 'Semoga jarak yang jauh ini cepat jadi cerita lama buat kita.', 'Semoga jarak yang jauh ini cepat jadi cerita lama buat kita.', 'Semoga jarak yang jauh ini cepat jadi cerita lama buat kita.'],
     message:
       'Di sini sudah malam, di sana baru sore. Lucu ya, kita lihat langit yang sama tapi jamnya beda.\n\nAku nggak minta kamu cepat pulang. Aku cuma mau kamu tahu: tiap kamu capek, ada yang nungguin kabarmu di sini.\n\nSatu lampion buat tiap harapan. Sisanya aku simpan sampai kita ketemu.',
     photos: ['/sample/kota.svg', '/sample/senja.svg'],

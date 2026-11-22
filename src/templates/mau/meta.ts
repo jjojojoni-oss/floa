@@ -24,14 +24,10 @@ export const meta: TemplateMeta = {
     { key: 'photos', label: 'Foto', hint: 'Opsional, sampai 3 foto.', count: 3 },
   ],
   sample: {
-    to: 'Kirana',
-    from: 'Adit',
-    title: 'Mau nggak jadi pacarku?',
-    notes: [
-      'Ada yang mau aku omongin dari lama.',
-      'Tiap sama kamu, waktu rasanya kecepetan.',
-      'Dan aku capek pura-pura biasa aja.',
-    ],
+    to: 'Maharani Kusumawati',
+    from: 'Bagaskara Aditya Pr',
+    title: 'Mau nggak jadi pacarku mulai hari ini juga??',
+    notes: ['Tiap sama kamu, waktu rasanya kecepetan banget dan aku nggak mau pulang.', 'Tiap sama kamu, waktu rasanya kecepetan banget dan aku nggak mau pulang.', 'Tiap sama kamu, waktu rasanya kecepetan banget dan aku nggak mau pulang.'],
     message:
       'AKHIRNYA.\n\nJujur aku sudah nyiapin mental buat dua jawaban, tapi cuma nyiapin rencana buat yang ini.\n\nSabtu ini aku jemput jam 4. Kita makan di tempat yang kamu bilang "kapan-kapan" itu. Kapan-kapannya sekarang.',
     photos: ['/sample/senja.svg', '/sample/kopi.svg'],

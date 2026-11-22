@@ -265,12 +265,13 @@
   max-width: 100%;
   border-style: solid;
   border-color: transparent;
-  border-width: 0 2.7em;
+  /* 9 irisan: ujung pita & lipatan bawah tetap ukurannya, bagian tengah meregang mengikuti teks */
+  border-width: 0.33em 2.7em 0.76em;
   border-image-source: url('/art/toga-pita.webp');
-  border-image-slice: 0 200 fill;
-  border-image-width: 0 2.7em;
+  border-image-slice: 24 200 56 200 fill;
+  border-image-width: 0.33em 2.7em 0.76em;
   border-image-repeat: stretch;
-  padding: 0.5em 0 1em;
+  padding: 0.3em 0 0.34em;
   margin: 0 -0.6em;
   color: #2a2148;
   font-family: var(--font-hand, cursive);

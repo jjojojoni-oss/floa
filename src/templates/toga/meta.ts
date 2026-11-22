@@ -30,6 +30,6 @@ export const meta: TemplateMeta = {
     notes: ['Begadangmu terbayar.', 'Tiga kali revisi, lulus juga.', 'Kami bangga, selalu.'],
     message:
       'Nak, hari ini kami melihatmu memakai toga, dan rasanya seperti baru kemarin mengantarmu di hari pertama sekolah.\n\nKami tahu jalannya nggak selalu mulus. Ada malam-malam yang kamu lewati sendirian di depan laptop. Semuanya terbayar hari ini.\n\nKe mana pun kamu melangkah setelah ini, pintu rumah selalu terbuka.',
-    photos: ['/sample/gunung.svg', '/sample/taman.svg'],
+    photos: ['/art/foto-gunung.webp', '/art/foto-taman.webp'],
   },
 };

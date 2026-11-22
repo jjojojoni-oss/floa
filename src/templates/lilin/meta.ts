@@ -35,6 +35,6 @@ export const meta: TemplateMeta = {
     ],
     message:
       'Satu tahun lagi lewat, dan kamu masih orang yang sama: yang ketawanya paling kenceng, yang paling duluan nanya "udah makan belum?".\n\nSemoga tahun ini lebih ringan dari yang kemarin. Kalau ternyata berat, kabarin aku. Kita cari makan enak dulu, baru mikir.\n\nSelamat bertambah umur. Kuenya virtual, traktirannya beneran ya.',
-    photos: ['/sample/taman.svg', '/sample/pantai.svg', '/sample/kota.svg'],
+    photos: ['/art/foto-taman.webp', '/art/foto-pantai.webp', '/art/foto-kota.webp'],
   },
 };
