@@ -49,7 +49,7 @@ export function MyGifts() {
 
   if (!list.length) {
     return (
-      <div className="mt-8 rounded-3xl bg-card p-8 text-center shadow-card">
+      <div className="paper-card mt-8 rounded-3xl p-8 text-center">
         <p className="font-display text-2xl font-semibold">Belum ada kado</p>
         <p className="mt-2 text-[15px] text-ink-2">Kado yang kamu terbitkan akan muncul di sini, lengkap dengan link-nya.</p>
         <Link href="/" className="btn btn-primary mt-5 h-12 px-6">
@@ -68,7 +68,7 @@ export function MyGifts() {
           const pending = g.status === 'pending';
           const payable = pending && !!g.qr && !!g.expiresAt && new Date(g.expiresAt).getTime() > Date.now();
           return (
-            <li key={g.id} className="flex gap-3.5 rounded-3xl bg-card p-3 shadow-card">
+            <li key={g.id} className="paper-card flex gap-3.5 rounded-3xl p-3">
               <div className="relative h-24 w-20 flex-none overflow-hidden rounded-2xl">{Cover ? <Cover /> : null}</div>
               <div className="min-w-0 flex-1 py-0.5">
                 <div className="flex items-center gap-2">
