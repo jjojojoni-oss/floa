@@ -6,7 +6,7 @@ export const meta: TemplateMeta = {
   tagline: 'Kuncup yang mekar satu-satu. Tiap bunga membawa satu kalimat darimu.',
   steps: ['Ketuk kuncup', 'Baca pesannya', 'Buka surat'],
   occasions: ['anniv', 'ultah', 'ortu', 'maaf'],
-  palette: { bg: '#fbe6dd', ink: '#3a2a2a', accent: '#e8506b' },
+  palette: { bg: '#fbe6d3', ink: '#43261f', accent: '#e0496a' },
   fields: [
     { key: 'to', label: 'Untuk siapa', placeholder: 'Nama dia', max: 20 },
     { key: 'from', label: 'Dari', placeholder: 'Namamu', max: 20 },

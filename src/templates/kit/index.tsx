@@ -21,8 +21,12 @@ export function cx(...parts: Array<string | false | null | undefined>) {
 
 /* ───────────────────────── Stage ───────────────────────── */
 
+export type BackdropName = 'pagi' | 'senja' | 'malam';
+
 type StageProps = {
   children: ReactNode;
+  /** latar lukisan: 'pagi' | 'senja' | 'malam', atau URL gambar sendiri */
+  backdrop?: BackdropName | (string & {});
   /** warna dunia template; juga tersedia sebagai var(--bg) / var(--ink) / var(--accent) */
   bg: string;
   ink: string;
@@ -35,14 +39,17 @@ type StageProps = {
  * Pembungkus wajib semua template. Mengisi penuh induknya, dan membuat `1em`
  * di dalamnya selalu proporsional dengan ukuran kotak (≈16px di HP 390px).
  */
-export function Stage({ children, bg, ink, accent, className, style }: StageProps) {
+export function Stage({ children, bg, ink, accent, backdrop, className, style }: StageProps) {
   const muted = useSyncExternalStore(subscribeMuted, isMuted, () => false);
   return (
     <div
       className={cx(s.stage, className)}
       style={{ '--bg': bg, '--ink': ink, '--accent': accent, ...style } as CSSProperties}
     >
+      {backdrop ? <div className={s.backdrop} style={{ backgroundImage: `url(${backdropUrl(backdrop)})` }} /> : null}
       <div className={s.inner}>{children}</div>
+      <div className={s.vignette} aria-hidden />
+      <div className={s.grain} aria-hidden />
       <button
         type="button"
         className={s.mute}
@@ -54,6 +61,84 @@ export function Stage({ children, bg, ink, accent, className, style }: StageProp
           {muted ? <path d="M16 9.5l5 5m0-5l-5 5" /> : <path d="M15.5 9a4.2 4.2 0 010 6M18 6.5a7.6 7.6 0 010 11" />}
         </svg>
       </button>
+    </div>
+  );
+}
+
+/* ───────────────────────── seni lukis ───────────────────────── */
+
+export function backdropUrl(name: string) {
+  return name.startsWith('/') || name.startsWith('http') ? name : `/art/bg-${name}.webp`;
+}
+
+/** Satu potong lukisan dari public/art (bunga, daun, benda). Ukuran & posisi lewat className/style. */
+export function Sprite({ name, className, style }: { name: string; className?: string; style?: CSSProperties }) {
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={`/art/${name}.webp`} alt="" draggable={false} decoding="async" className={cx(s.sprite, className)} style={style} />;
+}
+
+/**
+ * true setelah semua lukisan yang disebut selesai dimuat (atau setelah batas waktu),
+ * supaya adegan muncul utuh, bukan lapis demi lapis.
+ */
+export function useArtReady(names: string[], timeoutMs = 2500) {
+  const [ready, setReady] = useState(false);
+  const key = names.join('|');
+  useEffect(() => {
+    let alive = true;
+    let left = names.length;
+    const done = () => {
+      left -= 1;
+      if (left <= 0 && alive) setReady(true);
+    };
+    if (!left) setReady(true);
+    const imgs = names.map((n) => {
+      const im = new Image();
+      im.onload = done;
+      im.onerror = done;
+      im.src = n.startsWith('/') ? n : `/art/${n}.webp`;
+      return im;
+    });
+    const t = setTimeout(() => alive && setReady(true), timeoutMs);
+    return () => {
+      alive = false;
+      clearTimeout(t);
+      imgs.forEach((im) => {
+        im.onload = null;
+        im.onerror = null;
+      });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key, timeoutMs]);
+  return ready;
+}
+
+/** Gambar kartu katalog: satu lukisan utuh `public/art/cover-<id>.webp`. */
+export function CoverImage({ id }: { id: string }) {
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={`/art/cover-${id}.webp`} alt="" draggable={false} loading="lazy" decoding="async" className={s.cover} />;
+}
+
+/** Kelopak yang melayang turun pelan di latar. kinds = nama sprite tanpa awalan "kelopak-". */
+export function Petals({ kinds = ['putih', 'pink'], count = 9 }: { kinds?: string[]; count?: number }) {
+  return (
+    <div className={s.petals} aria-hidden>
+      {Array.from({ length: count }, (_, i) => {
+        const r = (n: number) => ((Math.sin((i + 1) * 12.9898 * n) * 43758.5453) % 1 + 1) % 1;
+        const vars = {
+          '--x': `${Math.round(r(1) * 96)}%`,
+          '--s': `${(1 + r(2) * 1.1).toFixed(2)}em`,
+          '--d': `${(9 + r(3) * 9).toFixed(1)}s`,
+          '--delay': `${(-r(4) * 16).toFixed(1)}s`,
+          '--r0': `${Math.round(r(5) * 360)}deg`,
+          '--sway': `${(r(6) * 8 - 4).toFixed(1)}em`,
+          '--o': (0.55 + r(7) * 0.4).toFixed(2),
+        } as CSSProperties;
+        return (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img key={i} src={`/art/kelopak-${kinds[i % kinds.length]}.webp`} alt="" style={vars} />
+        );
+      })}
     </div>
   );
 }
@@ -310,8 +395,10 @@ export function Typewriter({
 /* ───────────────────────── Finale ───────────────────────── */
 
 export type FinaleTheme = {
-  /** latar layar penutup */
+  /** latar layar penutup (warna/gradien CSS) */
   bg?: string;
+  /** latar lukisan untuk layar penutup */
+  backdrop?: BackdropName | (string & {});
   /** warna teks di atas latar */
   ink?: string;
   /** warna kertas surat */
@@ -329,6 +416,7 @@ export function Finale({
   mode,
   theme,
   eyebrow = 'Surat untukmu',
+  flower = 'bunga-kamboja',
   onReplay,
   children,
 }: {
@@ -336,6 +424,8 @@ export function Finale({
   mode: TemplateMode;
   theme?: FinaleTheme;
   eyebrow?: string;
+  /** bunga lukisan yang terselip di sudut surat (nama sprite), atau null untuk tanpa hiasan */
+  flower?: string | null;
   onReplay?: () => void;
   /** tambahan opsional di antara surat dan foto */
   children?: ReactNode;
@@ -347,6 +437,7 @@ export function Finale({
     '--f-ink': theme?.ink,
     '--f-paper': theme?.paper,
     '--f-paper-ink': theme?.paperInk,
+    ...(theme?.backdrop ? { backgroundImage: `url(${backdropUrl(theme.backdrop)})` } : null),
   } as CSSProperties;
 
   return (
@@ -356,6 +447,13 @@ export function Finale({
           <div className={s.eyebrow}>{eyebrow}</div>
           {data.title ? <h1 className={s.fTitle}>{data.title}</h1> : null}
           <div className={s.letter}>
+            {flower ? (
+              <div className={s.deco} aria-hidden>
+                <Sprite name="daun-2" className={s.decoLeaf} />
+                <Sprite name="daun-4" className={s.decoLeaf2} />
+                <Sprite name={flower} className={s.decoFlower} />
+              </div>
+            ) : null}
             {data.to ? <div className={s.salam}>Untuk {data.to},</div> : null}
             <div className={s.pesan}>{data.message}</div>
             {data.from ? (

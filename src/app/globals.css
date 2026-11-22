@@ -2,6 +2,7 @@
 @import '@fontsource-variable/fraunces/soft.css';
 @import '@fontsource-variable/fraunces/soft-italic.css';
 @import '@fontsource-variable/plus-jakarta-sans/wght.css';
+@import '@fontsource-variable/caveat/wght.css';
 
 @theme {
   --color-paper: #fbf6ee;
@@ -21,6 +22,7 @@
 
   --font-display: 'Fraunces Variable', 'Iowan Old Style', Georgia, serif;
   --font-sans: 'Plus Jakarta Sans Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-hand: 'Caveat Variable', 'Segoe Print', 'Bradley Hand', cursive;
 
   --shadow-card: 0 1px 0 rgba(30, 27, 24, 0.04), 0 10px 30px -18px rgba(30, 27, 24, 0.35);
   --shadow-pop: 0 2px 0 rgba(30, 27, 24, 0.06), 0 24px 60px -24px rgba(30, 27, 24, 0.5);
