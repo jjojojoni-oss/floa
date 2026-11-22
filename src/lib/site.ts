@@ -1,8 +1,16 @@
+/**
+ * Alamat situs untuk metadata. Urutan: yang diisi sendiri → domain produksi dari Vercel → floa.site.
+ * (Sebelum domain dipasang, Vercel mengisi yang kedua dengan alamat *.vercel.app.)
+ */
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'https://floa.site');
+
 /** Hal-hal yang paling sering ingin diubah pemilik situs ada di sini. */
 export const SITE = {
   name: 'floa',
   domain: 'floa.site',
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://floa.site',
+  url: SITE_URL,
   description:
     'Kado digital interaktif yang dibuka dari HP. Pilih template, ganti nama dan pesannya, bayar pakai QRIS, link kadomu langsung jadi.',
   contact: { email: 'halo@floa.site' },

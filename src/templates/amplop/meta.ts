@@ -4,7 +4,7 @@ export const meta: TemplateMeta = {
   id: 'amplop',
   name: 'Amplop Rahasia',
   tagline: 'Surat bersegel lilin. Segelnya ditekan sampai patah, baru isinya terbaca.',
-  steps: ['Tahan segelnya', 'Buka amplop', 'Baca surat'],
+  steps: ['Balik amplop', 'Tahan segelnya', 'Baca surat'],
   occasions: ['ortu', 'maaf', 'kangen', 'sahabat', 'anniv'],
   palette: { bg: '#efe5d4', ink: '#2e2a26', accent: '#b3261e' },
   fields: [
