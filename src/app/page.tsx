@@ -47,7 +47,7 @@ export default function Home() {
         </p>
         <ul className="mt-3 flex flex-wrap gap-1.5 text-[12px] font-bold sm:mt-5 sm:justify-center sm:text-[13px]">
           <li className="rounded-full bg-butter/70 px-2.5 py-1">Tanpa daftar akun</li>
-          <li className="rounded-full bg-blush/80 px-2.5 py-1">Jadi dalam 2 menit</li>
+          <li className="rounded-full bg-blush/80 px-2.5 py-1">Beres dalam hitungan menit</li>
           <li className="rounded-full bg-sky/80 px-2.5 py-1">Mulai {rupiahShort(CHEAPEST)}</li>
         </ul>
       </section>
@@ -88,7 +88,7 @@ export default function Home() {
             >
               {p.popular ? (
                 <span className="absolute right-4 top-4 rounded-full bg-butter px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-ink">
-                  Paling dipilih
+                  Disarankan
                 </span>
               ) : null}
               <div className="text-sm font-bold opacity-70">{p.name}</div>

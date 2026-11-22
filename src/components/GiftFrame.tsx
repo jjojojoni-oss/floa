@@ -8,7 +8,7 @@ export function GiftFrame({ bg, children, footer }: { bg: string; children: Reac
   return (
     <div className="fixed inset-0 flex flex-col items-center justify-center" style={{ background: bg }}>
       <div className="absolute inset-0 bg-black/10 max-sm:hidden" aria-hidden />
-      <div className="gift-frame relative w-full flex-1 overflow-hidden sm:flex-none">{children}</div>
+      <div className="gift-frame relative w-full flex-1 overflow-hidden sm:w-auto sm:flex-none">{children}</div>
       {footer}
     </div>
   );

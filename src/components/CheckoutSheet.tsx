@@ -33,7 +33,8 @@ export function CheckoutSheet({
   /** label kolom yang isinya masih contoh */
   sampleFields?: string[];
   resume?: MyGift;
-  onClose: () => void;
+  /** `finished` = true kalau ditutup setelah kadonya terbit */
+  onClose: (finished: boolean) => void;
   onPhotos?: (photos: string[]) => void;
 }) {
   const [order, setOrder] = useState<Order | null>(
@@ -143,10 +144,11 @@ export function CheckoutSheet({
   }, [order, remember, meta.id]);
 
   const canClose = step !== 'pay';
+  const close = () => onClose(step === 'done');
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label="Terbitkan kado">
-      <div className="absolute inset-0 animate-fade bg-ink/55 backdrop-blur-[2px]" onClick={canClose ? onClose : undefined} />
+      <div className="absolute inset-0 animate-fade bg-ink/55 backdrop-blur-[2px]" onClick={canClose ? close : undefined} />
       <div className="relative max-h-[94dvh] w-full animate-sheet overflow-y-auto overscroll-contain rounded-t-[1.75rem] bg-paper shadow-pop sm:max-w-[26rem] sm:rounded-[1.75rem]">
         <div className="sticky top-0 z-10 flex items-center justify-between bg-paper/95 px-5 pb-2 pt-4 backdrop-blur">
           <div className="flex items-center gap-2 text-[12px] font-extrabold uppercase tracking-wider text-muted">
@@ -156,7 +158,7 @@ export function CheckoutSheet({
             <span className="h-px w-4 bg-line" />
             <StepDot on={step === 'done'} done={false} n={3} /> Kirim
           </div>
-          <button type="button" onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full bg-paper-2 text-lg leading-none" aria-label="Tutup">
+          <button type="button" onClick={close} className="grid h-9 w-9 place-items-center rounded-full bg-paper-2 text-lg leading-none" aria-label="Tutup">
             ×
           </button>
         </div>
@@ -177,7 +179,7 @@ export function CheckoutSheet({
               busy={busy}
               error={error}
               price={price}
-              onBack={onClose}
+              onBack={close}
               onSubmit={submit}
             />
           ) : null}
@@ -193,7 +195,7 @@ export function CheckoutSheet({
                       setStep('form');
                     }
               }
-              onLater={onClose}
+              onLater={close}
             />
           ) : null}
           {step === 'done' && order ? <DoneStep order={order} to={data.to} from={data.from} templateId={meta.id} /> : null}
@@ -314,7 +316,7 @@ function FormStep(p: {
               >
                 <input type="radio" name="plan" value={pl.id} checked={on} onChange={() => p.setPlan(pl.id)} className="sr-only" />
                 {pl.popular ? (
-                  <span className="absolute -top-2 right-3 rounded-full bg-butter px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider">Paling dipilih</span>
+                  <span className="absolute -top-2 right-3 rounded-full bg-butter px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider">Disarankan</span>
                 ) : null}
                 <span className="block text-[13px] font-bold text-ink-2">{pl.name}</span>
                 <span className="font-display mt-0.5 block text-[1.45rem] font-semibold leading-none">{rupiah(pl.price)}</span>

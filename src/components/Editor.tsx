@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { EMPTY_DATA } from '@/lib/gift';
 import { type Draft, api, compressImage, loadDraft, saveDraft, uploadPhotos } from '@/lib/client';
@@ -30,6 +31,7 @@ export function Editor({ templateId }: { templateId: string }) {
   const [saving, setSaving] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const formRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
   // jumlah foto/kalimat mengubah susunan adegan, jadi pratinjau diputar ulang dari awal
   const previewKey = `${run}:${data.photos.length}:${data.notes.filter((n) => n.trim()).length}`;
 
@@ -259,7 +261,11 @@ export function Editor({ templateId }: { templateId: string }) {
           meta={meta}
           data={data}
           sampleFields={meta.fields.filter((f) => f.key !== 'photos' && !touched.includes(f.key)).map((f) => f.label)}
-          onClose={() => setCheckout(false)}
+          onClose={(finished) => {
+            setCheckout(false);
+            // kadonya sudah terbit: jangan biarkan diterbitkan dua kali dari draf yang sama
+            if (finished) router.push('/kado-saya');
+          }}
           onPhotos={(photos) => setData((d) => ({ ...d, photos }))}
         />
       ) : null}
