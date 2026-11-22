@@ -1,3 +1,4 @@
+import { isLocale } from '@/i18n/config';
 import { randomBytes } from 'node:crypto';
 import { type SupabaseClient, createClient } from '@supabase/supabase-js';
 import type { Gift } from '../gift';
@@ -17,6 +18,7 @@ type Row = {
   plan: Gift['plan'];
   amount: number;
   currency: Gift['currency'] | null;
+  lang: string | null;
   edit_key: string;
   contact: string | null;
   provider: string;
@@ -36,6 +38,7 @@ const toGift = (r: Row): Gift => ({
   plan: r.plan,
   amount: r.amount,
   currency: r.currency ?? 'IDR',
+  lang: isLocale(r.lang) ? r.lang : 'id',
   editKey: r.edit_key,
   contact: r.contact,
   provider: r.provider,
@@ -56,6 +59,7 @@ function toRow(g: Partial<Gift>): Partial<Row> {
   if (g.plan !== undefined) r.plan = g.plan;
   if (g.amount !== undefined) r.amount = g.amount;
   if (g.currency !== undefined) r.currency = g.currency;
+  if (g.lang !== undefined) r.lang = g.lang;
   if (g.editKey !== undefined) r.edit_key = g.editKey;
   if (g.contact !== undefined) r.contact = g.contact;
   if (g.provider !== undefined) r.provider = g.provider;

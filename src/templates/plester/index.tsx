@@ -3,7 +3,9 @@
 import { type CSSProperties, type PointerEvent as RPointerEvent, useRef, useState } from 'react';
 import { Confetti, Finale, Hint, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
+import { useText } from './i18n';
 import { meta } from './meta';
+import { fmt } from '@/i18n/client';
 import s from './style.module.css';
 
 /* Semua posisi memakai papan 600×800: hati (kanvas 600×560) di atas, nampan di bawah. */
@@ -58,6 +60,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const dragEnd = useRef(0);
   const stuckSet = useRef(new Set<number>());
   const later = useTimers();
+  const t = useText();
   const stuck = states.filter((p) => p.at === 'heart').length;
   const gap = healed ? 0 : 1 - stuck / n;
 
@@ -137,14 +140,14 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       <div className={s.head}>
         {healed ? (
           <div key="t">
-            <div className={s.eyebrow}>hatinya utuh lagi</div>
-            <div className={cx(s.name, s.small)}>{data.title || `Maaf ya, ${data.to}`}</div>
+            <div className={s.eyebrow}>{t.healedEyebrow}</div>
+            <div className={cx(s.name, s.small)}>{data.title || fmt(t.titleFallback, { to: data.to })}</div>
           </div>
         ) : (
           <div key="n">
-            <div className={s.eyebrow}>sebuah permintaan maaf untuk</div>
-            <div className={cx(s.name, long && s.small)}>{data.to || 'kamu'}</div>
-            {data.from ? <div className={s.from}>dari {data.from}</div> : null}
+            <div className={s.eyebrow}>{t.eyebrow}</div>
+            <div className={cx(s.name, long && s.small)}>{data.to || t.you}</div>
+            {data.from ? <div className={s.from}>{fmt(t.fromName, { name: data.from })}</div> : null}
           </div>
         )}
       </div>
@@ -155,7 +158,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           className={cx(s.board, healed && s.healed)}
           style={{ '--gap': gap } as CSSProperties}
           role="group"
-          aria-label={healed ? 'Hati yang sudah utuh lagi' : 'Hati yang retak'}
+          aria-label={healed ? t.healedAria : t.brokenAria}
         >
           <span className={s.shadow} />
           <Sprite name="plester-nampan" className={s.tray} />
@@ -203,7 +206,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                 type="button"
                 className={s.hit}
                 style={{ left: `${(trayX(i, n) / BW) * 100}%`, width: n === 3 ? '20%' : '17%' }}
-                aria-label={`Tempel plester ${i + 1}`}
+                aria-label={fmt(t.stickAria, { n: i + 1 })}
                 onClick={() => {
                   if (performance.now() - dragEnd.current < 120) return;
                   stick(i);
@@ -233,10 +236,10 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               setFinale(true);
             }}
           >
-            Baca suratnya →
+            {t.read}
           </button>
         ) : (
-          <div className={s.count} aria-label={`${stuck} dari ${n} plester ditempel`}>
+          <div className={s.count} aria-label={fmt(t.countAria, { stuck, n })}>
             {states.map((_, i) => (
               <i key={i} className={i < stuck ? s.on : undefined} />
             ))}
@@ -244,7 +247,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         )}
       </div>
 
-      {stuck === 0 ? <Hint>Ketuk plesternya, tempel di hati</Hint> : null}
+      {stuck === 0 ? <Hint>{t.hint}</Hint> : null}
 
       <Confetti burst={burst} shapes="hearts" count={70} colors={['#ef6a6a', '#ff9aa8', '#ffc9cf', '#ffffff', '#f7b3a0']} origin={{ x: 0.5, y: 0.5 }} />
 
@@ -252,7 +255,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         <Finale
           data={data}
           mode={mode}
-          eyebrow="Dari hati yang sudah ditambal"
+          eyebrow={t.finaleEyebrow}
           flower="bunga-kamboja"
           theme={{ backdrop: BG, ink: '#2f3b46', paper: '#fffdf8', paperInk: '#33303a' }}
           onReplay={onReplay}

@@ -4,22 +4,13 @@ import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from
 import { Confetti, Finale, Hint, Petals, Sprite, Stage, Typewriter, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { HeartIcon, Pulse } from './art';
+import { TEXT, useText } from './i18n';
+import { fmt } from '@/i18n/client';
 import { meta } from './meta';
 import s from './style.module.css';
 
-/* label tombol "Nggak" tiap kali dicoba ditekan; yang terakhir menyerah dan ikut bilang mau */
-const NO_LABELS = ['Nggak', 'Yakin?', 'Coba pikir lagi', 'Tombolnya licin', 'Yang satunya aja', 'Masih usaha?', 'Ya udah, mau'];
-const TEASE = [
-  '',
-  'Eh, tombolnya kabur.',
-  'Dia memang susah ditangkap.',
-  'Jarimu kurang cepat.',
-  'Yang gede itu lho tombolnya.',
-  'Nyerah aja, ya?',
-  'Nah, gitu dong.',
-];
-const LAST = NO_LABELS.length - 1;
-const WORDS = ['satu', 'dua', 'tiga'];
+/* label tombol "Nggak" & godaannya ada di i18n.ts; yang terakhir menyerah dan ikut bilang mau */
+const LAST = TEXT.id.noLabels.length - 1;
 const BPM = [82, 96, 111, 127];
 
 const BG = '/art/bg-mau.webp';
@@ -54,9 +45,10 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const triesRef = useRef(0);
   const lastTry = useRef(0);
   const later = useTimers();
+  const t = useText();
 
   const asking = step >= qStep && !yes;
-  const question = data.title.trim() || 'Mau nggak jadi pacarku?';
+  const question = data.title.trim() || t.defaultQuestion;
   const bpm = yes ? 76 : asking ? 138 + tries * 9 : BPM[Math.min(step, BPM.length - 1)];
 
   const advance = () => {
@@ -151,7 +143,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   };
 
   const story = step < qStep;
-  const text = step === 0 ? (data.from ? 'Ada yang mau aku bilang.' : 'Ada yang mau dibilang.') : notes[step - 1];
+  const text = step === 0 ? (data.from ? t.introFrom : t.introAnon) : notes[step - 1];
 
   return (
     <div
@@ -161,7 +153,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       onClick={story ? advance : undefined}
       role={story ? 'button' : undefined}
       tabIndex={story ? 0 : undefined}
-      aria-label={story ? 'Lanjut' : undefined}
+      aria-label={story ? t.next : undefined}
       onKeyDown={
         story
           ? (e) => {
@@ -180,8 +172,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       <div className={s.monitor}>
         <div className={s.pill}>
           <HeartIcon className={s.pillHeart} />
-          <span>{data.from ? `detak jantung ${data.from}` : 'detak jantung'}</span>
-          <b key={bpm}>{yes ? 'lega' : `${bpm} bpm`}</b>
+          <span>{data.from ? fmt(t.heartbeatOf, { name: data.from }) : t.heartbeat}</span>
+          <b key={bpm}>{yes ? t.relieved : `${bpm} bpm`}</b>
         </div>
         <Pulse className={s.pulse} />
       </div>
@@ -190,8 +182,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         <div className={s.body} key={step}>
           {step === 0 ? (
             <>
-              <div className={s.eyebrow}>{data.from ? `dari ${data.from}` : 'sebentar ya'}</div>
-              <div className={cx(s.hai, (data.to || '').length > 10 && s.haiSmall)}>Hai, {data.to || 'kamu'}.</div>
+              <div className={s.eyebrow}>{data.from ? fmt(t.fromName, { name: data.from }) : t.wait}</div>
+              <div className={cx(s.hai, (data.to || '').length > 10 && s.haiSmall)}>{fmt(t.hi, { name: data.to || t.you })}</div>
               <div className={s.lineSub}>
                 {skip ? text : <Typewriter text={text} speed={34} onDone={() => setTyped(true)} />}
               </div>
@@ -199,7 +191,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           ) : (
             <div className={cx(s.note, step % 2 ? s.noteL : s.noteR)}>
               <span className={s.tape} />
-              <span className={s.noteNo}>{WORDS[step - 1] ?? step}</span>
+              <span className={s.noteNo}>{t.words[step - 1] ?? step}</span>
               {skip ? text : <Typewriter text={text} speed={30} onDone={() => setTyped(true)} />}
             </div>
           )}
@@ -213,19 +205,19 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
             <Sprite name="mau-kilau" className={cx(s.spark, s.spark2)} />
             <Sprite name="mau-kilau" className={cx(s.spark, s.spark3)} />
           </div>
-          <div className={s.yeay}>Yeay!</div>
+          <div className={s.yeay}>{t.yeay}</div>
           <div className={s.pair}>
-            {data.to || 'Kamu'} <i>&amp;</i> {data.from || 'aku'}
+            {data.to || t.pairYou} <i>&amp;</i> {data.from || t.pairMe}
           </div>
         </div>
       ) : (
         <div className={cx(s.body, s.ask)} key="ask">
           <div ref={askRef} className={s.qcard}>
             <span className={s.tape} />
-            <div className={s.eyebrow}>jadi, {data.to || 'kamu'}…</div>
+            <div className={s.eyebrow}>{fmt(t.so, { name: data.to || t.you })}</div>
             <div className={cx(s.question, question.length > 26 && s.questionSmall)}>{question}</div>
             <div className={s.tease} key={tries}>
-              {TEASE[Math.min(tries, TEASE.length - 1)]}
+              {t.tease[Math.min(tries, t.tease.length - 1)]}
             </div>
           </div>
         </div>
@@ -245,10 +237,10 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               }}
               onClick={sayYes}
             >
-              Mau
+              {t.yes}
             </button>
             <span ref={slotRef} className={s.slot} aria-hidden>
-              Nggak
+              {t.noLabels[0]}
             </span>
           </div>
         ) : yes ? (
@@ -260,7 +252,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               setFinale(true);
             }}
           >
-            Baca pesannya →
+            {t.read}
           </button>
         ) : null}
       </div>
@@ -290,12 +282,12 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               else dodge();
             }}
           >
-            {NO_LABELS[Math.min(tries, LAST)]}
+            {t.noLabels[Math.min(tries, LAST)]}
           </button>
         </div>
       ) : null}
 
-      {story ? <Hint>Ketuk untuk lanjut</Hint> : null}
+      {story ? <Hint>{t.tapNext}</Hint> : null}
 
       <Confetti
         burst={burst}
@@ -307,9 +299,9 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
       {finale ? (
         <Finale
-          data={{ ...data, title: 'Kamu bilang mau.' }}
+          data={{ ...data, title: t.finaleTitle }}
           mode={mode}
-          eyebrow={data.from ? `Pesan dari ${data.from}` : 'Pesan buatmu'}
+          eyebrow={data.from ? fmt(t.finaleEyebrowFrom, { name: data.from }) : t.finaleEyebrow}
           flower="bunga-kamboja-pink"
           theme={{ backdrop: BG, ink: '#5a1730', paper: '#fffaf6', paperInk: '#4a1830' }}
           onReplay={onReplay}

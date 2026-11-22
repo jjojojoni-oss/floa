@@ -47,7 +47,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     if (!meta) return fail('Template tidak dikenal.');
     const store = getStore();
     const data = sanitizeData(meta, body?.data, (u) => store.ownsPhoto(u));
-    if (!data.to) return fail('Nama penerima belum diisi.');
+    if (!data.to) return fail('Nama penerima belum diisi.', 400, 'no_recipient');
     await store.updateGift(gift.id, { data });
     return json({ ok: true, slug: gift.slug });
   } catch (e) {

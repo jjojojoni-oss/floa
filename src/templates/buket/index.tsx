@@ -3,6 +3,8 @@
 import { type CSSProperties, useState } from 'react';
 import { Confetti, Finale, Hint, Petals, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
+import { fmt, useLocale } from '@/i18n/client';
+import { TEXT } from './i18n';
 import { meta } from './meta';
 import s from './style.module.css';
 
@@ -53,6 +55,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const [finale, setFinale] = useState(false);
   const [burst, setBurst] = useState(0);
   const later = useTimers();
+  const t = TEXT[useLocale()];
   const opened = open.filter(Boolean).length;
 
   const tap = (i: number) => {
@@ -83,20 +86,20 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       <div className={s.head}>
         {tied ? (
           <div key="t">
-            <div className={s.eyebrow}>buketnya sudah jadi</div>
-            <div className={cx(s.name, s.small)}>{data.title || `Untuk ${data.to}`}</div>
+            <div className={s.eyebrow}>{t.done}</div>
+            <div className={cx(s.name, s.small)}>{data.title || fmt(t.titleFallback, { to: data.to })}</div>
           </div>
         ) : (
           <div key="n">
-            <div className={s.eyebrow}>sebuah buket untuk</div>
-            <div className={cx(s.name, data.to.length > 12 && s.small)}>{data.to || 'kamu'}</div>
-            {data.from ? <div className={s.from}>dari {data.from}</div> : null}
+            <div className={s.eyebrow}>{t.bouquetFor}</div>
+            <div className={cx(s.name, data.to.length > 12 && s.small)}>{data.to || t.you}</div>
+            {data.from ? <div className={s.from}>{fmt(t.from, { from: data.from })}</div> : null}
           </div>
         )}
       </div>
 
       <div className={s.art}>
-        <div className={s.bq} role="group" aria-label="Buket bunga">
+        <div className={s.bq} role="group" aria-label={t.bouquet}>
           <Sprite name="buket-belakang" className={s.layer} />
           <Sprite name="buket-daun" className={cx(s.layer, s.greens)} />
           {heads.map((h, i) => {
@@ -118,7 +121,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                 }
                 onClick={() => tap(i)}
                 disabled={open[i]}
-                aria-label={open[i] ? `Bunga ${i + 1} sudah mekar` : `Mekarkan bunga ${i + 1}`}
+                aria-label={fmt(open[i] ? t.bloomed : t.bloom, { n: i + 1 })}
               >
                 <span className={s.glow} />
                 <span className={s.budWrap}>
@@ -157,10 +160,10 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               setFinale(true);
             }}
           >
-            Buka suratnya →
+            {t.open}
           </button>
         ) : (
-          <div className={s.count} aria-label={`${opened} dari ${n} bunga mekar`}>
+          <div className={s.count} aria-label={fmt(t.count, { opened, n })}>
             {open.map((o, i) => (
               <i key={i} className={o ? s.on : undefined} />
             ))}
@@ -168,7 +171,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         )}
       </div>
 
-      {opened === 0 ? <Hint>Ketuk kuncupnya satu-satu</Hint> : null}
+      {opened === 0 ? <Hint>{t.hint}</Hint> : null}
 
       <Confetti burst={burst} colors={['#ee6a58', '#ffcb3d', '#ff9f1f', '#f47a8c', '#fffdf7', '#5a9f79']} origin={{ x: 0.5, y: 0.55 }} />
 
@@ -176,7 +179,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         <Finale
           data={data}
           mode={mode}
-          eyebrow="Terselip di antara bunganya"
+          eyebrow={t.finale}
           flower="bunga-kamboja"
           theme={{ backdrop: 'pagi', ink: '#43261f', paper: '#fffaf0', paperInk: '#3b2a22' }}
           onReplay={onReplay}

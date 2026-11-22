@@ -6,6 +6,7 @@ import { PAY_WINDOW_MIN } from './payment/types';
 import { type Currency, type Market, getPlan, planAmount } from './site';
 import { slugProblem } from './slug';
 import { getStore } from './store';
+import { DEFAULT_LOCALE, isLocale } from '@/i18n/config';
 import { getTemplate } from '@/templates/registry';
 
 export class OrderError extends Error {
@@ -62,6 +63,7 @@ export async function createOrder(input: {
   plan: unknown;
   market: unknown;
   contact: unknown;
+  lang: unknown;
   /** asal situs tempat pembeli memesan, mis. https://floa.site */
   origin: string;
 }) {
@@ -81,11 +83,11 @@ export async function createOrder(input: {
   if (!plan) throw new OrderError('Paket tidak dikenal.');
   const slug = typeof input.slug === 'string' ? input.slug.trim().toLowerCase() : '';
   const problem = slugProblem(slug);
-  if (problem) throw new OrderError(`Alamat kado: ${problem.toLowerCase()}.`, 400, 'slug_invalid');
+  if (problem) throw new OrderError(`Alamat kado tidak valid (${problem}).`, 400, 'slug_invalid');
 
   const store = getStore();
   const data = sanitizeData(meta, input.data, (u) => store.ownsPhoto(u));
-  if (!data.to) throw new OrderError('Nama penerima belum diisi.');
+  if (!data.to) throw new OrderError('Nama penerima belum diisi.', 400, 'no_recipient');
 
   const contact =
     typeof input.contact === 'string' && input.contact.trim()
@@ -101,6 +103,7 @@ export async function createOrder(input: {
     plan: plan.id,
     amount: planAmount(plan, provider.currency),
     currency: provider.currency,
+    lang: isLocale(input.lang) ? input.lang : DEFAULT_LOCALE,
     editKey: randomBytes(18).toString('base64url'),
     contact,
     provider: provider.id,

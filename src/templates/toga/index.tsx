@@ -3,7 +3,9 @@
 import { type CSSProperties, type PointerEvent, useRef, useState } from 'react';
 import { Confetti, Finale, Hint, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
+import { useText } from './i18n';
 import { meta } from './meta';
+import { fmt } from '@/i18n/client';
 import s from './style.module.css';
 
 type Phase = 'ready' | 'thrown' | 'scroll' | 'open';
@@ -50,6 +52,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const thrown = useRef(false);
   const skipClick = useRef(false);
   const later = useTimers();
+  const t = useText();
 
   const throwCap = (fromPx = 0) => {
     if (thrown.current) return;
@@ -125,7 +128,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   };
 
   const after = phase !== 'ready';
-  const title = data.title || 'Selamat wisuda!';
+  const title = data.title || t.titleFallback;
 
   return (
     <div className={cx(s.wrap, ready && s.ready, after && s.thrown)}>
@@ -144,9 +147,9 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       ) : null}
 
       <div className={s.head}>
-        <div className={s.eyebrow}>{after ? 'resmi lulus!' : 'hari yang ditunggu-tunggu'}</div>
-        <div className={cx(s.name, data.to.length > 11 && s.small)}>{data.to || 'Wisudawan'}</div>
-        {data.from ? <div className={s.from}>dari {data.from}</div> : null}
+        <div className={s.eyebrow}>{after ? t.eyebrowAfter : t.eyebrowBefore}</div>
+        <div className={cx(s.name, data.to.length > 11 && s.small)}>{data.to || t.nameFallback}</div>
+        {data.from ? <div className={s.from}>{fmt(t.fromName, { name: data.from })}</div> : null}
       </div>
 
       <div className={cx(s.mid, !notes.length && phase === 'scroll' && s.center)}>
@@ -165,7 +168,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
             type="button"
             className={cx(s.rolled, phase === 'open' && s.gone)}
             onClick={openScroll}
-            aria-label="Buka gulungan ucapan"
+            aria-label={t.openAria}
             tabIndex={phase === 'open' ? -1 : 0}
           >
             <Sprite name="toga-gulungan" />
@@ -182,17 +185,17 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                   <div className={s.revealIn}>
                     <div className={s.paper}>
                       <div className={s.paperIn}>
-                        <div className={s.pEyebrow}>dengan bangga</div>
+                        <div className={s.pEyebrow}>{t.paperEyebrow}</div>
                         <div className={cx(s.pTitle, title.length > 22 && s.small)}>{title}</div>
                         <div className={s.rule}>
                           <i />
                         </div>
                         <div className={s.pFor}>
-                          {data.to ? `untuk ${data.to}` : 'untuk kamu'}
+                          {data.to ? fmt(t.forName, { name: data.to }) : t.forYou}
                           {data.from ? (
                             <>
                               <br />
-                              dari {data.from}
+                              {fmt(t.fromName, { name: data.from })}
                             </>
                           ) : null}
                         </div>
@@ -222,7 +225,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               type="button"
               ref={cap}
               className={cx(s.cap, after && s.fly)}
-              aria-label="Lempar toga ke atas"
+              aria-label={t.throwAria}
               onPointerDown={onDown}
               onPointerMove={onMove}
               onPointerUp={onUp}
@@ -253,13 +256,13 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               setFinale(true);
             }}
           >
-            Baca isi gulungannya →
+            {t.read}
           </button>
         ) : null}
       </div>
 
-      {phase === 'ready' ? <Hint>Geser toganya ke atas</Hint> : null}
-      {phase === 'scroll' ? <Hint>Ketuk gulungannya</Hint> : null}
+      {phase === 'ready' ? <Hint>{t.hintSwipe}</Hint> : null}
+      {phase === 'scroll' ? <Hint>{t.hintTap}</Hint> : null}
 
       <Confetti burst={burst} colors={GOLD} origin={{ x: 0.5, y: 0.7 }} count={140} />
 
@@ -267,7 +270,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         <Finale
           data={data}
           mode={mode}
-          eyebrow="Isi gulungannya"
+          eyebrow={t.finaleEyebrow}
           flower="bunga-kamboja"
           theme={{ backdrop: '/art/bg-toga.webp', ink: '#fdf6e3', paper: '#fff7e6', paperInk: '#24304f' }}
           onReplay={onReplay}

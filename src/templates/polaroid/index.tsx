@@ -9,6 +9,8 @@ import {
 } from 'react';
 import { Finale, Hint, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
+import { fmt, useLocale } from '@/i18n/client';
+import { TEXT } from './i18n';
 import { meta } from './meta';
 import s from './style.module.css';
 
@@ -60,9 +62,10 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const moved = useRef(false);
   const later = useTimers();
   const ready = useArtReady(ART);
+  const t = TEXT[useLocale()];
 
   const atLetter = idx >= total;
-  const to = data.to.trim() || 'kamu';
+  const to = data.to.trim() || t.you;
   const from = data.from.trim();
 
   const toss = (dir: number) => {
@@ -139,14 +142,14 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       <div className={s.head}>
         {atLetter && total > 0 ? (
           <div key="l">
-            <div className={s.eyebrow}>tinggal satu lagi</div>
-            <div className={cx(s.name, s.small)}>Ada surat di paling bawah.</div>
+            <div className={s.eyebrow}>{t.oneMore}</div>
+            <div className={cx(s.name, s.small)}>{t.letterBelow}</div>
           </div>
         ) : (
           <div key="n">
-            <div className={s.eyebrow}>{total > 0 ? 'setumpuk kenangan untuk' : 'ada surat untuk'}</div>
+            <div className={s.eyebrow}>{total > 0 ? t.pileFor : t.letterFor}</div>
             <div className={cx(s.name, to.length > 12 && s.small)}>{to}</div>
-            {from ? <div className={s.from}>dari {from}</div> : null}
+            {from ? <div className={s.from}>{fmt(t.from, { from })}</div> : null}
           </div>
         )}
       </div>
@@ -158,17 +161,17 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           onClick={open}
           tabIndex={atLetter ? 0 : -1}
           aria-hidden={!atLetter}
-          aria-label="Buka surat di paling bawah"
+          aria-label={t.openLabel}
         >
           <span className={s.noteFlap} />
-          <span className={s.noteEyebrow}>{total > 0 ? 'surat di paling bawah' : 'sepucuk surat'}</span>
+          <span className={s.noteEyebrow}>{total > 0 ? t.noteBottom : t.noteSingle}</span>
           <span className={s.sticker} aria-hidden>
             <Sprite name="daun-2" className={s.stickerLeaf} />
             <Sprite name="daun-4" className={s.stickerLeaf2} />
             <Sprite name="bunga-kamboja-pink" className={s.stickerFlower} />
           </span>
-          <span className={cx(s.noteTo, to.length > 13 && s.long)}>Buat {to}</span>
-          <span className={s.noteOpen}>ketuk untuk membuka</span>
+          <span className={cx(s.noteTo, to.length > 13 && s.long)}>{fmt(t.noteTo, { to })}</span>
+          <span className={s.noteOpen}>{t.noteOpen}</span>
         </button>
 
         {cards.map((c, i) => {
@@ -192,7 +195,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               style={style}
               tabIndex={top ? 0 : -1}
               aria-hidden={!top}
-              aria-label={`Foto ${i + 1} dari ${total}${c.cap ? `: ${c.cap}` : ''}. Ketuk atau geser untuk lanjut.`}
+              aria-label={fmt(t.card, { i: i + 1, total, cap: c.cap ? `: ${c.cap}` : '' })}
               onPointerDown={top ? onDown : undefined}
               onPointerMove={top ? onMove : undefined}
               onPointerUp={top ? (e) => onEnd(e, false) : undefined}
@@ -225,14 +228,14 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         ) : null}
       </div>
 
-      {idx === 0 && total > 0 ? <Hint>Geser atau ketuk fotonya</Hint> : null}
-      {atLetter && !finale ? <Hint key="s">Ketuk suratnya</Hint> : null}
+      {idx === 0 && total > 0 ? <Hint>{t.hintSwipe}</Hint> : null}
+      {atLetter && !finale ? <Hint key="s">{t.hintLetter}</Hint> : null}
 
       {finale ? (
         <Finale
           data={data}
           mode={mode}
-          eyebrow={total > 0 ? 'Surat di paling bawah' : 'Surat untukmu'}
+          eyebrow={total > 0 ? t.finaleBottom : t.finaleSingle}
           flower="bunga-kamboja-pink"
           theme={{ bg: `url(${BACKDROP}) center bottom / cover no-repeat`, ink: meta.palette.ink, paper: '#fffaf0', paperInk: '#3b2a22' }}
           onReplay={onReplay}

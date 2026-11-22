@@ -24,6 +24,9 @@ alter table public.gifts add column if not exists currency text not null default
 alter table public.gifts add column if not exists provider_ref text;
 alter table public.gifts add column if not exists pay_expires_at timestamptz;
 
+-- Bahasa pengirim (id / ms / en): halaman kado dan pratinjau link-nya memakai bahasa ini.
+alter table public.gifts add column if not exists lang text not null default 'id' check (lang in ('id', 'ms', 'en'));
+
 -- RLS aktif tanpa policy: tabel hanya bisa diakses server floa lewat service role key.
 alter table public.gifts enable row level security;
 

@@ -2,13 +2,20 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { type MyGift, type OrderInfo, api, clearDraft, upsertMyGift, uploadPhotos } from '@/lib/client';
+import { fmt, useLocale, useT } from '@/i18n/client';
+import type { Dict } from '@/i18n/dict';
+import { type MyGift, type OrderInfo, api, clearDraft, errorText, upsertMyGift, uploadPhotos } from '@/lib/client';
 import { MARKET_CURRENCY, type Market, PLANS, type PlanId, money, planAmount } from '@/lib/site';
-import { slugProblem, slugify, suggestSlug } from '@/lib/slug';
+import { SLUG_MAX, SLUG_MIN, slugProblem, slugify, suggestSlug } from '@/lib/slug';
 import { Confetti } from '@/templates/kit';
 import type { GiftData, TemplateMeta } from '@/templates/types';
 
 type SlugState = { s: 'idle' | 'checking' | 'ok' | 'bad'; reason?: string; suggestion?: string };
+
+function slugReason(code: string | undefined, t: Dict) {
+  const m = t.slug as Record<string, string>;
+  return fmt(m[code ?? ''] ?? m.reserved, { n: code === 'too_long' ? SLUG_MAX : SLUG_MIN });
+}
 type MarketInfo = { available: boolean; test: boolean; provider: string | null };
 export type PaymentOptions = { country: string | null; suggested: Market; options: Record<Market, MarketInfo> };
 
@@ -68,6 +75,8 @@ export function CheckoutSheet({
   onClose: (finished: boolean) => void;
   onPhotos?: (photos: string[]) => void;
 }) {
+  const t = useT();
+  const locale = useLocale();
   const [order, setOrder] = useState<OrderInfo | null>(resume ? orderFromMyGift(resume) : null);
   const [step, setStep] = useState<'form' | 'pay' | 'done'>(resume ? (resume.status === 'live' ? 'done' : 'pay') : 'form');
   const [slug, setSlug] = useState(() => resume?.slug ?? suggestSlug(data.to));
@@ -136,19 +145,19 @@ export function CheckoutSheet({
   const submit = async () => {
     if (busy) return;
     if (slugState.s === 'bad' || slugProblem(slug)) {
-      setError('Alamat kadonya belum bisa dipakai. Ganti dulu ya.');
+      setError(t.checkout.fixAddress);
       return;
     }
     if (options && !options.options[market].available) {
-      setError('Cara bayar ini belum aktif. Pilih yang lain ya.');
+      setError(t.checkout.methodOff);
       return;
     }
     setError(null);
     try {
-      setBusy('Menyiapkan…');
-      const photos = await uploadPhotos(data.photos, (d, t) => setBusy(`Mengunggah foto ${d}/${t}…`));
+      setBusy(t.checkout.preparing);
+      const photos = await uploadPhotos(data.photos, (d, n) => setBusy(fmt(t.checkout.uploading, { done: d, total: n })));
       onPhotos?.(photos);
-      setBusy(market === 'id' ? 'Membuat QRIS…' : 'Menyiapkan pembayaran kartu…');
+      setBusy(market === 'id' ? t.checkout.makingQris : t.checkout.makingCard);
       const o = await api<OrderInfo>('/api/orders', {
         method: 'POST',
         body: JSON.stringify({
@@ -157,6 +166,7 @@ export function CheckoutSheet({
           slug,
           plan,
           market,
+          lang: locale,
           contact,
           replaces: order ? { id: order.id, key: order.editKey } : undefined,
         }),
@@ -164,14 +174,14 @@ export function CheckoutSheet({
       setOrder(o);
       rememberOrder(o, 'pending', extra);
       if (o.kind === 'redirect' && o.url) {
-        setBusy('Membuka halaman pembayaran…');
+        setBusy(t.checkout.redirecting);
         window.location.assign(o.url);
         return; // tetap "sibuk" sampai halaman berpindah
       }
       setStep('pay');
       setBusy(null);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Ada yang tidak beres. Coba lagi ya.');
+      setError(errorText(e, t));
       setBusy(null);
     }
   };
@@ -195,18 +205,18 @@ export function CheckoutSheet({
   const close = () => onClose(step === 'done');
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label="Terbitkan kado">
+    <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label={t.checkout.dialog}>
       <div className="absolute inset-0 animate-fade bg-ink/55 backdrop-blur-[2px]" onClick={canClose ? close : undefined} />
       <div className="relative max-h-[94dvh] w-full animate-sheet overflow-y-auto overscroll-contain rounded-t-[1.75rem] bg-paper shadow-pop sm:max-w-[26rem] sm:rounded-[1.75rem]">
         <div className="sticky top-0 z-10 flex items-center justify-between bg-paper/95 px-5 pb-2 pt-4 backdrop-blur">
           <div className="flex items-center gap-2 text-[12px] font-extrabold uppercase tracking-wider text-muted">
-            <StepDot on={step === 'form'} done={step !== 'form'} n={1} /> Link
+            <StepDot on={step === 'form'} done={step !== 'form'} n={1} /> {t.checkout.stepLink}
             <span className="h-px w-4 bg-line" />
-            <StepDot on={step === 'pay'} done={step === 'done'} n={2} /> Bayar
+            <StepDot on={step === 'pay'} done={step === 'done'} n={2} /> {t.checkout.stepPay}
             <span className="h-px w-4 bg-line" />
-            <StepDot on={step === 'done'} done={false} n={3} /> Kirim
+            <StepDot on={step === 'done'} done={false} n={3} /> {t.checkout.stepSend}
           </div>
-          <button type="button" onClick={close} className="grid h-9 w-9 place-items-center rounded-full bg-paper-2 text-lg leading-none" aria-label="Tutup">
+          <button type="button" onClick={close} className="grid h-9 w-9 place-items-center rounded-full bg-paper-2 text-lg leading-none" aria-label={t.checkout.close}>
             ×
           </button>
         </div>
@@ -274,10 +284,7 @@ function StepDot({ on, done, n }: { on: boolean; done: boolean; n: number }) {
 
 /* ───────────────────────── 1. link + paket + cara bayar ───────────────────────── */
 
-const MARKETS: { id: Market; title: string; sub: string }[] = [
-  { id: 'id', title: 'Indonesia', sub: 'QRIS · Rupiah' },
-  { id: 'intl', title: 'Luar negeri', sub: 'Kartu · USD' },
-];
+const MARKETS: Market[] = ['id', 'intl'];
 
 function FormStep(p: {
   to: string;
@@ -299,6 +306,7 @@ function FormStep(p: {
   onBack: () => void;
   onSubmit: () => void;
 }) {
+  const t = useT();
   const [host, setHost] = useState('floa.site');
   useEffect(() => setHost(window.location.host), []);
   const st = p.slugState;
@@ -312,16 +320,16 @@ function FormStep(p: {
         p.onSubmit();
       }}
     >
-      <h2 className="font-display text-[1.7rem] font-semibold leading-tight">Terbitkan kado{p.to ? ` untuk ${p.to}` : ''}</h2>
+      <h2 className="font-display text-[1.7rem] font-semibold leading-tight">{p.to ? fmt(t.checkout.titleFor, { to: p.to }) : t.checkout.title}</h2>
 
       {p.sampleFields.length ? (
         <button type="button" onClick={p.onBack} className="mt-3 block w-full rounded-2xl bg-butter/55 px-3.5 py-2.5 text-left text-[13px] font-semibold leading-snug">
-          Masih isi contoh: {p.sampleFields.join(', ')}. <span className="underline underline-offset-2">Periksa lagi</span>
+          {fmt(t.checkout.stillSample, { fields: p.sampleFields.join(', ') })} <span className="underline underline-offset-2">{t.checkout.checkAgain}</span>
         </button>
       ) : null}
 
       <label htmlFor="co-slug" className="mt-5 block text-[14px] font-extrabold">
-        Alamat kadomu
+        {t.checkout.address}
       </label>
       <div
         className={
@@ -341,7 +349,7 @@ function FormStep(p: {
           autoComplete="off"
           spellCheck={false}
           maxLength={32}
-          placeholder="untuk-namanya"
+          placeholder={t.checkout.addressPlaceholder}
           aria-describedby="co-slug-status"
         />
         <span className="grid h-7 w-7 flex-none place-items-center" aria-hidden>
@@ -351,24 +359,25 @@ function FormStep(p: {
         </span>
       </div>
       <p id="co-slug-status" className="mt-1.5 min-h-5 text-[13px] font-semibold" aria-live="polite">
-        {st.s === 'ok' ? <span className="text-leaf">Tersedia. Ini link yang nanti kamu kirim.</span> : null}
+        {st.s === 'ok' ? <span className="text-leaf">{t.checkout.available}</span> : null}
         {st.s === 'bad' ? (
           <span className="text-tomato-dark">
-            {st.reason}.{' '}
+            {slugReason(st.reason, t)}.{' '}
             {st.suggestion ? (
               <button type="button" className="underline underline-offset-2" onClick={() => p.setSlug(st.suggestion!)}>
-                Pakai {st.suggestion}
+                {fmt(t.checkout.use, { slug: st.suggestion! })}
               </button>
             ) : null}
           </span>
         ) : null}
-        {st.s === 'idle' || st.s === 'checking' ? <span className="text-muted">Huruf kecil, angka, dan tanda hubung.</span> : null}
+        {st.s === 'idle' || st.s === 'checking' ? <span className="text-muted">{t.checkout.slugHelp}</span> : null}
       </p>
 
       <fieldset className="mt-3">
-        <legend className="text-[14px] font-extrabold">Bayar dari mana?</legend>
+        <legend className="text-[14px] font-extrabold">{t.checkout.payFrom}</legend>
         <div className="mt-1.5 grid grid-cols-2 gap-1 rounded-2xl bg-paper-2 p-1" role="radiogroup">
-          {MARKETS.map((m) => {
+          {MARKETS.map((id) => {
+            const m = id === 'id' ? { id, title: t.checkout.marketId, sub: t.checkout.marketIdSub } : { id, title: t.checkout.marketIntl, sub: t.checkout.marketIntlSub };
             const on = p.market === m.id;
             const off = p.options ? !p.options.options[m.id].available : false;
             return (
@@ -390,20 +399,18 @@ function FormStep(p: {
                   className="sr-only"
                 />
                 <span className="block text-[14px] font-extrabold leading-tight">{m.title}</span>
-                <span className="mt-0.5 block text-[11.5px] font-semibold text-muted">{off ? 'Belum aktif' : m.sub}</span>
+                <span className="mt-0.5 block text-[11.5px] font-semibold text-muted">{off ? t.checkout.notActive : m.sub}</span>
               </label>
             );
           })}
         </div>
         <p className="mt-1.5 text-[12.5px] leading-snug text-muted">
-          {p.market === 'id'
-            ? 'QRIS diproses BorderPay. Bisa dibayar dari GoPay, OVO, DANA, ShopeePay, atau m-banking.'
-            : 'Kamu akan diarahkan ke halaman pembayaran Creem untuk bayar pakai kartu kredit/debit. Pajak bisa ditambahkan sesuai negaramu.'}
+          {p.market === 'id' ? t.checkout.noteId : t.checkout.noteIntl}
         </p>
       </fieldset>
 
       <fieldset className="mt-4">
-        <legend className="text-[14px] font-extrabold">Link aktif berapa lama?</legend>
+        <legend className="text-[14px] font-extrabold">{t.checkout.howLong}</legend>
         <div className="mt-1.5 grid grid-cols-2 gap-2.5">
           {PLANS.map((pl) => {
             const on = p.plan === pl.id;
@@ -417,11 +424,11 @@ function FormStep(p: {
               >
                 <input type="radio" name="plan" value={pl.id} checked={on} onChange={() => p.setPlan(pl.id)} className="sr-only" />
                 {pl.popular ? (
-                  <span className="absolute -top-2 right-3 rounded-full bg-butter px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider">Disarankan</span>
+                  <span className="absolute -top-2 right-3 rounded-full bg-butter px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider">{t.plans.recommended}</span>
                 ) : null}
-                <span className="block text-[13px] font-bold text-ink-2">{pl.name}</span>
+                <span className="block text-[13px] font-bold text-ink-2">{t.plans[pl.id].name}</span>
                 <span className="font-display mt-0.5 block text-[1.45rem] font-semibold leading-none">{money(planAmount(pl, currency), currency)}</span>
-                <span className="mt-1 block text-[12px] leading-tight text-muted">{pl.note}</span>
+                <span className="mt-1 block text-[12px] leading-tight text-muted">{t.plans[pl.id].note}</span>
               </label>
             );
           })}
@@ -429,7 +436,7 @@ function FormStep(p: {
       </fieldset>
 
       <label htmlFor="co-contact" className="mt-4 block text-[14px] font-extrabold">
-        Nomor WhatsApp <span className="font-semibold text-muted">(opsional)</span>
+        {t.checkout.whatsapp} <span className="font-semibold text-muted">{t.checkout.optional}</span>
       </label>
       <input
         id="co-contact"
@@ -441,11 +448,11 @@ function FormStep(p: {
         placeholder={p.market === 'id' ? '08xxxxxxxxxx' : '+1 555 000 0000'}
         className="mt-1.5 w-full rounded-2xl bg-white px-4 py-3 text-[16px] shadow-[inset_0_0_0_1.5px_var(--color-line)] outline-none focus:shadow-[inset_0_0_0_2px_var(--color-ink)]"
       />
-      <p className="mt-1 text-[12.5px] text-muted">Hanya dipakai kalau kamu butuh bantuan soal kado ini.</p>
+      <p className="mt-1 text-[12.5px] text-muted">{t.checkout.whatsappHelp}</p>
 
       {info?.test ? (
         <p className="mt-4 rounded-2xl bg-butter/60 px-3.5 py-2.5 text-[12.5px] font-semibold leading-snug">
-          Mode uji: pembayaran ini tidak memakai uang sungguhan.
+          {t.checkout.testMode}
         </p>
       ) : null}
 
@@ -458,20 +465,20 @@ function FormStep(p: {
       <button type="submit" disabled={!!p.busy || p.slugState.s === 'checking'} className="btn btn-primary mt-5 h-14 w-full text-[16px]">
         {p.busy ?? (
           <>
-            Bayar {money(p.price, currency)} pakai {p.market === 'id' ? 'QRIS' : 'kartu'} <span aria-hidden>→</span>
+            {fmt(p.market === 'id' ? t.checkout.payQris : t.checkout.payCard, { price: money(p.price, currency) })} <span aria-hidden>→</span>
           </>
         )}
       </button>
       <p className="mt-3 text-center text-[12px] leading-snug text-muted">
-        Sekali bayar, bukan langganan. Dengan membayar kamu setuju dengan{' '}
+        {t.checkout.legalA}{' '}
         <Link href="/syarat" target="_blank" className="underline">
-          Syarat
+          {t.nav.terms}
         </Link>{' '}
-        dan{' '}
+        {t.checkout.legalAnd}{' '}
         <Link href="/privasi" target="_blank" className="underline">
-          Privasi
-        </Link>{' '}
-        floa.
+          {t.nav.privacy}
+        </Link>
+        {t.checkout.legalB === '.' ? '.' : ` ${t.checkout.legalB}`}
       </p>
     </form>
   );
@@ -490,6 +497,7 @@ function PayStep({
   onChange?: () => void;
   onLater: () => void;
 }) {
+  const t = useT();
   const [img, setImg] = useState<string | null>(null);
   const [left, setLeft] = useState(() => Math.max(0, new Date(order.expiresAt).getTime() - Date.now()));
   const [simulating, setSimulating] = useState(false);
@@ -542,29 +550,29 @@ function PayStep({
       const r = await api<{ status: string; slug: string }>('/api/pay/simulate', { method: 'POST', body: JSON.stringify({ id: order.id }) });
       if (r.status === 'live') paid.current(r.slug);
       else {
-        setNote('Simulasi terkirim, menunggu konfirmasi…');
+        setNote(t.checkout.simulateSent);
         setSimulating(false);
       }
     } catch (e) {
-      setNote(e instanceof Error ? e.message : 'Gagal.');
+      setNote(errorText(e, t));
       setSimulating(false);
     }
   };
 
   return (
     <div className="text-center">
-      <h2 className="font-display text-[1.7rem] font-semibold leading-tight">Scan untuk bayar</h2>
+      <h2 className="font-display text-[1.7rem] font-semibold leading-tight">{t.checkout.scanTitle}</h2>
       <p className="mt-1 text-[14px] text-ink-2">
-        Buka e-wallet atau m-banking, pilih <b>Scan QRIS</b>.
+        {t.checkout.scanSub} <b>{t.checkout.scanQris}</b>.
       </p>
 
       {order.provider === 'demo' ? (
         <p className="mt-3 rounded-2xl bg-butter/60 px-3.5 py-2.5 text-left text-[13px] font-semibold leading-snug">
-          Mode simulasi: payment gateway belum disambungkan, jadi QR ini bukan QRIS asli dan tidak ada uang yang berpindah.
+          {t.checkout.demoNote}
         </p>
       ) : order.test ? (
         <p className="mt-3 rounded-2xl bg-butter/60 px-3.5 py-2.5 text-left text-[13px] font-semibold leading-snug">
-          Mode uji BorderPay: QR ini dari sandbox, tidak ada uang yang berpindah. Pakai tombol simulasi di bawah.
+          {t.checkout.bpTestNote}
         </p>
       ) : null}
 
@@ -575,46 +583,46 @@ function PayStep({
         </div>
         <div className={'relative aspect-square overflow-hidden rounded-xl bg-paper-2 ' + (expired ? 'opacity-25' : '')}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          {img ? <img src={img} alt="Kode QRIS untuk pembayaran" className="h-full w-full" /> : <span className="floa-loader absolute inset-0 m-auto text-muted" />}
+          {img ? <img src={img} alt={t.checkout.qrAlt} className="h-full w-full" /> : <span className="floa-loader absolute inset-0 m-auto text-muted" />}
         </div>
         <div className="font-display mt-2.5 text-[1.7rem] font-semibold leading-none">{money(order.amount, order.currency)}</div>
       </div>
 
       {expired ? (
-        <p className="mt-4 text-[14px] font-bold text-tomato-dark">QR ini sudah kedaluwarsa.</p>
+        <p className="mt-4 text-[14px] font-bold text-tomato-dark">{t.checkout.expired}</p>
       ) : (
         <p className="mt-4 inline-flex items-center gap-2 text-[14px] font-semibold text-ink-2" aria-live="off">
-          <span className="floa-loader !h-4 !w-4 !border-2" /> Menunggu pembayaran · <span className="tabular-nums">{mm}:{ss}</span>
+          <span className="floa-loader !h-4 !w-4 !border-2" /> {t.checkout.waiting} · <span className="tabular-nums">{mm}:{ss}</span>
         </p>
       )}
 
       <div className="mt-4 flex flex-col gap-2">
         {order.test && !expired ? (
           <button type="button" onClick={simulate} disabled={simulating} className="btn btn-primary h-13 w-full py-4 text-[15px]">
-            {simulating ? 'Memproses…' : 'Simulasikan pembayaran berhasil'}
+            {simulating ? t.checkout.simulating : t.checkout.simulate}
           </button>
         ) : null}
         {order.payUrl && !expired ? (
           <a href={order.payUrl} className="btn btn-ghost h-12 w-full text-[14px]">
-            Bayar di halaman BorderPay
+            {t.checkout.payOnBorderpay}
           </a>
         ) : null}
         {img && !expired ? (
           <a href={img} download={`qris-floa-${order.slug}.png`} className="btn btn-ghost h-12 w-full text-[14px]">
-            Simpan QR ke galeri
+            {t.checkout.saveQr}
           </a>
         ) : null}
         {onChange ? (
           <button type="button" onClick={onChange} className="btn h-11 w-full text-[13.5px] text-ink-2 underline underline-offset-2">
-            {expired ? 'Buat QR baru' : 'Ganti link, paket, atau cara bayar'}
+            {expired ? t.checkout.newQr : t.checkout.change}
           </button>
         ) : null}
       </div>
       {note ? <p className="mt-2 text-[13px] font-bold text-ink-2">{note}</p> : null}
       <p className="mt-3 text-[12.5px] leading-snug text-muted">
-        Halaman ini otomatis lanjut begitu pembayaran masuk. Kalau tertutup, lanjutkan dari menu{' '}
+        {t.checkout.autoContinue}{' '}
         <button type="button" onClick={onLater} className="font-bold underline">
-          Kado saya
+          {t.nav.myGifts}
         </button>
         .
       </p>
@@ -635,6 +643,7 @@ export function DoneStep({
   from: string;
   templateId?: string;
 }) {
+  const t = useT();
   const [origin, setOrigin] = useState('https://floa.site');
   const [qr, setQr] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -668,7 +677,7 @@ export function DoneStep({
     setTimeout(() => setCopied(false), 2200);
   };
 
-  const waText = `Hai${to ? ` ${to}` : ''}, ada sesuatu buat kamu${from ? ` dari ${from}` : ''}. Buka pelan-pelan ya:\n${url}`;
+  const waText = `${fmt(t.checkout.waMessage, { to: to ? ` ${to}` : '', from: from ? fmt(t.checkout.waFrom, { from }) : '' })}\n${url}`;
 
   return (
     <div className="relative text-center">
@@ -676,51 +685,51 @@ export function DoneStep({
         <Confetti burst={burst} origin={{ x: 0.5, y: 0.5 }} />
       </div>
       <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-leaf text-2xl text-white">✓</div>
-      <h2 className="font-display mt-3 text-[1.9rem] font-semibold leading-tight">Kadomu sudah terbit!</h2>
-      <p className="mt-1 text-[14px] text-ink-2">Tinggal kirim link ini{to ? ` ke ${to}` : ''}.</p>
+      <h2 className="font-display mt-3 text-[1.9rem] font-semibold leading-tight">{t.checkout.doneTitle}</h2>
+      <p className="mt-1 text-[14px] text-ink-2">{to ? fmt(t.checkout.doneSubTo, { to }) : t.checkout.doneSub}</p>
 
       <div className="mt-4 flex items-center gap-2 rounded-2xl bg-white p-2 pl-4 shadow-[inset_0_0_0_1.5px_var(--color-line)]">
         <span className="min-w-0 flex-1 truncate text-left text-[15px] font-bold" data-testid="gift-url">
           {url.replace(/^https?:\/\//, '')}
         </span>
         <button type="button" onClick={copy} className="btn btn-ink h-10 flex-none px-4 text-[13px]">
-          {copied ? 'Tersalin ✓' : 'Salin'}
+          {copied ? t.checkout.copied : t.checkout.copy}
         </button>
       </div>
 
       <div className="mt-3 flex flex-col gap-2">
         <a href={`https://wa.me/?text=${encodeURIComponent(waText)}`} target="_blank" rel="noopener" className="btn btn-primary h-13 w-full py-4 text-[15px]">
-          Kirim lewat WhatsApp
+          {t.checkout.sendWa}
         </a>
         <div className="grid grid-cols-2 gap-2">
           <a href={`/${order.slug}`} target="_blank" rel="noopener" className="btn btn-ghost h-12 text-[14px]">
-            Lihat kado
+            {t.checkout.viewGift}
           </a>
           {qr ? (
             <a href={qr} download={`qr-kado-${order.slug}.png`} className="btn btn-ghost h-12 text-[14px]">
-              Unduh QR
+              {t.checkout.downloadQr}
             </a>
           ) : (
-            <span className="btn btn-ghost h-12 text-[14px] opacity-50">Unduh QR</span>
+            <span className="btn btn-ghost h-12 text-[14px] opacity-50">{t.checkout.downloadQr}</span>
           )}
         </div>
       </div>
 
       <p className="mt-4 text-[12.5px] leading-snug text-muted">
-        QR-nya bisa dicetak dan diselipkan di kado fisik.{' '}
+        {t.checkout.printTip}{' '}
         {order.editKey && templateId ? (
           <>
-            Mau ubah isinya nanti?{' '}
+            {t.checkout.editLater}{' '}
             <Link href={`/buat/${templateId}?edit=${order.id}&key=${encodeURIComponent(order.editKey)}`} className="font-bold underline">
-              Ubah isi
+              {t.checkout.editContent}
             </Link>{' '}
-            atau buka{' '}
+            {t.checkout.orOpen}{' '}
           </>
         ) : (
-          'Daftar kadomu ada di '
+          `${t.checkout.listAt} `
         )}
         <Link href="/kado-saya" className="font-bold underline">
-          Kado saya
+          {t.nav.myGifts}
         </Link>
         .
       </p>

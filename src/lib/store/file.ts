@@ -27,11 +27,11 @@ export const fileStore: Store = {
   kind: 'file',
 
   async getGift(id) {
-    const g = await readJson<Omit<Gift, 'currency' | 'providerRef' | 'payExpiresAt'> & Partial<Gift>>(
+    const g = await readJson<Omit<Gift, 'currency' | 'lang' | 'providerRef' | 'payExpiresAt'> & Partial<Gift>>(
       path.join(dir('gifts'), `${safe(id)}.json`),
     );
     // pesanan lama (sebelum ada pilihan mata uang) selalu rupiah
-    return g ? { ...g, currency: g.currency ?? 'IDR', providerRef: g.providerRef ?? null, payExpiresAt: g.payExpiresAt ?? null } : null;
+    return g ? { ...g, currency: g.currency ?? 'IDR', lang: g.lang ?? 'id', providerRef: g.providerRef ?? null, payExpiresAt: g.payExpiresAt ?? null } : null;
   },
 
   async getGiftBySlug(slug) {

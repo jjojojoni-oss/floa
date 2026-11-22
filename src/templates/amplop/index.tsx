@@ -3,6 +3,8 @@
 import { type CSSProperties, useRef, useState } from 'react';
 import { Finale, Hint, HoldButton, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
+import { fmt, useLocale } from '@/i18n/client';
+import { TEXT } from './i18n';
 import { meta } from './meta';
 import s from './style.module.css';
 
@@ -45,8 +47,9 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const [finale, setFinale] = useState(false);
   const broke = useRef(false);
   const later = useTimers();
+  const t = TEXT[useLocale()];
 
-  const to = data.to.trim() || 'kamu';
+  const to = data.to.trim() || t.you;
   const from = data.from.trim();
   const mono = from ? Array.from(from)[0].toUpperCase() : '';
   const photos = data.photos.filter(Boolean).slice(0, 2);
@@ -101,18 +104,18 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       <div className={s.head}>
         {showFront ? (
           <div key="a">
-            <div className={s.eyebrow}>sepucuk surat dari</div>
-            <div className={cx(s.name, from.length > 12 && s.small)}>{from || 'seseorang'}</div>
+            <div className={s.eyebrow}>{t.letterFrom}</div>
+            <div className={cx(s.name, from.length > 12 && s.small)}>{from || t.someone}</div>
           </div>
         ) : !opened ? (
           <div key="b">
-            <div className={s.eyebrow}>masih tersegel</div>
-            <div className={cx(s.name, s.small)}>Cuma {to} yang boleh buka.</div>
+            <div className={s.eyebrow}>{t.sealed}</div>
+            <div className={cx(s.name, s.small)}>{fmt(t.onlyYou, { to })}</div>
           </div>
         ) : (
           <div key="c">
-            <div className={s.eyebrow}>segelnya patah</div>
-            <div className={cx(s.name, s.small)}>Silakan dibaca, {to}.</div>
+            <div className={s.eyebrow}>{t.broken}</div>
+            <div className={cx(s.name, s.small)}>{fmt(t.goRead, { to })}</div>
           </div>
         )}
       </div>
@@ -122,11 +125,11 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           <div className={cx(s.bob, !opened && s.floaty)}>
             <div className={cx(s.flip, side === 'turnOut' && s.turnOut, side === 'turnIn' && s.turnIn)}>
               {showFront ? (
-                <button type="button" className={s.front} onClick={flip} aria-label="Balik amplopnya">
+                <button type="button" className={s.front} onClick={flip} aria-label={t.flip}>
                   <Sprite name="amplop-muka" className={s.face} />
-                  {from ? <span className={s.sender}>dari {from}</span> : null}
+                  {from ? <span className={s.sender}>{fmt(t.from, { from })}</span> : null}
                   <span className={s.addr}>
-                    <span className={s.addrLabel}>Untuk</span>
+                    <span className={s.addrLabel}>{t.addrTo}</span>
                     <span className={cx(s.addrName, to.length > 11 && s.small)}>{to}</span>
                   </span>
                 </button>
@@ -145,10 +148,10 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                     onClick={openLetter}
                     tabIndex={phase === 'out' ? 0 : -1}
                     aria-hidden={phase !== 'out'}
-                    aria-label="Baca suratnya"
+                    aria-label={t.read}
                   >
-                    <span className={s.lTitle}>{data.title || 'Surat untukmu'}</span>
-                    <span className={s.lSalam}>Untuk {to},</span>
+                    <span className={s.lTitle}>{data.title || t.titleFallback}</span>
+                    <span className={s.lSalam}>{fmt(t.salam, { to })}</span>
                     <span className={s.lBody}>{data.message}</span>
                   </button>
                   <Sprite name="amplop-kantong" className={cx(s.layer, s.pocket)} />
@@ -163,7 +166,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                         ms={1300}
                         onComplete={breakSeal}
                         onProgress={setHold}
-                        label="Tekan dan tahan segelnya sampai patah"
+                        label={t.sealLabel}
                         className={s.sealBtn}
                       >
                         <span className={cx(s.sealIn, hold > 0 && s.shaking)}>
@@ -199,15 +202,15 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       <div className={s.foot}>
         {phase === 'out' ? (
           <button type="button" className={s.cta} onClick={openLetter}>
-            Baca suratnya →
+            {t.cta}
           </button>
         ) : null}
       </div>
 
-      {side === 'front' ? <Hint>Ketuk amplopnya</Hint> : null}
+      {side === 'front' ? <Hint>{t.hintTap}</Hint> : null}
       {side === 'back' && phase === 'sealed' ? (
         <Hint key={taps > 0 ? 't' : 'h'}>
-          {taps > 0 ? `Tahan lebih lama, atau ketuk ${TAPS_TO_BREAK - taps}× lagi` : 'Tekan & tahan segelnya'}
+          {taps > 0 ? fmt(t.hintMore, { n: TAPS_TO_BREAK - taps }) : t.hintHold}
         </Hint>
       ) : null}
 
@@ -215,7 +218,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         <Finale
           data={data}
           mode={mode}
-          eyebrow="Surat untukmu"
+          eyebrow={t.finale}
           flower="bunga-kamboja"
           theme={{ bg: `url(${BACKDROP}) center bottom / cover no-repeat`, ink: meta.palette.ink, paper: '#fffaf0', paperInk: '#3b2a22' }}
           onReplay={onReplay}

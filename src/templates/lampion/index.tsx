@@ -3,7 +3,9 @@
 import { type CSSProperties, useMemo, useRef, useState } from 'react';
 import { Finale, Hint, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
+import { useText } from './i18n';
 import { meta } from './meta';
+import { fmt } from '@/i18n/client';
 import s from './style.module.css';
 
 /** Titik menetap tiap lampion di langit: [kiri %, atas %, skala]. */
@@ -66,6 +68,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const dragEnd = useRef(0);
   const curRef = useRef(0);
   const later = useTimers();
+  const t = useText();
 
   // kerlip bintang di atas lukisan (bintang lukisannya sendiri diam)
   const stars = useMemo(() => {
@@ -142,14 +145,14 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       <div className={s.head}>
         {done ? (
           <div key="t">
-            <div className={s.eyebrow}>langitnya penuh harapan</div>
-            <div className={cx(s.name, s.small)}>{data.title || `Untuk ${data.to}`}</div>
+            <div className={s.eyebrow}>{t.doneEyebrow}</div>
+            <div className={cx(s.name, s.small)}>{data.title || fmt(t.titleFallback, { to: data.to })}</div>
           </div>
         ) : (
           <div key="n">
-            <div className={s.eyebrow}>harapan-harapan untuk</div>
-            <div className={cx(s.name, long && s.small)}>{data.to || 'kamu'}</div>
-            {data.from ? <div className={s.from}>dari {data.from}</div> : null}
+            <div className={s.eyebrow}>{t.eyebrow}</div>
+            <div className={cx(s.name, long && s.small)}>{data.to || t.you}</div>
+            {data.from ? <div className={s.from}>{fmt(t.fromName, { name: data.from })}</div> : null}
           </div>
         )}
       </div>
@@ -170,7 +173,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                 style={{ transform: isReady && dy ? `translateY(${dy}px)` : undefined }}
                 role={isReady ? 'button' : undefined}
                 tabIndex={isReady ? 0 : undefined}
-                aria-label={isReady ? `Terbangkan lampion ${i + 1}` : undefined}
+                aria-label={isReady ? fmt(t.releaseAria, { n: i + 1 }) : undefined}
                 aria-hidden={isReady ? undefined : true}
                 onPointerDown={
                   isReady
@@ -257,19 +260,19 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               setFinale(true);
             }}
           >
-            Baca pesannya →
+            {t.read}
           </button>
         ) : (
           <>
             {note ? (
               <div key={cur} className={s.card}>
-                <span className={s.cardNo}>harapan ke-{cur + 1}</span>
+                <span className={s.cardNo}>{fmt(t.wishNo, { n: cur + 1 })}</span>
                 {note}
               </div>
             ) : (
               <div className={s.cardGap} />
             )}
-            <div className={s.count} style={cur === 0 ? { visibility: 'hidden' } : undefined} aria-label={`${Math.min(cur, n)} dari ${n} lampion terbang`}>
+            <div className={s.count} style={cur === 0 ? { visibility: 'hidden' } : undefined} aria-label={fmt(t.countAria, { cur: Math.min(cur, n), n })}>
               {slots.map((_, i) => (
                 <i key={i} className={i < cur ? s.on : undefined} />
               ))}
@@ -278,13 +281,13 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         )}
       </div>
 
-      {cur === 0 ? <Hint>Geser lampionnya ke atas</Hint> : null}
+      {cur === 0 ? <Hint>{t.hint}</Hint> : null}
 
       {finale ? (
         <Finale
           data={data}
           mode={mode}
-          eyebrow="Dititipkan lewat lampion"
+          eyebrow={t.finaleEyebrow}
           flower="bunga-kamboja"
           theme={{ backdrop: BG, ink: '#fdf1d8', paper: '#fff6e2', paperInk: '#2b2440' }}
           onReplay={onReplay}

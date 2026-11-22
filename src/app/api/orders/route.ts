@@ -40,6 +40,7 @@ export async function POST(req: Request) {
       plan: body.plan,
       market: body.market,
       contact: body.contact,
+      lang: body.lang,
       origin: originOf(req),
     });
     return json({

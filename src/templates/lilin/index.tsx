@@ -3,6 +3,8 @@
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { Confetti, Finale, Hint, HoldButton, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
+import { fmt, useLocale } from '@/i18n/client';
+import { TEXT } from './i18n';
 import { meta } from './meta';
 import s from './style.module.css';
 
@@ -56,6 +58,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const scene = useRef<HTMLDivElement>(null);
   const blowing = useRef(false);
   const later = useTimers();
+  const t = TEXT[useLocale()];
 
   const litCount = lit.filter(Boolean).length;
   const party = phase === 'party';
@@ -108,7 +111,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   };
 
   const note = last !== null ? notes[last] : null;
-  const title = data.title || `Selamat ulang tahun${data.to ? `, ${data.to}` : ''}!`;
+  const title = data.title || `${t.happy}${data.to ? `, ${data.to}` : ''}!`;
   const glow = out ? 0 : litCount / n;
   // seberapa redup benda-benda: temaram saat belum ada api, makin terang tiap lilin, gelap sesaat setelah ditiup
   const dim = party ? 0 : phase === 'blown' ? 0.66 : 0.56 - 0.44 * (litCount / n);
@@ -121,20 +124,20 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       <div className={s.head}>
         {party ? (
           <div key="t">
-            <div className={s.eyebrow}>hore, pestanya mulai</div>
+            <div className={s.eyebrow}>{t.party}</div>
             <div className={cx(s.title, title.length > 24 && s.small)}>{title}</div>
           </div>
         ) : (
           <div key="n">
-            <div className={s.eyebrow}>kue ulang tahun untuk</div>
-            <div className={cx(s.name, data.to.length > 12 && s.small)}>{data.to || 'kamu'}</div>
-            {data.from ? <div className={s.from}>dari {data.from}</div> : null}
+            <div className={s.eyebrow}>{t.cakeFor}</div>
+            <div className={cx(s.name, data.to.length > 12 && s.small)}>{data.to || t.you}</div>
+            {data.from ? <div className={s.from}>{fmt(t.from, { from: data.from })}</div> : null}
           </div>
         )}
       </div>
 
       <div className={s.art}>
-        <div ref={scene} className={cx(s.bq, out && s.out, phase !== 'light' && s.locked)} role="group" aria-label="Lilin di atas kue">
+        <div ref={scene} className={cx(s.bq, out && s.out, phase !== 'light' && s.locked)} role="group" aria-label={t.cake}>
           <Sprite name="lilin-meja" className={s.table} />
           <span className={cx(s.shade, s.table, s.tableShade)} style={mask('lilin-meja')} />
           <span className={s.glow} />
@@ -156,7 +159,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                 style={{ left: `${(c.x - 22) / 4.4}%`, top: `${(c.y - 142) / 4.8}%`, '--i': i } as CSSProperties}
                 onClick={() => light(i)}
                 disabled={!canTap}
-                aria-label={lit[i] ? `Lilin ${i + 1} sudah menyala` : `Nyalakan lilin ${i + 1}`}
+                aria-label={fmt(lit[i] ? t.isLit : t.light, { n: i + 1 })}
               >
                 <span className={s.halo} />
                 <Sprite name={c.stick} className={s.stick} />
@@ -183,7 +186,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                 {note}
               </div>
             ) : null}
-            <div className={s.count} aria-label={`${litCount} dari ${n} lilin menyala`}>
+            <div className={s.count} aria-label={fmt(t.count, { lit: litCount, n })}>
               {lit.map((o, i) => (
                 <i key={i} className={o ? s.on : undefined} />
               ))}
@@ -193,16 +196,16 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
         {phase === 'wish' ? (
           <div className={s.blowBox}>
-            <div className={s.prompt}>Buat permohonan dulu, lalu…</div>
-            <HoldButton ms={1500} onComplete={blow} onProgress={onProgress} className={s.blowBtn} label="Tahan untuk meniup lilin">
+            <div className={s.prompt}>{t.prompt}</div>
+            <HoldButton ms={1500} onComplete={blow} onProgress={onProgress} className={s.blowBtn} label={t.holdLabel}>
               <span className={s.blowLabel}>
-                <b>Tiup</b>
-                <small>tahan</small>
+                <b>{t.blow}</b>
+                <small>{t.hold}</small>
               </span>
             </HoldButton>
             {alt ? (
               <button type="button" className={s.alt} onClick={blow}>
-                atau ketuk di sini untuk meniup
+                {t.alt}
               </button>
             ) : null}
           </div>
@@ -210,7 +213,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
         {party ? (
           <>
-            {data.from ? <div className={s.sub}>dari {data.from}, dengan sayang</div> : null}
+            {data.from ? <div className={s.sub}>{fmt(t.withLove, { from: data.from })}</div> : null}
             <button
               type="button"
               className={s.cta}
@@ -219,13 +222,13 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                 setFinale(true);
               }}
             >
-              Buka kartu ucapannya →
+              {t.open}
             </button>
           </>
         ) : null}
       </div>
 
-      {phase === 'light' && litCount === 0 ? <Hint>Ketuk lilinnya untuk menyalakan</Hint> : null}
+      {phase === 'light' && litCount === 0 ? <Hint>{t.hint}</Hint> : null}
 
       <Confetti burst={burst} colors={['#ee6a58', '#ffb52e', '#3fa39a', '#8e72d0', '#f58ea6', '#fffaf0']} origin={{ x: 0.5, y: 0.5 }} count={130} />
 
@@ -233,7 +236,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         <Finale
           data={data}
           mode={mode}
-          eyebrow="Kartu ucapan untukmu"
+          eyebrow={t.finale}
           flower="bunga-kamboja-pink"
           theme={{ backdrop: '/art/bg-lilin-terang.webp', ink: '#4a2238', paper: '#fffaf0', paperInk: '#3d2440' }}
           onReplay={onReplay}

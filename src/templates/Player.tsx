@@ -2,13 +2,15 @@
 
 import dynamic from 'next/dynamic';
 import type { ComponentType } from 'react';
+import { useT } from '@/i18n/client';
 import { getTemplate } from './registry';
 import type { GiftData, TemplateMode, TemplateProps } from './types';
 
 function Loading() {
+  const t = useT();
   return (
     <div style={{ position: 'absolute', inset: 0, display: 'grid', placeItems: 'center' }}>
-      <span className="floa-loader" aria-label="Memuat kado" />
+      <span className="floa-loader" aria-label={t.gift.loading} />
     </div>
   );
 }

@@ -2,24 +2,27 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { fmt, useLocale, useT } from '@/i18n/client';
 import { COVERS } from '@/templates/covers';
-import { OCCASIONS, TEMPLATES } from '@/templates/registry';
+import { OCCASION_IDS, TEMPLATES, localizeMeta, occasionLabel } from '@/templates/registry';
 import type { OccasionId } from '@/templates/types';
 
 /** Katalog: semua template langsung terlihat, bisa disaring per momen. */
 export function Catalog() {
   const [occ, setOcc] = useState<OccasionId | 'all'>('all');
-  const list = occ === 'all' ? TEMPLATES : TEMPLATES.filter((t) => t.occasions.includes(occ));
+  const locale = useLocale();
+  const tt = useT();
+  const list = (occ === 'all' ? TEMPLATES : TEMPLATES.filter((t) => t.occasions.includes(occ))).map((m) => localizeMeta(m, locale));
 
   return (
-    <section id="template" aria-label="Template kado">
+    <section id="template" aria-label={tt.nav.templates}>
       <div className="no-scrollbar sticky top-0 z-20 -mx-4 flex gap-2 overflow-x-auto px-4 py-2.5 max-sm:[mask-image:linear-gradient(90deg,transparent,#000_4%,#000_94%,transparent)] sm:static sm:mx-0 sm:flex-wrap sm:justify-center sm:px-0">
         <Chip active={occ === 'all'} onClick={() => setOcc('all')}>
-          Semua <span className="opacity-60">{TEMPLATES.length}</span>
+          {tt.home.all} <span className="opacity-60">{TEMPLATES.length}</span>
         </Chip>
-        {OCCASIONS.filter((o) => TEMPLATES.some((t) => t.occasions.includes(o.id))).map((o) => (
-          <Chip key={o.id} active={occ === o.id} onClick={() => setOcc(o.id)}>
-            {o.label}
+        {OCCASION_IDS.filter((o) => TEMPLATES.some((t) => t.occasions.includes(o))).map((o) => (
+          <Chip key={o} active={occ === o} onClick={() => setOcc(o)}>
+            {occasionLabel(o, locale)}
           </Chip>
         ))}
       </div>
@@ -36,7 +39,7 @@ export function Catalog() {
               <Link
                 href={`/demo/${t.id}`}
                 className="relative block aspect-[4/5] overflow-hidden rounded-[1.05rem] shadow-[inset_0_0_0_1px_rgba(74,36,20,0.12)]"
-                aria-label={`Coba demo ${t.name}`}
+                aria-label={fmt(tt.home.tryDemoOf, { name: t.name })}
               >
                 <div className="absolute inset-0 transition-transform duration-700 ease-out group-hover:scale-[1.06]">
                   <Cover />
@@ -45,7 +48,7 @@ export function Catalog() {
                   <svg width="8" height="9" viewBox="0 0 8 9" aria-hidden>
                     <path d="M0 0l8 4.5L0 9z" fill="currentColor" />
                   </svg>
-                  Coba demo
+                  {tt.home.tryDemo}
                 </span>
               </Link>
               <div className="flex flex-1 flex-col px-2 pb-1.5 pt-3 sm:px-2.5 sm:pb-2 sm:pt-4">
@@ -54,10 +57,10 @@ export function Catalog() {
                 <p className="mt-1.5 hidden text-sm leading-snug text-muted sm:block">{t.tagline}</p>
                 <div className="mt-auto flex gap-1.5 pt-3">
                   <Link href={`/demo/${t.id}`} className="btn btn-ghost h-10 flex-1 text-[13px]">
-                    Demo
+                    {tt.home.demo}
                   </Link>
                   <Link href={`/buat/${t.id}`} className="btn btn-ink h-10 flex-[1.4] text-[13px]">
-                    Pakai <span aria-hidden>→</span>
+                    {tt.home.use} <span aria-hidden>→</span>
                   </Link>
                 </div>
               </div>

@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { type MyGift, api, clearDraft, findMyGift, upsertMyGift } from '@/lib/client';
+import { useT } from '@/i18n/client';
+import { ApiError, type MyGift, api, clearDraft, findMyGift, upsertMyGift } from '@/lib/client';
 import { DoneStep } from './CheckoutSheet';
 
 type State = 'checking' | 'slow' | 'live' | 'missing';
@@ -14,6 +15,7 @@ const ORDER_ID = /^floa-[a-f0-9]{18}$/;
  * Alamat ini tidak dipercaya sebagai bukti bayar: status selalu dicek ke server, yang mengeceknya ke penyedia.
  */
 export function PaymentReturn() {
+  const t = useT();
   const [id, setId] = useState<string | null>(null);
   const [mine, setMine] = useState<MyGift | undefined>();
   const [state, setState] = useState<State>('checking');
@@ -50,7 +52,7 @@ export function PaymentReturn() {
         }
       } catch (e) {
         if (!alive) return;
-        if (e instanceof Error && /tidak ditemukan/i.test(e.message)) {
+        if (e instanceof ApiError && e.code === 'not_found') {
           setState('missing');
           return;
         }
@@ -80,12 +82,12 @@ export function PaymentReturn() {
   if (state === 'missing') {
     return (
       <div className="text-center">
-        <h1 className="font-display text-[1.9rem] font-semibold leading-tight">Pesanannya tidak ketemu</h1>
+        <h1 className="font-display text-[1.9rem] font-semibold leading-tight">{t.payReturn.missing}</h1>
         <p className="mt-2 text-[15px] text-ink-2">
-          Kalau kamu sudah membayar, tenang: cek menu Kado saya di perangkat yang kamu pakai saat memesan, atau hubungi kami.
+          {t.payReturn.missingSub}
         </p>
         <Link href="/kado-saya" className="btn btn-primary mt-6 h-12 px-6">
-          Ke Kado saya
+          {t.payReturn.toMyGifts}
         </Link>
       </div>
     );
@@ -95,16 +97,14 @@ export function PaymentReturn() {
     <div className="text-center" aria-live="polite">
       <span className="floa-loader mx-auto block text-tomato" />
       <h1 className="font-display mt-5 text-[1.9rem] font-semibold leading-tight">
-        {state === 'slow' ? 'Masih menunggu konfirmasi' : 'Mengonfirmasi pembayaran…'}
+        {state === 'slow' ? t.payReturn.slow : t.payReturn.checking}
       </h1>
       <p className="mt-2 text-[15px] text-ink-2">
-        {state === 'slow'
-          ? 'Pembayaranmu belum terkonfirmasi. Biasanya hanya beberapa menit; halaman ini terus mengecek. Kamu juga bisa menutupnya dan cek lagi di Kado saya.'
-          : 'Sebentar ya, kami sedang memastikan pembayaranmu masuk.'}
+        {state === 'slow' ? t.payReturn.slowSub : t.payReturn.checkingSub}
       </p>
       {state === 'slow' ? (
         <Link href="/kado-saya" className="btn btn-ghost mt-6 h-12 px-6">
-          Ke Kado saya
+          {t.payReturn.toMyGifts}
         </Link>
       ) : null}
     </div>

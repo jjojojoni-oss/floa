@@ -12,6 +12,19 @@ import {
 import type { GiftData, TemplateMode } from '../types';
 import s from './kit.module.css';
 import { haptic, isMuted, setMuted, sfx, subscribeMuted } from './sfx';
+import { useLocale } from '@/i18n/client';
+import type { Locale } from '@/i18n/config';
+
+/** Teks bersama kit dalam tiga bahasa. */
+const KIT: Record<Locale, { soundOn: string; soundOff: string; letterFor: string; to: string; from: string; replay: string; madeWith: string; makeYours: string; zoom: string; zoomed: string }> = {
+  id: { soundOn: 'Nyalakan suara', soundOff: 'Matikan suara', letterFor: 'Surat untukmu', to: 'Untuk', from: 'dari,', replay: 'Putar ulang', madeWith: 'Dibuat dengan', makeYours: 'bikin punyamu', zoom: 'Perbesar foto', zoomed: 'Foto diperbesar' },
+  ms: { soundOn: 'Hidupkan bunyi', soundOff: 'Matikan bunyi', letterFor: 'Surat untukmu', to: 'Untuk', from: 'daripada,', replay: 'Main semula', madeWith: 'Dibuat dengan', makeYours: 'buat milikmu', zoom: 'Besarkan foto', zoomed: 'Foto dibesarkan' },
+  en: { soundOn: 'Turn sound on', soundOff: 'Turn sound off', letterFor: 'A letter for you', to: 'Dear', from: 'love,', replay: 'Play again', madeWith: 'Made with', makeYours: 'make your own', zoom: 'Enlarge photo', zoomed: 'Enlarged photo' },
+};
+
+export function useKitText() {
+  return KIT[useLocale()];
+}
 
 export { sfx, haptic } from './sfx';
 
@@ -41,6 +54,7 @@ type StageProps = {
  */
 export function Stage({ children, bg, ink, accent, backdrop, className, style }: StageProps) {
   const muted = useSyncExternalStore(subscribeMuted, isMuted, () => false);
+  const k = useKitText();
   return (
     <div
       className={cx(s.stage, className)}
@@ -53,7 +67,7 @@ export function Stage({ children, bg, ink, accent, backdrop, className, style }:
       <button
         type="button"
         className={s.mute}
-        aria-label={muted ? 'Nyalakan suara' : 'Matikan suara'}
+        aria-label={muted ? k.soundOn : k.soundOff}
         onClick={() => setMuted(!muted)}
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -415,7 +429,7 @@ export function Finale({
   data,
   mode,
   theme,
-  eyebrow = 'Surat untukmu',
+  eyebrow,
   flower = 'bunga-kamboja',
   onReplay,
   children,
@@ -431,6 +445,8 @@ export function Finale({
   children?: ReactNode;
 }) {
   const [zoom, setZoom] = useState<string | null>(null);
+  const k = useKitText();
+  eyebrow = eyebrow ?? k.letterFor;
   const photos = data.photos.filter(Boolean);
   const vars = {
     '--f-bg': theme?.bg,
@@ -454,11 +470,11 @@ export function Finale({
                 <Sprite name={flower} className={s.decoFlower} />
               </div>
             ) : null}
-            {data.to ? <div className={s.salam}>Untuk {data.to},</div> : null}
+            {data.to ? <div className={s.salam}>{k.to} {data.to},</div> : null}
             <div className={s.pesan}>{data.message}</div>
             {data.from ? (
               <div className={s.ttd}>
-                dari,
+                {k.from}
                 <br />
                 <b>{data.from}</b>
               </div>
@@ -476,7 +492,7 @@ export function Finale({
                     sfx.tap();
                     setZoom(src);
                   }}
-                  aria-label={`Perbesar foto ${i + 1}`}
+                  aria-label={`${k.zoom} ${i + 1}`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={src} alt="" loading="lazy" draggable={false} />
@@ -494,19 +510,19 @@ export function Finale({
                   onReplay();
                 }}
               >
-                ↺ Putar ulang
+                ↺ {k.replay}
               </button>
             ) : null}
             {mode === 'live' ? (
               <a className={s.made} href="/?ref=kado" target="_blank" rel="noopener">
-                Dibuat dengan <b>floa</b> · bikin punyamu →
+                {k.madeWith} <b>floa</b> · {k.makeYours} →
               </a>
             ) : null}
           </div>
         </div>
       </div>
       {zoom ? (
-        <div className={s.lightbox} onClick={() => setZoom(null)} role="dialog" aria-label="Foto diperbesar">
+        <div className={s.lightbox} onClick={() => setZoom(null)} role="dialog" aria-label={k.zoomed}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={zoom} alt="" />
         </div>

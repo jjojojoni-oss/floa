@@ -3,12 +3,15 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { type MyGift, api, readMyGifts, removeMyGift, upsertMyGift } from '@/lib/client';
+import { fmt, useLocale, useT } from '@/i18n/client';
 import { EMPTY_DATA } from '@/lib/gift';
 import { COVERS } from '@/templates/covers';
 import { getTemplate } from '@/templates/registry';
 import { CheckoutSheet } from './CheckoutSheet';
 
 export function MyGifts() {
+  const t = useT();
+  const locale = useLocale();
   const [list, setList] = useState<MyGift[] | null>(null);
   const [resume, setResume] = useState<MyGift | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
@@ -42,7 +45,7 @@ export function MyGifts() {
       setCopied(g.id);
       setTimeout(() => setCopied(null), 2000);
     } catch {
-      window.prompt('Salin link ini:', url);
+      window.prompt(t.myGifts.copyPrompt, url);
     }
   };
 
@@ -51,10 +54,10 @@ export function MyGifts() {
   if (!list.length) {
     return (
       <div className="paper-card mt-8 rounded-3xl p-8 text-center">
-        <p className="font-display text-2xl font-semibold">Belum ada kado</p>
-        <p className="mt-2 text-[15px] text-ink-2">Kado yang kamu terbitkan akan muncul di sini, lengkap dengan link-nya.</p>
+        <p className="font-display text-2xl font-semibold">{t.myGifts.emptyTitle}</p>
+        <p className="mt-2 text-[15px] text-ink-2">{t.myGifts.emptySub}</p>
         <Link href="/" className="btn btn-primary mt-5 h-12 px-6">
-          Pilih template →
+          {t.myGifts.pick}
         </Link>
       </div>
     );
@@ -64,7 +67,7 @@ export function MyGifts() {
     <>
       <ul className="mt-6 space-y-3">
         {list.map((g) => {
-          const meta = getTemplate(g.template);
+          const meta = getTemplate(g.template, locale);
           const Cover = COVERS[g.template];
           const pending = g.status === 'pending';
           const payable = pending && !!g.pay && new Date(g.pay.expiresAt).getTime() > Date.now();
@@ -73,14 +76,14 @@ export function MyGifts() {
               <div className="relative h-24 w-20 flex-none overflow-hidden rounded-2xl">{Cover ? <Cover /> : null}</div>
               <div className="min-w-0 flex-1 py-0.5">
                 <div className="flex items-center gap-2">
-                  <h2 className="truncate text-[16px] font-extrabold">Untuk {g.to || '…'}</h2>
+                  <h2 className="truncate text-[16px] font-extrabold">{fmt(t.myGifts.for, { to: g.to || '…' })}</h2>
                   <span
                     className={
                       'flex-none rounded-full px-2 py-0.5 text-[10.5px] font-extrabold uppercase tracking-wider ' +
                       (pending ? 'bg-butter/70 text-ink' : 'bg-leaf/15 text-leaf')
                     }
                   >
-                    {pending ? 'Belum dibayar' : 'Terbit'}
+                    {pending ? t.myGifts.unpaid : t.myGifts.live}
                   </span>
                 </div>
                 <p className="truncate text-[13px] text-muted">
@@ -91,15 +94,15 @@ export function MyGifts() {
                     <>
                       {payable && g.pay?.kind === 'redirect' && g.pay.url ? (
                         <a href={g.pay.url} className="btn btn-primary h-9 px-3.5 text-[13px]">
-                          Lanjut bayar
+                          {t.myGifts.continuePay}
                         </a>
                       ) : payable ? (
                         <button type="button" onClick={() => setResume(g)} className="btn btn-primary h-9 px-3.5 text-[13px]">
-                          Lanjut bayar
+                          {t.myGifts.continuePay}
                         </button>
                       ) : (
                         <Link href={`/buat/${g.template}`} className="btn btn-ink h-9 px-3.5 text-[13px]">
-                          Terbitkan ulang
+                          {t.myGifts.republish}
                         </Link>
                       )}
                       <button
@@ -110,19 +113,19 @@ export function MyGifts() {
                         }}
                         className="btn btn-ghost h-9 px-3.5 text-[13px]"
                       >
-                        Hapus
+                        {t.myGifts.remove}
                       </button>
                     </>
                   ) : (
                     <>
                       <button type="button" onClick={() => copy(g)} className="btn btn-ink h-9 px-3.5 text-[13px]">
-                        {copied === g.id ? 'Tersalin ✓' : 'Salin link'}
+                        {copied === g.id ? t.myGifts.copied : t.myGifts.copyLink}
                       </button>
                       <a href={`/${g.slug}`} target="_blank" rel="noopener" className="btn btn-ghost h-9 px-3.5 text-[13px]">
-                        Lihat
+                        {t.myGifts.view}
                       </a>
                       <Link href={`/buat/${g.template}?edit=${g.id}&key=${encodeURIComponent(g.editKey)}`} className="btn btn-ghost h-9 px-3.5 text-[13px]">
-                        Ubah isi
+                        {t.myGifts.edit}
                       </Link>
                     </>
                   )}
@@ -134,7 +137,7 @@ export function MyGifts() {
       </ul>
       {resume && getTemplate(resume.template) ? (
         <CheckoutSheet
-          meta={getTemplate(resume.template)!}
+          meta={getTemplate(resume.template, locale)!}
           data={{ ...EMPTY_DATA, to: resume.to, from: resume.from ?? '' }}
           resume={resume}
           onClose={() => {

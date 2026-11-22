@@ -1,3 +1,4 @@
+import type { Locale } from '@/i18n/config';
 import type { Currency, PlanId } from './site';
 import type { GiftData, TemplateMeta } from '@/templates/types';
 
@@ -13,6 +14,8 @@ export type Gift = {
   /** dalam satuan terkecil `currency` (rupiah, atau sen untuk USD) */
   amount: number;
   currency: Currency;
+  /** bahasa pengirim saat memesan: dipakai halaman kado dan pratinjau link-nya */
+  lang: Locale;
   /** kunci rahasia untuk mengubah isi kado; hanya dipegang pembuatnya */
   editKey: string;
   contact: string | null;

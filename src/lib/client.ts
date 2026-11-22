@@ -1,6 +1,7 @@
 'use client';
 
 import { del, get, set } from 'idb-keyval';
+import type { Dict } from '@/i18n/dict';
 import type { Currency } from '@/lib/site';
 import type { GiftData } from '@/templates/types';
 
@@ -170,8 +171,8 @@ export async function uploadPhotos(photos: string[], onProgress?: (done: number,
     const form = new FormData();
     form.append('file', await dataUrlToBlob(p), 'foto.jpg');
     const res = await fetch('/api/upload', { method: 'POST', body: form });
-    const json = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
-    if (!res.ok || !json.url) throw new Error(json.error ?? 'Gagal mengunggah foto.');
+    const json = (await res.json().catch(() => ({}))) as { url?: string; error?: string; code?: string };
+    if (!res.ok || !json.url) throw new ApiError(json.code ?? 'upload_failed', json.error ?? '', res.status);
     out.push(json.url);
     done += 1;
     onProgress?.(done, total);
@@ -184,7 +185,25 @@ export async function api<T>(url: string, init?: RequestInit): Promise<T> {
     ...init,
     headers: init?.body ? { 'Content-Type': 'application/json', ...init.headers } : init?.headers,
   });
-  const json = (await res.json().catch(() => ({}))) as T & { error?: string };
-  if (!res.ok) throw new Error(json.error ?? 'Ada yang tidak beres. Coba lagi ya.');
+  const json = (await res.json().catch(() => ({}))) as T & { error?: string; code?: string };
+  if (!res.ok) throw new ApiError(json.code ?? 'generic', json.error ?? '', res.status);
   return json;
+}
+
+/** Error dari API floa. `code` dipetakan ke teks dalam bahasa pengguna (kamus errors), pesan server jadi cadangan. */
+export class ApiError extends Error {
+  constructor(
+    readonly code: string,
+    message: string,
+    readonly status = 0,
+  ) {
+    super(message || code);
+  }
+}
+
+/** Teks error dalam bahasa aktif. */
+export function errorText(e: unknown, t: Dict): string {
+  const errors = t.errors as Record<string, string>;
+  if (e instanceof ApiError) return errors[e.code] ?? errors.generic;
+  return errors.generic;
 }

@@ -73,6 +73,21 @@ export type TemplateMeta = {
   fields: FieldSpec[];
   /** isi contoh: dipakai demo dan jadi isian awal editor */
   sample: GiftData;
+  /**
+   * Terjemahan Bahasa Melayu & English. Teks di atas (name, tagline, steps, label kolom, sample) adalah Bahasa Indonesia.
+   * Pakai localizeMeta() di registry untuk mendapatkan meta dalam bahasa tertentu.
+   */
+  i18n: Record<'ms' | 'en', MetaText>;
+};
+
+/** Teks meta yang diterjemahkan. `fields` hanya berisi label/hint/placeholder; batas & jumlah tetap dari meta utama. */
+export type MetaText = {
+  name: string;
+  tagline: string;
+  steps: string[];
+  fields: Partial<Record<FieldSpec['key'], { label?: string; hint?: string; placeholder?: string }>>;
+  /** isi contoh dalam bahasa ini (nama, pesan, catatan). Foto boleh sama dengan versi Indonesia. */
+  sample: GiftData;
 };
 
 export type TemplateComponent = ComponentType<TemplateProps>;

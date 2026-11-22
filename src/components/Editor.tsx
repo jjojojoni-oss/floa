@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { EMPTY_DATA } from '@/lib/gift';
 import { type Draft, api, compressImage, loadDraft, saveDraft, uploadPhotos } from '@/lib/client';
-import { CHEAPEST, rupiahShort } from '@/lib/site';
+import { fmt, useLocale, useT } from '@/i18n/client';
+import { errorText } from '@/lib/client';
+import { cheapestLabel } from '@/lib/site';
 import { TemplatePlayer } from '@/templates/Player';
 import { getTemplate } from '@/templates/registry';
 import type { FieldSpec, GiftData, NotesField, PhotosField, TextField } from '@/templates/types';
@@ -14,7 +16,9 @@ import { CheckoutSheet } from './CheckoutSheet';
 type EditCtx = { id: string; key: string; slug: string };
 
 export function Editor({ templateId }: { templateId: string }) {
-  const meta = getTemplate(templateId)!;
+  const locale = useLocale();
+  const t = useT();
+  const meta = getTemplate(templateId, locale)!;
   // isian awal = contoh, tapi tanpa foto contoh (supaya foto orang lain tidak ikut terbit)
   const sample = useMemo<GiftData>(() => ({ ...meta.sample, notes: [...meta.sample.notes], photos: [] }), [meta]);
 
@@ -48,12 +52,12 @@ export function Editor({ templateId }: { templateId: string }) {
             `/api/gifts/${encodeURIComponent(id)}?key=${encodeURIComponent(key)}`,
           );
           if (!alive) return;
-          if (g.template !== templateId) throw new Error('Template tidak cocok.');
+          if (g.template !== templateId) throw new Error('template mismatch');
           setData({ ...EMPTY_DATA, ...g.data });
           setTouched(meta.fields.map((f) => f.key));
           setEdit({ id, key, slug: g.slug });
         } catch {
-          if (alive) setLoadError('Kado ini tidak bisa dibuka untuk diubah. Pastikan kamu membukanya dari menu Kado saya.');
+          if (alive) setLoadError(t.editor.cantOpen);
         }
       } else {
         const d = await loadDraft(templateId);
@@ -106,7 +110,7 @@ export function Editor({ templateId }: { templateId: string }) {
       if (!v || stillSample) {
         setFieldError({
           key,
-          msg: !v ? 'Yang ini wajib diisi.' : 'Ini masih nama contoh. Ganti dengan nama yang asli ya.',
+          msg: !v ? t.editor.required : t.editor.stillSample,
         });
         setPreview(false);
         focusField(key);
@@ -123,28 +127,28 @@ export function Editor({ templateId }: { templateId: string }) {
   const saveEdit = async () => {
     if (!edit || !validate()) return;
     try {
-      setSaving('Menyimpan…');
-      const photos = await uploadPhotos(data.photos, (d, t) => setSaving(`Mengunggah foto ${d}/${t}…`));
+      setSaving(t.editor.saving);
+      const photos = await uploadPhotos(data.photos, (d, n) => setSaving(fmt(t.editor.uploading, { done: d, total: n })));
       setData((d) => ({ ...d, photos }));
       await api(`/api/gifts/${edit.id}`, { method: 'PUT', body: JSON.stringify({ key: edit.key, data: { ...data, photos } }) });
-      setToast('Tersimpan. Link kadomu tetap sama.');
+      setToast(t.editor.saved);
     } catch (e) {
-      setToast(e instanceof Error ? e.message : 'Gagal menyimpan.');
+      setToast(errorText(e, t) || t.editor.saveFailed);
     } finally {
       setSaving(null);
     }
   };
 
-  const primaryLabel = edit ? (saving ?? 'Simpan perubahan') : `Terbitkan · ${rupiahShort(CHEAPEST)}`;
+  const primaryLabel = edit ? (saving ?? t.editor.saveChanges) : fmt(t.editor.publish, { price: cheapestLabel(locale) });
   const onPrimary = edit ? saveEdit : publish;
 
   if (loadError) {
     return (
       <main className="mx-auto max-w-md px-5 py-20 text-center">
-        <h1 className="font-display text-3xl font-semibold">Tidak bisa dibuka</h1>
+        <h1 className="font-display text-3xl font-semibold">{t.editor.cantOpenTitle}</h1>
         <p className="mt-3 text-ink-2">{loadError}</p>
         <Link href="/kado-saya" className="btn btn-ink mt-6 h-12 px-6">
-          Ke Kado saya
+          {t.editor.toMyGifts}
         </Link>
       </main>
     );
@@ -154,13 +158,13 @@ export function Editor({ templateId }: { templateId: string }) {
     <div className="min-h-dvh">
       <header className="sticky top-0 z-30 border-b border-line bg-paper/90 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-2.5 px-3 sm:px-6">
-          <Link href={edit ? '/kado-saya' : '/'} className="btn btn-ghost h-9 w-9 flex-none" aria-label="Kembali">
+          <Link href={edit ? '/kado-saya' : '/'} className="btn btn-ghost h-9 w-9 flex-none" aria-label={t.editor.back}>
             ←
           </Link>
           <div className="min-w-0 flex-1">
             <div className="truncate text-[15px] font-extrabold leading-tight">{meta.name}</div>
             <div className="truncate text-[11.5px] text-muted">
-              {edit ? 'Mengubah kado yang sudah terbit' : saved ? 'Draf tersimpan otomatis di perangkat ini' : 'Isi kadomu'}
+              {edit ? t.editor.editing : saved ? t.editor.draftSaved : t.editor.fillIn}
             </div>
           </div>
           <button type="button" onClick={onPrimary} disabled={!!saving} className="btn btn-primary hidden h-10 px-5 text-sm lg:inline-flex">
@@ -173,7 +177,7 @@ export function Editor({ templateId }: { templateId: string }) {
         <div ref={formRef} className="mx-auto w-full max-w-xl">
           {!edit ? (
             <p className="rounded-2xl bg-butter/50 px-4 py-3 text-[14px] font-semibold leading-snug">
-              Semua sudah terisi contoh. Tinggal ganti dengan ceritamu, lalu terbitkan.
+              {t.editor.sampleNote}
             </p>
           ) : null}
 
@@ -205,9 +209,9 @@ export function Editor({ templateId }: { templateId: string }) {
               <TemplatePlayer key={previewKey} id={meta.id} data={data} mode="preview" />
             </div>
             <div className="mt-4 flex items-center justify-center gap-3 text-[13px] font-bold text-ink-2">
-              <span>Pratinjau langsung</span>
+              <span>{t.editor.livePreview}</span>
               <button type="button" className="underline underline-offset-2" onClick={() => setRun((v) => v + 1)}>
-                ↺ Ulang dari awal
+                {t.editor.restart}
               </button>
             </div>
           </div>
@@ -224,7 +228,7 @@ export function Editor({ templateId }: { templateId: string }) {
           }}
           className="btn btn-ghost h-12 flex-1 text-[15px]"
         >
-          Lihat hasil
+          {t.editor.seeResult}
         </button>
         <button type="button" onClick={onPrimary} disabled={!!saving} className="btn btn-primary h-12 flex-[1.5] text-[15px]">
           {primaryLabel} {edit ? null : <span aria-hidden>→</span>}
@@ -233,13 +237,13 @@ export function Editor({ templateId }: { templateId: string }) {
 
       {/* pratinjau layar penuh (HP) */}
       {preview ? (
-        <div className="fixed inset-0 z-40 flex animate-fade flex-col bg-ink lg:hidden" role="dialog" aria-label="Pratinjau kado">
+        <div className="fixed inset-0 z-40 flex animate-fade flex-col bg-ink lg:hidden" role="dialog" aria-label={t.editor.previewLabel}>
           <div className="relative flex-1">
             <TemplatePlayer key={previewKey} id={meta.id} data={data} mode="preview" />
           </div>
           <div className="flex gap-2 bg-paper px-3 py-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))]">
             <button type="button" onClick={() => setPreview(false)} className="btn btn-ghost h-12 flex-1 text-[15px]">
-              ← Ubah lagi
+              {t.editor.editMore}
             </button>
             <button
               type="button"
@@ -298,6 +302,7 @@ function Field({
   update: Update;
   onError: (msg: string) => void;
 }) {
+  const t = useT();
   return (
     <div data-field={spec.key}>
       <div className="flex items-baseline justify-between gap-3">
@@ -305,7 +310,7 @@ function Field({
           {spec.label}
         </label>
         {isSample && spec.key !== 'photos' ? (
-          <span className="rounded-full bg-paper-2 px-2 py-0.5 text-[10.5px] font-extrabold uppercase tracking-wider text-muted">contoh</span>
+          <span className="rounded-full bg-paper-2 px-2 py-0.5 text-[10.5px] font-extrabold uppercase tracking-wider text-muted">{t.editor.sampleBadge}</span>
         ) : null}
       </div>
       {spec.hint ? <p className="mt-0.5 text-[13px] leading-snug text-muted">{spec.hint}</p> : null}
@@ -414,6 +419,7 @@ function AutoGrow({
 }
 
 function Notes({ spec, value, onChange }: { spec: NotesField; value: string[]; onChange: (v: string[]) => void }) {
+  const t = useT();
   const rows = Math.max(spec.min, value.length, spec.min === 0 ? 0 : 1);
   const list = Array.from({ length: rows }, (_, i) => value[i] ?? '');
   const set = (i: number, v: string) => {
@@ -439,7 +445,7 @@ function Notes({ spec, value, onChange }: { spec: NotesField; value: string[]; o
               type="button"
               onClick={() => onChange(list.filter((_, k) => k !== i))}
               className="mt-1.5 grid h-9 w-9 flex-none place-items-center rounded-full text-lg text-muted hover:bg-paper-2 hover:text-ink"
-              aria-label={`Hapus baris ${i + 1}`}
+              aria-label={fmt(t.editor.removeRow, { n: i + 1 })}
             >
               ×
             </button>
@@ -448,7 +454,7 @@ function Notes({ spec, value, onChange }: { spec: NotesField; value: string[]; o
       ))}
       {rows < spec.count ? (
         <button type="button" onClick={() => onChange([...list, ''])} className="btn btn-ghost h-10 px-4 text-[13px]">
-          + Tambah baris
+          {t.editor.addRow}
         </button>
       ) : null}
     </div>
@@ -466,6 +472,7 @@ function Photos({
   onChange: (v: string[]) => void;
   onError: (msg: string) => void;
 }) {
+  const t = useT();
   const [busy, setBusy] = useState(false);
   const input = useRef<HTMLInputElement>(null);
 
@@ -473,14 +480,14 @@ function Photos({
     if (!files?.length) return;
     const room = spec.count - value.length;
     const picked = Array.from(files).slice(0, room);
-    if (files.length > room) onError(`Maksimal ${spec.count} foto untuk template ini.`);
+    if (files.length > room) onError(fmt(t.editor.maxPhotos, { n: spec.count }));
     setBusy(true);
     const next = value.slice();
     for (const f of picked) {
       try {
         next.push(await compressImage(f));
       } catch (e) {
-        onError(e instanceof Error ? e.message : 'Foto ini tidak bisa dipakai.');
+        onError(t.editor.photoUnusable);
       }
     }
     onChange(next);
@@ -501,22 +508,22 @@ function Photos({
       {value.map((src, i) => (
         <div key={src.slice(-32) + i} className="group relative aspect-square overflow-hidden rounded-2xl bg-paper-2">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={src} alt={`Foto ${i + 1}`} className="h-full w-full object-cover" />
+          <img src={src} alt={fmt(t.editor.photoN, { n: i + 1 })} className="h-full w-full object-cover" />
           <span className="absolute left-1.5 top-1.5 grid h-5 w-5 place-items-center rounded-full bg-black/60 text-[10px] font-extrabold text-white">{i + 1}</span>
           <button
             type="button"
             onClick={() => onChange(value.filter((_, k) => k !== i))}
             className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-base leading-none text-white"
-            aria-label={`Hapus foto ${i + 1}`}
+            aria-label={fmt(t.editor.removePhoto, { n: i + 1 })}
           >
             ×
           </button>
           {value.length > 1 ? (
             <div className="absolute inset-x-1.5 bottom-1.5 flex justify-between">
-              <button type="button" disabled={i === 0} onClick={() => move(i, -1)} className="grid h-7 w-7 place-items-center rounded-full bg-black/60 text-sm text-white disabled:opacity-0" aria-label="Geser ke kiri">
+              <button type="button" disabled={i === 0} onClick={() => move(i, -1)} className="grid h-7 w-7 place-items-center rounded-full bg-black/60 text-sm text-white disabled:opacity-0" aria-label={t.editor.moveLeft}>
                 ‹
               </button>
-              <button type="button" disabled={i === value.length - 1} onClick={() => move(i, 1)} className="grid h-7 w-7 place-items-center rounded-full bg-black/60 text-sm text-white disabled:opacity-0" aria-label="Geser ke kanan">
+              <button type="button" disabled={i === value.length - 1} onClick={() => move(i, 1)} className="grid h-7 w-7 place-items-center rounded-full bg-black/60 text-sm text-white disabled:opacity-0" aria-label={t.editor.moveRight}>
                 ›
               </button>
             </div>
@@ -536,7 +543,7 @@ function Photos({
           />
           <span>
             <span className="block text-2xl leading-none">{busy ? '…' : '+'}</span>
-            {busy ? 'Memproses' : 'Tambah foto'}
+            {busy ? t.editor.processing : t.editor.addPhoto}
           </span>
         </label>
       ) : null}

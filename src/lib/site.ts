@@ -65,3 +65,13 @@ export function rupiahShort(n: number) {
 export function money(amount: number, currency: Currency) {
   return currency === 'IDR' ? rupiah(amount) : `$${(amount / 100).toFixed(2)}`;
 }
+
+/** Mata uang yang ditampilkan lebih dulu untuk sebuah bahasa: rupiah untuk Bahasa Indonesia, dolar AS selain itu. */
+export function displayCurrency(locale: string): Currency {
+  return locale === 'id' ? 'IDR' : 'USD';
+}
+
+/** Harga termurah yang ringkas untuk label ("19rb" atau "$2.99"). */
+export function cheapestLabel(locale: string) {
+  return displayCurrency(locale) === 'IDR' ? rupiahShort(CHEAPEST) : money(Math.min(...PLANS.map((p) => p.usd)), 'USD');
+}
