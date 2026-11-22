@@ -1,18 +1,41 @@
 'use client';
 
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { Confetti, Finale, Hint, HoldButton, Stage, cx, haptic, sfx, useTimers } from '../kit';
+import { Confetti, Finale, Hint, HoldButton, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
-import { Bunting, CakeBase, FlameShape, GlowDefs, VIEW, candles } from './art';
 import { meta } from './meta';
 import s from './style.module.css';
 
 type Phase = 'light' | 'wish' | 'blown' | 'party';
 
+/** Dasar tiap lilin di kanvas kue 440×480 (sama dengan art/sprites/41-lilin.js). */
+function candleSpots(n: number) {
+  const span = n <= 3 ? 92 : n === 4 ? 122 : 142;
+  return Array.from({ length: n }, (_, i) => ({
+    x: 220 + (n === 1 ? 0 : i / (n - 1) - 0.5) * span,
+    y: 206 + (i % 2 === 0 ? -5 : 6),
+    stick: `lilin-batang-${(i % 5) + 1}`,
+  }));
+}
+
+/** Bayangan gelap yang mengikuti bentuk sebuah sprite (dipakai untuk meredupkan benda saat ruang temaram). */
+const mask = (name: string): CSSProperties => ({
+  WebkitMaskImage: `url(/art/${name}.webp)`,
+  maskImage: `url(/art/${name}.webp)`,
+});
+
+const BALLOONS: [string, CSSProperties][] = [
+  ['lilin-balon-1', { left: '-7%', top: '-5%', '--d': '0s' } as CSSProperties],
+  ['lilin-balon-2', { left: '2%', top: '19%', '--d': '0.2s' } as CSSProperties],
+  ['lilin-balon-3', { right: '-7%', top: '-1%', '--d': '0.1s' } as CSSProperties],
+  ['lilin-balon-4', { right: '3%', top: '23%', '--d': '0.3s' } as CSSProperties],
+];
+
 export default function Lilin(props: TemplateProps) {
   const [run, setRun] = useState(0);
   return (
-    <Stage {...meta.palette}>
+    // tinta Stage sengaja gelap (untuk vignette & petunjuk); warna teks adegan diatur di .wrap
+    <Stage bg={meta.palette.bg} ink="#1b0f2c" accent={meta.palette.accent} backdrop="/art/bg-lilin.webp" className={s.stage}>
       <Scene key={run} {...props} onReplay={() => setRun((v) => v + 1)} />
     </Stage>
   );
@@ -21,7 +44,8 @@ export default function Lilin(props: TemplateProps) {
 function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void }) {
   const notes = data.notes.map((n) => n.trim()).filter(Boolean).slice(0, 5);
   const n = Math.min(5, Math.max(3, notes.length));
-  const cs = candles(n);
+  const cs = candleSpots(n);
+  const ready = useArtReady(['bg-lilin', 'lilin-kue', 'lilin-meja', 'lilin-api', ...cs.map((c) => c.stick)]);
 
   const [lit, setLit] = useState<boolean[]>(() => Array(n).fill(false));
   const [last, setLast] = useState<number | null>(null);
@@ -29,7 +53,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const [alt, setAlt] = useState(false);
   const [finale, setFinale] = useState(false);
   const [burst, setBurst] = useState(0);
-  const flames = useRef<SVGSVGElement>(null);
+  const scene = useRef<HTMLDivElement>(null);
   const blowing = useRef(false);
   const later = useTimers();
 
@@ -62,7 +86,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   };
 
   const onProgress = (p: number) => {
-    flames.current?.style.setProperty('--p', String(p));
+    scene.current?.style.setProperty('--p', String(p));
     if (p > 0 && !blowing.current) {
       blowing.current = true;
       sfx.blow();
@@ -85,13 +109,14 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
   const note = last !== null ? notes[last] : null;
   const title = data.title || `Selamat ulang tahun${data.to ? `, ${data.to}` : ''}!`;
-  const glowLevel = out ? 0 : litCount / n;
+  const glow = out ? 0 : litCount / n;
+  // seberapa redup benda-benda: temaram saat belum ada api, makin terang tiap lilin, gelap sesaat setelah ditiup
+  const dim = party ? 0 : phase === 'blown' ? 0.66 : 0.56 - 0.44 * (litCount / n);
 
   return (
-    <div className={cx(s.wrap, party && s.party)} style={{ '--lit': glowLevel } as CSSProperties}>
-      <div className={s.dark} />
+    <div className={cx(s.wrap, ready && s.ready, party && s.party)} style={{ '--lit': glow, '--dim': dim } as CSSProperties}>
       <div className={s.bright} />
-      {party ? <Bunting className={s.bunting} /> : null}
+      <Sprite name="lilin-bendera" className={s.bunting} />
 
       <div className={s.head}>
         {party ? (
@@ -109,73 +134,52 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       </div>
 
       <div className={s.art}>
-        <div className={s.glow} />
-        {party ? (
-          <>
-            <span className={s.balloon} style={{ '--c': '#ff8fa3', '--d': '0s', left: '0.5em', top: '6%' } as CSSProperties} />
-            <span className={s.balloon} style={{ '--c': '#ffd36e', '--d': '0.18s', left: '2.5em', top: '24%' } as CSSProperties} />
-            <span className={s.balloon} style={{ '--c': '#7fd1c7', '--d': '0.1s', right: '0.6em', top: '9%' } as CSSProperties} />
-            <span className={s.balloon} style={{ '--c': '#b7a2ee', '--d': '0.26s', right: '2.7em', top: '27%' } as CSSProperties} />
-          </>
-        ) : null}
+        <div ref={scene} className={cx(s.bq, out && s.out, phase !== 'light' && s.locked)} role="group" aria-label="Lilin di atas kue">
+          <Sprite name="lilin-meja" className={s.table} />
+          <span className={cx(s.shade, s.table, s.tableShade)} style={mask('lilin-meja')} />
+          <span className={s.glow} />
+          {BALLOONS.map(([name, pos]) => (
+            <span key={name} className={s.balloon} style={pos}>
+              <Sprite name={name} />
+            </span>
+          ))}
+          <Sprite name="lilin-kue" className={s.layer} />
+          <span className={cx(s.shade, s.layer)} style={mask('lilin-kue')} />
 
-        <svg viewBox={VIEW} className={s.cake} aria-hidden>
-          <CakeBase n={n} />
-        </svg>
-
-        <svg
-          viewBox={VIEW}
-          ref={flames}
-          className={cx(s.flames, out && s.out, phase !== 'light' && s.locked)}
-          role="group"
-          aria-label="Lilin di atas kue"
-        >
-          <GlowDefs />
           {cs.map((c, i) => {
             const canTap = phase === 'light' && !lit[i];
             return (
-              <g
+              <button
                 key={i}
-                transform={`translate(${c.x} ${c.y - c.h - 6})`}
+                type="button"
                 className={cx(s.candle, lit[i] && s.isLit)}
-                style={{ ['--i' as string]: i }}
-                role="button"
+                style={{ left: `${(c.x - 22) / 4.4}%`, top: `${(c.y - 142) / 4.8}%`, '--i': i } as CSSProperties}
+                onClick={() => light(i)}
+                disabled={!canTap}
                 aria-label={lit[i] ? `Lilin ${i + 1} sudah menyala` : `Nyalakan lilin ${i + 1}`}
-                tabIndex={canTap ? 0 : undefined}
-                onClick={canTap ? () => light(i) : undefined}
-                onKeyDown={
-                  canTap
-                    ? (e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault();
-                          light(i);
-                        }
-                      }
-                    : undefined
-                }
               >
-                <circle className={s.halo} r="52" cy="-12" fill="url(#lilin-glow)" />
-                <path className={s.smoke} d="M0,-2C-7,-12 7,-20 0,-30C-7,-40 7,-48 0,-58" />
-                <g className={s.fl}>
-                  <g className={s.lean}>
-                    <g className={s.flick}>
-                      <FlameShape />
-                    </g>
-                  </g>
-                </g>
-                <circle className={s.spark} r="3.2" cy="-1" />
-                <rect className={s.hit} x="-13" y="-38" width="26" height={c.h + 50} fill="transparent" />
-              </g>
+                <span className={s.halo} />
+                <Sprite name={c.stick} className={s.stick} />
+                <span className={cx(s.shade, s.stick, s.stickShade)} style={mask(c.stick)} />
+                <Sprite name="lilin-asap" className={s.smoke} />
+                <span className={s.fl}>
+                  <span className={s.lean}>
+                    <Sprite name="lilin-api" className={s.flick} />
+                  </span>
+                </span>
+                <span className={s.spark} />
+              </button>
             );
           })}
-        </svg>
+        </div>
       </div>
 
       <div className={s.foot}>
         {phase === 'light' ? (
           <>
             {note ? (
-              <div key={last} className={s.wish} style={{ ['--dot' as string]: cs[last as number].color }}>
+              <div key={last} className={s.wish}>
+                <Sprite name={cs[last as number].stick} className={s.wishIcon} />
                 {note}
               </div>
             ) : null}
@@ -223,14 +227,15 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
       {phase === 'light' && litCount === 0 ? <Hint>Ketuk lilinnya untuk menyalakan</Hint> : null}
 
-      <Confetti burst={burst} colors={['#ff8fa3', '#ffd36e', '#7fd1c7', '#b7a2ee', '#ff9d5c', '#ffffff']} origin={{ x: 0.5, y: 0.5 }} count={130} />
+      <Confetti burst={burst} colors={['#ee6a58', '#ffb52e', '#3fa39a', '#8e72d0', '#f58ea6', '#fffaf0']} origin={{ x: 0.5, y: 0.5 }} count={130} />
 
       {finale ? (
         <Finale
           data={data}
           mode={mode}
           eyebrow="Kartu ucapan untukmu"
-          theme={{ bg: 'linear-gradient(#fff1dc, #ffd6c6)', ink: '#4a2238', paper: '#fffdf8', paperInk: '#3d2440' }}
+          flower="bunga-kamboja-pink"
+          theme={{ backdrop: '/art/bg-lilin-terang.webp', ink: '#4a2238', paper: '#fffaf0', paperInk: '#3d2440' }}
           onReplay={onReplay}
         />
       ) : null}

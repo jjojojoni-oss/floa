@@ -4,11 +4,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: linear-gradient(#0a0f2c 0%, #131b44 38%, #262766 70%, #4a3572 100%);
   color: var(--ink);
+  opacity: 0;
+  transition: opacity 0.5s ease;
 }
+.wrap.ready { opacity: 1; }
 
-/* ── langit ── */
+/* ── langit: kerlip bintang, bulan lukisan, pendar di air ── */
 .sky {
   position: absolute;
   inset: 0;
@@ -19,52 +21,40 @@
   width: 1em;
   height: 1em;
   border-radius: 50%;
-  background: #fff8e6;
-  opacity: 0.75;
+  background: radial-gradient(closest-side, #fffbe9, rgba(255, 244, 214, 0.5) 45%, transparent);
   animation: twinkle 3.6s ease-in-out infinite;
 }
-.starBig {
-  box-shadow: 0 0 0.9em 0.2em rgba(255, 244, 214, 0.55);
-}
 @keyframes twinkle {
-  0%, 100% { opacity: 0.25; transform: scale(0.8); }
-  50% { opacity: 0.95; transform: scale(1.15); }
+  0%, 100% { opacity: 0.15; transform: scale(0.7); }
+  50% { opacity: 1; transform: scale(1.5); }
 }
 .moon {
   position: absolute;
-  left: 1.3em;
-  top: 1.2em;
-  width: 3.4em;
-  height: 3.4em;
-  filter: drop-shadow(0 0 0.8em rgba(253, 241, 216, 0.45));
+  left: 0.4em;
+  top: 0.3em;
+  width: 5.6em;
+  height: 5.6em;
+  animation: moon 7s ease-in-out infinite;
 }
-.hills {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 13.5em;
+@keyframes moon {
+  0%, 100% { opacity: 0.88; }
+  50% { opacity: 1; }
 }
 .reflect {
   position: absolute;
   left: 50%;
-  bottom: 0;
-  width: 13em;
-  height: 6em;
-  margin-left: -6.5em;
-  background:
-    radial-gradient(50% 50% at 50% 30%, rgba(255, 180, 90, 0.5), transparent 70%),
-    repeating-linear-gradient(transparent 0 0.42em, rgba(255, 200, 120, 0.28) 0.42em 0.54em);
-  -webkit-mask-image: radial-gradient(50% 60% at 50% 40%, #000 20%, transparent 75%);
-  mask-image: radial-gradient(50% 60% at 50% 40%, #000 20%, transparent 75%);
+  bottom: 3em;
+  width: 16em;
+  height: 9em;
+  margin-left: -8em;
+  background: radial-gradient(closest-side, rgba(255, 190, 100, 0.42), rgba(255, 150, 70, 0.14) 55%, transparent);
   opacity: 0;
   transition: opacity 1.4s ease;
 }
 .reflectWide {
-  width: 100%;
-  left: 0;
-  margin-left: 0;
-  height: 7em;
+  width: 30em;
+  margin-left: -15em;
+  height: 12em;
 }
 .reflectOn {
   opacity: 1;
@@ -72,7 +62,7 @@
 }
 @keyframes shimmer {
   0%, 100% { transform: scaleX(1); }
-  50% { transform: scaleX(0.9); }
+  50% { transform: scaleX(0.88); }
 }
 
 /* ── kepala ── */
@@ -80,29 +70,29 @@
   position: relative;
   z-index: 6;
   margin-top: 4.3em;
-  min-height: 7em;
+  min-height: 7.4em;
   padding: 0 2.6em;
   text-align: center;
 }
 .eyebrow {
   font-size: 0.74em;
   font-weight: 800;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--accent);
-  opacity: 0.9;
+  text-shadow: 0 0.1em 0.5em rgba(8, 13, 43, 0.8);
 }
 .name {
-  margin-top: 0.18em;
+  margin-top: 0.14em;
   font-family: var(--font-serif, Georgia, serif);
   font-variation-settings: 'SOFT' 100;
-  font-size: 3em;
-  line-height: 1.04;
+  font-size: 3.1em;
+  line-height: 1.03;
   font-weight: 600;
   letter-spacing: -0.025em;
   text-wrap: balance;
   overflow-wrap: anywhere;
-  text-shadow: 0 0.06em 0.6em rgba(10, 15, 44, 0.7);
+  text-shadow: 0 0.06em 0.6em rgba(8, 13, 43, 0.75);
   animation: up 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 .name.small {
@@ -110,10 +100,12 @@
   line-height: 1.1;
 }
 .from {
-  margin-top: 0.5em;
-  font-size: 0.92em;
+  margin-top: 0.1em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.6em;
   font-weight: 600;
-  opacity: 0.7;
+  opacity: 0.88;
+  text-shadow: 0 0.06em 0.5em rgba(8, 13, 43, 0.8);
   animation: up 0.8s 0.12s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 @keyframes up {
@@ -121,55 +113,54 @@
   to { opacity: 1; transform: none; }
 }
 
-/* ── lampion ── */
+/* ── lampion: lapis mendatar (.fly) → lapis menaik (.flyY) → benda (.lan) ── */
+.fly,
+.flyY {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.fly {
+  z-index: 4;
+  transition: transform 2.7s cubic-bezier(0.3, 0.6, 0.25, 1);
+}
+.flyY {
+  transition: transform 2.7s cubic-bezier(0.18, 0.7, 0.22, 1);
+}
+.fly.ready2 { z-index: 7; }
+.fly.flown { z-index: 3; }
+
 .lan {
   position: absolute;
-  z-index: 4;
   left: 50%;
-  top: calc(100% - 15.2em);
-  width: 7.6em;
-  height: 9.9em;
-  margin: -4.95em 0 0 -3.8em;
+  top: calc(100% - 17.2em);
+  width: 7.8em;
+  height: 10.4em;
+  margin: -5.2em 0 0 -3.9em;
   outline: none;
-  transition:
-    left 2.7s cubic-bezier(0.3, 0.6, 0.25, 1),
-    top 2.7s cubic-bezier(0.18, 0.7, 0.22, 1),
-    transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.lan.dragging {
-  transition: none;
-}
-.lan.ready {
-  z-index: 7;
+.lan.dragging { transition: none; }
+.ready2 .lan {
+  pointer-events: auto;
   cursor: grab;
   touch-action: none;
-}
-.lan.flown {
-  z-index: 3;
-  pointer-events: none;
-}
-.lan.wait {
-  pointer-events: none;
 }
 .lanScale {
   width: 100%;
   height: 100%;
   transform-origin: 50% 50%;
-  transition:
-    transform 2.7s cubic-bezier(0.25, 0.6, 0.25, 1),
-    opacity 0.6s ease;
+  transition: transform 2.7s cubic-bezier(0.25, 0.6, 0.25, 1), opacity 0.6s ease;
 }
 .wait .lanScale {
   opacity: 0;
   transform: translateY(5em) scale(0.82);
   transition: none;
 }
-.ready .lanScale {
+.ready2 .lanScale {
   opacity: 1;
   transform: none;
-  transition:
-    transform 0.9s 0.75s cubic-bezier(0.2, 0.9, 0.2, 1),
-    opacity 0.6s 0.75s ease;
+  transition: transform 0.9s 0.75s cubic-bezier(0.2, 0.9, 0.2, 1), opacity 0.6s 0.75s ease;
 }
 .flown .lanScale {
   transform: scale(var(--sc));
@@ -193,27 +184,26 @@
   0%, 100% { transform: translate(-0.6em, 0.5em) rotate(-3deg); }
   50% { transform: translate(0.6em, -0.7em) rotate(3deg); }
 }
-.lanSvg {
+.lanImg {
   position: relative;
-  display: block;
   width: 100%;
   height: 100%;
-  filter: drop-shadow(0 0.6em 1em rgba(255, 150, 60, 0.4));
   animation: lanIn 1s 0.15s cubic-bezier(0.2, 0.9, 0.2, 1) both;
 }
 @keyframes lanIn {
   from { opacity: 0; transform: translateY(3em) scale(0.9); }
   to { opacity: 1; transform: none; }
 }
+/* pendar api: hanya opacity + transform */
 .glow {
   position: absolute;
   left: 50%;
-  top: 56%;
-  width: 17em;
-  height: 17em;
-  margin: -8.5em 0 0 -8.5em;
+  top: 62%;
+  width: 19em;
+  height: 19em;
+  margin: -9.5em 0 0 -9.5em;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(255, 190, 100, 0.5), rgba(255, 150, 70, 0.16) 50%, transparent 72%);
+  background: radial-gradient(closest-side, rgba(255, 196, 110, 0.55), rgba(255, 150, 70, 0.17) 48%, transparent 72%);
   animation: flicker 2.3s ease-in-out infinite;
   animation-delay: calc(var(--i) * -0.5s);
   pointer-events: none;
@@ -223,10 +213,10 @@
   40% { opacity: 1; transform: scale(1.06); }
   70% { opacity: 0.72; transform: scale(0.97); }
 }
-.lan:focus-visible .lanSvg {
+.lan:focus-visible {
   outline: 0.14em dashed var(--accent);
-  outline-offset: 0.3em;
-  border-radius: 1em;
+  outline-offset: 0.2em;
+  border-radius: 1.2em;
 }
 
 /* ── lampion-lampion kecil di akhir ── */
@@ -236,14 +226,24 @@
   z-index: 2;
   pointer-events: none;
 }
-.crowd i {
+.crowd span {
   position: absolute;
-  bottom: 9.5em;
-  border-radius: 46% 46% 32% 32% / 52% 52% 30% 30%;
-  background: radial-gradient(60% 60% at 50% 78%, #fff6cf, #ffc56b 45%, #f08a3c);
-  box-shadow: 0 0 1em 0.25em rgba(255, 170, 80, 0.45);
+  bottom: 10em;
+  aspect-ratio: 3 / 4;
   opacity: 0;
   animation: crowd 7s cubic-bezier(0.2, 0.6, 0.3, 1) both;
+}
+.crowd span::before {
+  content: '';
+  position: absolute;
+  inset: -90%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 180, 90, 0.5), transparent);
+}
+.crowd img {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 @keyframes crowd {
   0% { opacity: 0; transform: translate(0, 0) scale(0.4); }
@@ -251,102 +251,102 @@
   100% { opacity: var(--o); transform: translate(var(--dx), var(--rise)) scale(1); }
 }
 
-/* ── kaki: kartu harapan ── */
+/* ── kaki: kartu harapan di kertas, tulisan tangan ── */
 .foot {
   position: relative;
   z-index: 8;
   margin-top: auto;
   width: 100%;
-  height: 9.3em;
+  height: 11.2em;
   flex: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 0 1.6em;
+  padding: 0 1.5em;
   pointer-events: none;
 }
-.foot > * {
-  pointer-events: auto;
-}
-.card,
+.foot > * { pointer-events: auto; }
 .cardGap {
-  min-height: 4.5em;
+  min-height: 5.6em;
 }
 .card {
   position: relative;
   max-width: 100%;
-  padding: 0.8em 1.25em 0.9em;
-  border-radius: 0.55em;
-  background: #fff6e2;
+  padding: 0.38em 1.05em 0.5em;
+  composes: paper from '../kit/kit.module.css';
+  --paper: #fff3dc;
   color: #2b2440;
-  box-shadow: 0 1.2em 2.2em -1.1em rgba(0, 0, 0, 0.8), 0 0 0 0.06em rgba(255, 190, 110, 0.5);
-  font-family: var(--font-serif, Georgia, serif);
-  font-style: italic;
-  font-size: 1.1em;
-  font-weight: 500;
-  line-height: 1.3;
+  border-radius: 0.25em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.62em;
+  font-weight: 600;
+  line-height: 1.12;
   text-align: center;
   text-wrap: balance;
   overflow-wrap: anywhere;
   animation: cardIn 0.6s 0.35s cubic-bezier(0.34, 1.4, 0.64, 1) both;
 }
+/* benang yang mengikat kartu ke lampion */
 .card::before {
   content: '';
   position: absolute;
   left: 50%;
   bottom: 100%;
-  width: 0.08em;
-  height: 1.2em;
-  background: rgba(253, 241, 216, 0.55);
+  width: 0.06em;
+  height: 0.9em;
+  background: rgba(253, 241, 216, 0.6);
 }
 .cardNo {
   display: block;
-  margin-bottom: 0.25em;
   font-family: var(--font-ui, sans-serif);
-  font-style: normal;
-  font-size: 0.6em;
+  font-size: 0.4em;
   font-weight: 800;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #c8651b;
+  color: #c2601a;
+  line-height: 1.9;
 }
 @keyframes cardIn {
-  from { opacity: 0; transform: translateY(0.8em) scale(0.94); }
-  to { opacity: 1; transform: none; }
+  from { opacity: 0; transform: translateY(0.8em) rotate(2deg) scale(0.94); }
+  to { opacity: 1; transform: rotate(-0.8deg); }
 }
 .count {
-  margin-top: 0.95em;
+  margin-top: 1em;
   display: flex;
-  gap: 0.42em;
+  gap: 0.45em;
+  padding: 0.45em 0.7em;
+  border-radius: 99em;
+  background: rgba(8, 13, 43, 0.45);
 }
 .count i {
   width: 0.5em;
   height: 0.5em;
   border-radius: 50%;
-  background: rgba(253, 241, 216, 0.25);
-  transition: background 0.4s, transform 0.4s, box-shadow 0.4s;
+  background: rgba(253, 241, 216, 0.3);
+  transition: background 0.4s, transform 0.4s;
 }
 .count i.on {
   background: var(--accent);
-  transform: scale(1.15);
-  box-shadow: 0 0 0.6em rgba(255, 179, 71, 0.9);
+  transform: scale(1.2);
 }
 .cta {
-  margin-top: 1.6em;
+  position: relative;
+  margin-top: 2.6em;
   padding: 0.95em 1.7em;
   border-radius: 99em;
-  background: var(--accent);
-  color: #2b1a05;
+  background: linear-gradient(180deg, #ffc566, #f59a2e);
+  color: #3a1d06;
   font-weight: 800;
   font-size: 1em;
   cursor: pointer;
-  box-shadow: 0 0.18em 0 #d98a22, 0 0 2.4em rgba(255, 179, 71, 0.55);
+  box-shadow:
+    inset 0 0.08em 0 rgba(255, 255, 255, 0.55),
+    0 0.2em 0 #b8651a,
+    0 1.2em 2.2em -0.6em rgba(255, 170, 70, 0.75);
   animation: ctaIn 0.7s 1.6s cubic-bezier(0.34, 1.5, 0.64, 1) both, ctaPulse 2s 2.6s ease-in-out infinite;
 }
-.cta:active {
-  transform: translateY(0.1em);
-}
+.cta:active { transform: translateY(0.1em); }
 @keyframes ctaIn {
   from { opacity: 0; transform: translateY(0.8em) scale(0.9); }
   to { opacity: 1; transform: none; }
@@ -356,31 +356,6 @@
   50% { scale: 1.04; }
 }
 
-/* ── kartu katalog ── */
-.cover {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  background: linear-gradient(#0a0f2c 0%, #131b44 40%, #262766 74%, #4a3572 100%);
-}
-.cover > svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.cvLan {
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: cvFloat 5s ease-in-out infinite;
-}
-.cvLan:nth-of-type(2n) { animation-delay: -1.6s; animation-duration: 6.2s; }
-.cvLan:nth-of-type(3n) { animation-delay: -3.1s; animation-duration: 5.6s; }
-@keyframes cvFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-5px); }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .star, .lanBob, .glow, .reflectOn, .cvLan { animation: none; }
+  .star, .moon, .lanBob, .glow, .reflectOn { animation: none; }
 }

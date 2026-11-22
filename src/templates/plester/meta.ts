@@ -6,7 +6,7 @@ export const meta: TemplateMeta = {
   tagline: 'Hati yang retak, ditambal plester satu per satu sampai utuh lagi.',
   steps: ['Tempel plester', 'Hatinya pulih', 'Baca permintaan maaf'],
   occasions: ['maaf'],
-  palette: { bg: '#e4eff4', ink: '#24323b', accent: '#ef6a6a' },
+  palette: { bg: '#d6e6ec', ink: '#2f3b46', accent: '#e4506a' },
   fields: [
     { key: 'to', label: 'Untuk siapa', placeholder: 'Nama dia', max: 20 },
     { key: 'from', label: 'Dari', placeholder: 'Namamu', max: 20 },

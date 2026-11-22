@@ -36,6 +36,6 @@ export const meta: TemplateMeta = {
     ],
     message:
       'Aku nggak jago merangkai kata, apalagi merangkai bunga. Jadi aku titip semuanya di sini.\n\nMakasih sudah bertahan, sudah mau diajak makan di tempat yang itu-itu aja, dan sudah jadi orang pertama yang aku cari tiap ada kabar baik.\n\nSemoga buket ini nggak pernah layu. Sama kayak kita.',
-    photos: ['/sample/senja.svg', '/sample/kopi.svg', '/sample/taman.svg'],
+    photos: ['/art/foto-senja.webp', '/art/foto-kopi.webp', '/art/foto-taman.webp'],
   },
 };

@@ -3,7 +3,7 @@
   const F = window.FLOA;
   const { el, painted, wash, mix, jitter, ramp, leaf, linGrad, radGrad } = F;
 
-  const PAPER = { base: '#f1e2c6', light: '#fff7e4', dark: '#d2b88e' };
+  const PAPER = { base: '#f6ebd3', light: '#fffbee', dark: '#dcc6a0' };
   const INNER = { base: '#d9c29b', light: '#eadab8', dark: '#b89b6e' };
   const LINER = { base: '#c96a55', light: '#e89a80', dark: '#9c4235' };
   const WARM = '#3a1d12';
@@ -17,7 +17,7 @@
       stroke: () => {
         const x = box[0] + R() * box[2], y = box[1] + R() * box[3];
         const L = len[0] + R() * (len[1] - len[0]);
-        const c = mix(base, R() < 0.55 ? pal.light : pal.dark, R() * 0.5);
+        const c = R() < 0.6 ? mix(base, pal.light, R() * 0.55) : mix(base, pal.dark, R() * 0.36);
         return { d: `M${x},${y}l${(dir[0] / m) * L},${(dir[1] / m) * L}`, color: jitter(c, 4, R), width: width[0] + R() * (width[1] - width[0]), opacity: 0.22 + R() * 0.4 };
       },
     });
@@ -206,13 +206,7 @@
   function linen(svg, R, W2, H2, { n = 520 } = {}) {
     const stops = [[0, '#e3e6d0'], [0.5, '#d5dbc0'], [1, '#c0c9a6']];
     wash(svg, { x: -40, y: -20, w: W2 + 80, h: H2 + 40, R, n, angle: 0, len: [0.2, 0.55], width: [14, 34], opacity: [0.25, 0.6], base: linGrad(svg, stops, 0, 0, 0, H2), color: (u, v) => ramp(stops, v + (u - 0.5) * 0.08) });
-    wash(svg, { x: -40, y: -20, w: W2 + 80, h: H2 + 40, R, n: Math.round(n * 0.5), angle: 90, len: [0.3, 0.8], width: [5, 14], opacity: [0.1, 0.26], color: (u, v, R2) => mix(ramp(stops, v), R2() < 0.5 ? '#f6f7e8' : '#9fab84', 0.55) });
-    // benang anyaman halus
-    const id = F.uid('ln');
-    const pt = el('pattern', { id, width: 7, height: 7, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(2)' }, svg.querySelector('defs'));
-    el('path', { d: 'M0,1.5H7', stroke: '#5f6e48', 'stroke-width': 0.9, 'stroke-opacity': 0.2 }, pt);
-    el('path', { d: 'M2,0V7', stroke: '#f6f7e8', 'stroke-width': 0.9, 'stroke-opacity': 0.34 }, pt);
-    el('rect', { width: W2, height: H2, fill: `url(#${id})` }, svg);
+    wash(svg, { x: -40, y: -20, w: W2 + 80, h: H2 + 40, R, n: Math.round(n * 0.3), angle: 90, len: [0.3, 0.8], width: [8, 18], opacity: [0.08, 0.2], color: (u, v, R2) => mix(ramp(stops, v), R2() < 0.5 ? '#f6f7e8' : '#9fab84', 0.55) });
     el('rect', { width: W2, height: H2, fill: kawung(svg, { size: 132, color: '#7d8c61', sw: 2.4, rot: 0 }), opacity: 0.2 }, svg);
   }
 
@@ -240,14 +234,13 @@
     const c = el('g', { transform: 'translate(-30 1500)' }, svg);
     corner(c, R);
     const fl = el('g', { filter: 'url(#castBig)' }, svg);
-    F.flora.flowers.kamboja(el('g', { transform: 'translate(128 1352) rotate(20)' }, fl), R, 0.8);
-    F.flora.flowers.kambojaPink(el('g', { transform: 'translate(296 1452) rotate(-30)' }, fl), R, 0.5);
-    F.flora.flowers.melati(el('g', { transform: 'translate(262 1290) rotate(10)' }, fl), R, 0.62);
-    F.flora.flowers.melati(el('g', { transform: 'translate(54 1178) rotate(40)' }, fl), R, 0.5);
+    F.flora.flowers.kamboja(el('g', { transform: 'translate(96 1392) rotate(20)' }, fl), R, 0.74);
+    F.flora.flowers.kambojaPink(el('g', { transform: 'translate(238 1476) rotate(-30)' }, fl), R, 0.44);
+    F.flora.flowers.melati(el('g', { transform: 'translate(212 1326) rotate(10)' }, fl), R, 0.58);
+    F.flora.flowers.melati(el('g', { transform: 'translate(40 1232) rotate(40)' }, fl), R, 0.48);
     // sudut kanan-atas: ranting mengintip
-    const t = el('g', { transform: 'translate(800 -16) rotate(196)' }, svg);
-    [[-26, 1, 250, 86], [8, 0, 300, 96], [40, 2, 240, 84]].forEach(([a, gi, len, w]) => leaf(t, { len, w, ...F.flora.GREEN[gi], R, n: 40, transform: `rotate(${a})`, curve: 0.2, cast: 'castBig' }));
-    F.flora.flowers.melati(el('g', { transform: 'translate(676 150) rotate(20)', filter: 'url(#cast)' }, svg), R, 0.56);
+    const t = el('g', { transform: 'translate(806 -22) rotate(200)' }, svg);
+    [[-24, 1, 190, 68], [10, 0, 228, 76], [42, 2, 180, 66]].forEach(([a, gi, len, w]) => leaf(t, { len, w, ...F.flora.GREEN[gi], R, n: 36, transform: `rotate(${a})`, curve: 0.2, cast: 'castBig' }));
   } };
 
   /* ── kartu katalog ── */

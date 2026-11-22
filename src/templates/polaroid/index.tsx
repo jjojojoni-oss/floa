@@ -7,7 +7,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Finale, Hint, Stage, cx, haptic, sfx, useTimers } from '../kit';
+import { Finale, Hint, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { meta } from './meta';
 import s from './style.module.css';
@@ -15,7 +15,7 @@ import s from './style.module.css';
 export default function Polaroid(props: TemplateProps) {
   const [run, setRun] = useState(0);
   return (
-    <Stage {...meta.palette}>
+    <Stage {...meta.palette} backdrop={BACKDROP}>
       <Scene key={run} {...props} onReplay={() => setRun((v) => v + 1)} />
     </Stage>
   );
@@ -34,8 +34,12 @@ const SHIFT: [number, number][] = [
   [0.75, 0.15],
   [-0.35, -0.25],
 ];
-const TAPE = ['#ef6f4c', '#f2c94c', '#7fb2a0', '#e9a0b0', '#8fa8d6', '#f0a35e'];
-const TINT = ['#f7c9b6', '#f6dc9c', '#bcd9cb', '#f1c3cf', '#c5d2ee', '#f5cfa4'];
+/* kartu tanpa foto: kertas berwarna lembut */
+const TINT = ['#f9d8c8', '#f8e6b4', '#d3e5d6', '#f6d5dc', '#dbe3f3', '#f7dcba'];
+const TAPE_ROT = [-3, 4, -6, 2, 5, -2];
+
+const BACKDROP = '/art/bg-polaroid.webp';
+const ART = ['bg-polaroid', 'polaroid-selotip-1', 'polaroid-selotip-2', 'polaroid-selotip-3', 'polaroid-selotip-4'];
 
 function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void }) {
   const photos = data.photos.filter(Boolean).slice(0, 6);
@@ -55,6 +59,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const drag = useRef<Drag | null>(null);
   const moved = useRef(false);
   const later = useTimers();
+  const ready = useArtReady(ART);
 
   const atLetter = idx >= total;
   const to = data.to.trim() || 'kamu';
@@ -130,12 +135,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   };
 
   return (
-    <div className={s.wrap}>
-      <span className={s.ring} />
-      <span className={cx(s.scrap, s.scrap1)} />
-      <span className={cx(s.scrap, s.scrap2)} />
-      <span className={cx(s.scrap, s.scrap3)} />
-
+    <div className={cx(s.wrap, ready && s.ready)}>
       <div className={s.head}>
         {atLetter && total > 0 ? (
           <div key="l">
@@ -162,11 +162,11 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         >
           <span className={s.noteFlap} />
           <span className={s.noteEyebrow}>{total > 0 ? 'surat di paling bawah' : 'sepucuk surat'}</span>
-          <svg className={s.sticker} viewBox="0 0 40 40" aria-hidden>
-            <circle cx="20" cy="20" r="19" fill="var(--accent)" />
-            <circle cx="20" cy="20" r="15.5" fill="none" stroke="#fff" strokeOpacity=".5" strokeWidth="1" strokeDasharray="2 2.6" />
-            <path d="M20,29C9,21 12,12 20,17C28,12 31,21 20,29Z" fill="#fff" />
-          </svg>
+          <span className={s.sticker} aria-hidden>
+            <Sprite name="daun-2" className={s.stickerLeaf} />
+            <Sprite name="daun-4" className={s.stickerLeaf2} />
+            <Sprite name="bunga-kamboja-pink" className={s.stickerFlower} />
+          </span>
           <span className={cx(s.noteTo, to.length > 13 && s.long)}>Buat {to}</span>
           <span className={s.noteOpen}>ketuk untuk membuka</span>
         </button>
@@ -181,7 +181,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
             '--y': `${top ? 0 : SHIFT[i % 6][1] + k * 0.32}em`,
             '--s': top ? 1 : Math.max(0.9, 1 - k * 0.022),
             '--dir': dirs[i] ?? 1,
-            '--tape': TAPE[i % 6],
+            '--tr': `${TAPE_ROT[i % 6]}deg`,
             zIndex: gone ? 30 + i : total - i,
           } as CSSProperties;
           return (
@@ -199,15 +199,16 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               onPointerCancel={top ? (e) => onEnd(e, true) : undefined}
               onClick={top ? onTap : undefined}
             >
-              <span className={s.tape} />
+              <Sprite name={`polaroid-selotip-${(i % 4) + 1}`} className={s.tape} />
               {c.src ? (
                 <span className={s.photo}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={c.src} alt="" draggable={false} />
                 </span>
               ) : (
-                <span className={cx(s.photo, s.blank)} style={{ background: TINT[i % 6] }}>
+                <span className={cx(s.photo, s.blank)} style={{ '--paper': TINT[i % 6] } as CSSProperties}>
                   <span className={s.quote}>{c.cap}</span>
+                  <Sprite name="bunga-melati" className={s.blankFlower} />
                 </span>
               )}
               <span className={s.cap}>{c.src ? c.cap : from ? `— ${from}` : ''}</span>
@@ -232,7 +233,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           data={data}
           mode={mode}
           eyebrow={total > 0 ? 'Surat di paling bawah' : 'Surat untukmu'}
-          theme={{ bg: 'linear-gradient(#e3ede6, #cddcd2)', ink: '#22302a', paper: '#fffefa', paperInk: '#22302a' }}
+          flower="bunga-kamboja-pink"
+          theme={{ bg: `url(${BACKDROP}) center bottom / cover no-repeat`, ink: meta.palette.ink, paper: '#fffaf0', paperInk: '#3b2a22' }}
           onReplay={onReplay}
         />
       ) : null}

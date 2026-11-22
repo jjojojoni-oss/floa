@@ -1,9 +1,8 @@
 'use client';
 
 import { type CSSProperties, useMemo, useRef, useState } from 'react';
-import { Finale, Hint, Stage, cx, haptic, sfx, useTimers } from '../kit';
+import { Finale, Hint, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
-import { Hills, Lantern, Moon, seeded } from './art';
 import { meta } from './meta';
 import s from './style.module.css';
 
@@ -29,10 +28,25 @@ const SLOTS: Record<number, [number, number, number][]> = {
   ],
 };
 
+const BG = '/art/bg-lampion.webp';
+const ART = [BG, 'lampion', 'lampion-bulan'];
+
+/** PRNG kecil supaya posisi bintang/lampion sama di tiap render. */
+function seeded(seed: number) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 export default function Lampion(props: TemplateProps) {
   const [run, setRun] = useState(0);
   return (
-    <Stage {...meta.palette}>
+    <Stage {...meta.palette} backdrop={BG}>
       <Scene key={run} {...props} onReplay={() => setRun((v) => v + 1)} />
     </Stage>
   );
@@ -42,6 +56,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const notes = data.notes.map((t) => t.trim()).filter(Boolean).slice(0, 5);
   const n = Math.min(5, Math.max(3, notes.length));
   const slots = SLOTS[n];
+  const ready = useArtReady(ART);
   const [cur, setCur] = useState(0);
   const [done, setDone] = useState(false);
   const [finale, setFinale] = useState(false);
@@ -52,27 +67,22 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const curRef = useRef(0);
   const later = useTimers();
 
+  // kerlip bintang di atas lukisan (bintang lukisannya sendiri diam)
   const stars = useMemo(() => {
     const r = seeded(7);
-    return Array.from({ length: 54 }, (_, i) => ({
-      x: r() * 100,
-      y: r() * 66,
-      z: 0.09 + r() * 0.15,
-      d: r() * 4,
-      big: i % 9 === 0,
-    }));
+    return Array.from({ length: 18 }, () => ({ x: r() * 100, y: r() * 56, z: 0.12 + r() * 0.14, d: r() * 4 }));
   }, []);
 
   const crowd = useMemo(() => {
     const r = seeded(21);
-    return Array.from({ length: 30 }, () => ({
+    return Array.from({ length: 28 }, () => ({
       x: 3 + r() * 94,
-      w: 0.5 + r() * 0.75,
+      w: 0.9 + r() * 1.3,
       rise: 2.5 + r() * 25,
       dx: (r() - 0.5) * 5,
       dur: 5 + r() * 5,
       delay: r() * 2.6,
-      o: 0.5 + r() * 0.45,
+      o: 0.6 + r() * 0.4,
     }));
   }, []);
 
@@ -97,30 +107,24 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const long = (data.to || '').length > 12;
 
   return (
-    <div className={s.wrap}>
+    <div className={cx(s.wrap, ready && s.ready)}>
       <div className={s.sky} aria-hidden>
         {stars.map((st, i) => (
-          <i
-            key={i}
-            className={cx(s.star, st.big && s.starBig)}
-            style={{ left: `${st.x}%`, top: `${st.y}%`, fontSize: `${st.z}em`, animationDelay: `${-st.d}s` }}
-          />
+          <i key={i} className={s.star} style={{ left: `${st.x}%`, top: `${st.y}%`, fontSize: `${st.z}em`, animationDelay: `${-st.d}s` }} />
         ))}
-        <Moon className={s.moon} />
-        <Hills className={s.hills} />
+        <Sprite name="lampion-bulan" className={s.moon} />
         <span className={cx(s.reflect, (cur < n || done) && s.reflectOn, done && s.reflectWide)} />
       </div>
 
       {done ? (
         <div className={s.crowd} aria-hidden>
           {crowd.map((c, i) => (
-            <i
+            <span
               key={i}
               style={
                 {
                   left: `${c.x}%`,
                   width: `${c.w}em`,
-                  height: `${c.w * 1.25}em`,
                   '--rise': `${-c.rise}em`,
                   '--dx': `${c.dx}em`,
                   '--o': c.o,
@@ -128,7 +132,9 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                   animationDelay: `${c.delay}s`,
                 } as CSSProperties
               }
-            />
+            >
+              <Sprite name="lampion-kecil" />
+            </span>
           ))}
         </div>
       ) : null}
@@ -150,91 +156,91 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
       {slots.map(([x, y, sc], i) => {
         const flown = i < cur;
-        const ready = i === cur;
+        const isReady = i === cur;
         return (
+          // dua lapis seukuran stage: gerak mendatar dan menaik punya lengkung waktu sendiri
           <div
             key={i}
-            className={cx(s.lan, flown && s.flown, ready && s.ready, i > cur && s.wait, ready && dragging && s.dragging)}
-            style={
-              {
-                left: flown ? `${x}%` : undefined,
-                top: flown ? `${y}%` : undefined,
-                transform: ready && dy ? `translateY(${dy}px)` : undefined,
-                '--sc': sc,
-                '--i': i,
-              } as CSSProperties
-            }
-            role={ready ? 'button' : undefined}
-            tabIndex={ready ? 0 : undefined}
-            aria-label={ready ? `Terbangkan lampion ${i + 1}` : undefined}
-            aria-hidden={ready ? undefined : true}
-            onPointerDown={
-              ready
-                ? (e) => {
-                    drag.current = { y0: e.clientY, moved: false };
-                    e.currentTarget.setPointerCapture?.(e.pointerId);
-                  }
-                : undefined
-            }
-            onPointerMove={
-              ready
-                ? (e) => {
-                    const d = drag.current;
-                    if (!d) return;
-                    const v = e.clientY - d.y0;
-                    if (Math.abs(v) > 6 && !d.moved) {
-                      d.moved = true;
-                      setDragging(true);
-                    }
-                    if (d.moved) setDy(Math.min(10, v));
-                  }
-                : undefined
-            }
-            onPointerUp={
-              ready
-                ? (e) => {
-                    const d = drag.current;
-                    drag.current = null;
-                    setDragging(false);
-                    if (!d || !d.moved) return;
-                    dragEnd.current = performance.now();
-                    if (e.clientY - d.y0 < -26) release(i);
-                    else setDy(0);
-                  }
-                : undefined
-            }
-            onPointerCancel={
-              ready
-                ? () => {
-                    drag.current = null;
-                    setDragging(false);
-                    setDy(0);
-                  }
-                : undefined
-            }
-            onClick={
-              ready
-                ? () => {
-                    if (performance.now() - dragEnd.current < 120) return;
-                    release(i);
-                  }
-                : undefined
-            }
-            onKeyDown={
-              ready
-                ? (e) => {
-                    if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowUp') {
-                      e.preventDefault();
-                      release(i);
-                    }
-                  }
-                : undefined
-            }
+            className={cx(s.fly, flown && s.flown, isReady && s.ready2, i > cur && s.wait)}
+            style={{ transform: flown ? `translateX(${x - 50}%)` : undefined, '--sc': sc, '--i': i } as CSSProperties}
           >
-            <div className={s.lanScale}>
-              <div className={s.lanBob}>
-                <span className={s.glow} />
-                <Lantern className={s.lanSvg} />
+            <div className={s.flyY} style={{ transform: flown ? `translateY(calc(${y - 100}% + 17.2em))` : undefined }}>
+              <div
+                className={cx(s.lan, isReady && dragging && s.dragging)}
+                style={{ transform: isReady && dy ? `translateY(${dy}px)` : undefined }}
+                role={isReady ? 'button' : undefined}
+                tabIndex={isReady ? 0 : undefined}
+                aria-label={isReady ? `Terbangkan lampion ${i + 1}` : undefined}
+                aria-hidden={isReady ? undefined : true}
+                onPointerDown={
+                  isReady
+                    ? (e) => {
+                        drag.current = { y0: e.clientY, moved: false };
+                        e.currentTarget.setPointerCapture?.(e.pointerId);
+                      }
+                    : undefined
+                }
+                onPointerMove={
+                  isReady
+                    ? (e) => {
+                        const d = drag.current;
+                        if (!d) return;
+                        const v = e.clientY - d.y0;
+                        if (Math.abs(v) > 6 && !d.moved) {
+                          d.moved = true;
+                          setDragging(true);
+                        }
+                        if (d.moved) setDy(Math.min(10, v));
+                      }
+                    : undefined
+                }
+                onPointerUp={
+                  isReady
+                    ? (e) => {
+                        const d = drag.current;
+                        drag.current = null;
+                        setDragging(false);
+                        if (!d || !d.moved) return;
+                        dragEnd.current = performance.now();
+                        if (e.clientY - d.y0 < -26) release(i);
+                        else setDy(0);
+                      }
+                    : undefined
+                }
+                onPointerCancel={
+                  isReady
+                    ? () => {
+                        drag.current = null;
+                        setDragging(false);
+                        setDy(0);
+                      }
+                    : undefined
+                }
+                onClick={
+                  isReady
+                    ? () => {
+                        if (performance.now() - dragEnd.current < 120) return;
+                        release(i);
+                      }
+                    : undefined
+                }
+                onKeyDown={
+                  isReady
+                    ? (e) => {
+                        if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowUp') {
+                          e.preventDefault();
+                          release(i);
+                        }
+                      }
+                    : undefined
+                }
+              >
+                <div className={s.lanScale}>
+                  <div className={s.lanBob}>
+                    <span className={s.glow} />
+                    <Sprite name="lampion" className={s.lanImg} />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -279,7 +285,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           data={data}
           mode={mode}
           eyebrow="Dititipkan lewat lampion"
-          theme={{ bg: 'linear-gradient(#131b40, #2a2259)', ink: '#fdf1d8', paper: '#fff6e2', paperInk: '#2b2440' }}
+          flower="bunga-kamboja"
+          theme={{ backdrop: BG, ink: '#fdf1d8', paper: '#fff6e2', paperInk: '#2b2440' }}
           onReplay={onReplay}
         />
       ) : null}

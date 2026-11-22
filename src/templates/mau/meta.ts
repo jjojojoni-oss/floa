@@ -6,7 +6,7 @@ export const meta: TemplateMeta = {
   tagline: 'Satu pertanyaan penting, dengan tombol "nggak" yang susah banget ditangkap.',
   steps: ['Baca pelan-pelan', 'Jawab pertanyaannya', 'Rayakan'],
   occasions: ['nembak'],
-  palette: { bg: '#ffdbe4', ink: '#4a1830', accent: '#ff3d6e' },
+  palette: { bg: '#f8c3ce', ink: '#5a1730', accent: '#e8315f' },
   fields: [
     { key: 'to', label: 'Untuk siapa', placeholder: 'Nama dia', max: 20 },
     { key: 'from', label: 'Dari', placeholder: 'Namamu', max: 20 },

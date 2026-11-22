@@ -6,7 +6,7 @@ export const meta: TemplateMeta = {
   tagline: 'Lempar toganya tinggi-tinggi, lalu buka gulungan ucapannya.',
   steps: ['Geser toga ke atas', 'Konfeti', 'Buka gulungan'],
   occasions: ['wisuda'],
-  palette: { bg: '#14284b', ink: '#fdf6e3', accent: '#f2c14e' },
+  palette: { bg: '#18265a', ink: '#fdf6e3', accent: '#f2c14e' },
   fields: [
     { key: 'to', label: 'Yang wisuda', hint: 'Boleh pakai gelarnya.', placeholder: 'Nama dia', max: 24 },
     { key: 'from', label: 'Dari', placeholder: 'Namamu', max: 24 },

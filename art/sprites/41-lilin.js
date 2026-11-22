@@ -215,7 +215,8 @@
     el('path', { d: ellipse(TAB.cx, TAB.cy, TAB.rx, TAB.ry), fill: kawung(root, '#f6e7c8', 58, 'scale(1 0.34) rotate(45)'), opacity: 0.4 }, top.inner);
     el('path', { d: `M${TAB.cx - TAB.rx + 6},${TAB.cy + 2}A${TAB.rx - 6},${TAB.ry - 2} 0 0 0 ${TAB.cx + TAB.rx - 6},${TAB.cy + 2}`, fill: 'none', stroke: '#c9f0e2', 'stroke-width': 3, 'stroke-opacity': 0.55 }, svg);
   }
-  F.sprites['lilin-meja'] = { w: 700, h: 310, seed: 441, draw: table };
+  // dirender 0,75× (tampil ±525px di layar): ukuran berkas lebih hemat
+  F.sprites['lilin-meja'] = { w: 525, h: 233, seed: 441, draw(svg, R) { table(el('g', { transform: 'scale(0.75)' }, svg), R); } };
 
   // ── bendera pesta, kanvas 780×190 ──
   const FLAG_COLORS = [
@@ -244,7 +245,7 @@
       if (k % 2 === 0) for (const [cx, cy, r] of [[0, 30, 5], [-9, 46, 3.6], [9, 46, 3.6], [0, 60, 3]]) el('circle', { cx, cy, r, fill: '#fff6e4', opacity: 0.75 }, p.inner);
     }
   }
-  F.sprites['lilin-bendera'] = { w: 780, h: 190, seed: 451, draw(svg, R) { bunting(svg, R); } };
+  F.sprites['lilin-bendera'] = { w: 468, h: 114, seed: 451, draw(svg, R) { bunting(el('g', { transform: 'scale(0.6)' }, svg), R); } };
 
   // ── balon, kanvas 150×330 ──
   const BALLOONS = [
@@ -287,7 +288,7 @@
     room(svg, R, {
       wall: [[0, '#1b0f2c'], [0.3, '#2c1840'], [0.55, '#472548'], [0.78, '#3a1d3a'], [1, '#22112a']],
       glow: [[0, '#ffb057', 0.4], [0.45, '#ff8e4a', 0.16], [1, '#ff8e4a', 0]],
-      motif: '#c79ac4', motifOp: 0.1, floor: ['#2a1422', '#160a14'], board: ['#3c2034', '#241225'],
+      motif: '#c79ac4', motifOp: 0.07, floor: ['#2a1422', '#160a14'], board: ['#3c2034', '#241225'],
     });
     dabs(svg, { n: 26, R, filter: 'soft', place: (i, R2) => ({ x: R2() * 780, y: 80 + R2() * 1100, rx: 6 + R2() * 12, color: R2() < 0.5 ? '#ffcf8a' : '#ff9d6a', opacity: 0.1 + R2() * 0.14 }) });
   } };

@@ -1,16 +1,29 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import { Finale, Hint, HoldButton, Stage, cx, haptic, sfx, useTimers } from '../kit';
+import { type CSSProperties, useRef, useState } from 'react';
+import { Finale, Hint, HoldButton, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
-import { FlapEdge, Pocket, Postmark, Seal, Stamp } from './art';
 import { meta } from './meta';
 import s from './style.module.css';
+
+const BACKDROP = '/art/bg-amplop.webp';
+const ART = [
+  'bg-amplop',
+  'amplop-muka',
+  'amplop-belakang',
+  'amplop-kantong',
+  'amplop-tutup',
+  'amplop-tutup-dalam',
+  'amplop-segel',
+  'amplop-retak',
+  'amplop-segel-kiri',
+  'amplop-segel-kanan',
+];
 
 export default function Amplop(props: TemplateProps) {
   const [run, setRun] = useState(0);
   return (
-    <Stage {...meta.palette}>
+    <Stage {...meta.palette} backdrop={BACKDROP}>
       <Scene key={run} {...props} onReplay={() => setRun((v) => v + 1)} />
     </Stage>
   );
@@ -24,6 +37,7 @@ type Phase = 'sealed' | 'broken' | 'open' | 'out';
 const TAPS_TO_BREAK = 3;
 
 function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void }) {
+  const ready = useArtReady(ART);
   const [side, setSide] = useState<Side>('front');
   const [phase, setPhase] = useState<Phase>('sealed');
   const [hold, setHold] = useState(0);
@@ -83,7 +97,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const opened = phase !== 'sealed';
 
   return (
-    <div className={s.wrap}>
+    <div className={cx(s.wrap, ready && s.ready)}>
       <div className={s.head}>
         {showFront ? (
           <div key="a">
@@ -105,29 +119,20 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
       <div className={s.mid}>
         <div className={s.env}>
-          <span className={s.ground} />
           <div className={cx(s.bob, !opened && s.floaty)}>
             <div className={cx(s.flip, side === 'turnOut' && s.turnOut, side === 'turnIn' && s.turnIn)}>
               {showFront ? (
                 <button type="button" className={s.front} onClick={flip} aria-label="Balik amplopnya">
-                  {from ? (
-                    <span className={s.sender}>
-                      dari
-                      <b>{from}</b>
-                    </span>
-                  ) : null}
-                  <Postmark className={s.postmark} />
-                  <Stamp className={s.stamp} />
+                  <Sprite name="amplop-muka" className={s.face} />
+                  {from ? <span className={s.sender}>dari {from}</span> : null}
                   <span className={s.addr}>
                     <span className={s.addrLabel}>Untuk</span>
                     <span className={cx(s.addrName, to.length > 11 && s.small)}>{to}</span>
-                    <i className={s.rule} />
                   </span>
-                  <span className={s.stripe} />
                 </button>
               ) : (
                 <div className={cx(s.back, (phase === 'open' || phase === 'out') && s.open, phase === 'out' && s.out)}>
-                  <div className={s.inside} />
+                  <Sprite name="amplop-belakang" className={cx(s.layer, s.inside)} />
                   {photos.map((src, i) => (
                     <span key={src + i} className={cx(s.peek, i === 0 ? s.peek1 : s.peek2)}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -146,15 +151,10 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                     <span className={s.lSalam}>Untuk {to},</span>
                     <span className={s.lBody}>{data.message}</span>
                   </button>
-                  <div className={s.pocket}>
-                    <Pocket />
-                  </div>
-                  <span className={s.flapShadow} />
+                  <Sprite name="amplop-kantong" className={cx(s.layer, s.pocket)} />
                   <div className={s.flap}>
-                    <div className={cx(s.flapFace, s.flapOut)}>
-                      <FlapEdge />
-                    </div>
-                    <div className={cx(s.flapFace, s.flapIn)} />
+                    <Sprite name="amplop-tutup" className={cx(s.layer, s.flapOut)} />
+                    <Sprite name="amplop-tutup-dalam" className={cx(s.layer, s.flapIn)} />
                   </div>
 
                   <div className={s.sealWrap} onClick={tapSeal}>
@@ -167,16 +167,24 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                         className={s.sealBtn}
                       >
                         <span className={cx(s.sealIn, hold > 0 && s.shaking)}>
-                          <Seal letter={mono} progress={progress} className={s.sealArt} />
+                          <Sprite name="amplop-segel" className={s.sealImg} />
+                          <span className={s.mono}>{mono}</span>
+                          <Sprite
+                            name="amplop-retak"
+                            className={s.crack}
+                            style={{ transform: `scaleY(${progress.toFixed(3)})`, opacity: Math.min(1, progress * 4) } as CSSProperties}
+                          />
                         </span>
                       </HoldButton>
                     ) : phase === 'broken' || phase === 'open' ? (
                       <>
                         <span className={cx(s.half, s.halfL)}>
-                          <Seal letter={mono} progress={1} className={s.sealArt} />
+                          <Sprite name="amplop-segel-kiri" className={s.sealImg} />
+                          <span className={cx(s.mono, s.monoL)}>{mono}</span>
                         </span>
                         <span className={cx(s.half, s.halfR)}>
-                          <Seal letter={mono} progress={1} className={s.sealArt} />
+                          <Sprite name="amplop-segel-kanan" className={s.sealImg} />
+                          <span className={cx(s.mono, s.monoR)}>{mono}</span>
                         </span>
                       </>
                     ) : null}
@@ -208,7 +216,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           data={data}
           mode={mode}
           eyebrow="Surat untukmu"
-          theme={{ bg: 'linear-gradient(#f3ead9, #e6d7bd)', ink: '#2e2a26', paper: '#fffdf7', paperInk: '#2e2a26' }}
+          flower="bunga-kamboja"
+          theme={{ bg: `url(${BACKDROP}) center bottom / cover no-repeat`, ink: meta.palette.ink, paper: '#fffaf0', paperInk: '#3b2a22' }}
           onReplay={onReplay}
         />
       ) : null}

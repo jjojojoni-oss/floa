@@ -6,7 +6,7 @@ export const meta: TemplateMeta = {
   tagline: 'Setumpuk foto yang digeser satu-satu, sampai surat di paling bawah.',
   steps: ['Geser fotonya', 'Baca catatan', 'Surat terakhir'],
   occasions: ['sahabat', 'anniv', 'ortu', 'ultah'],
-  palette: { bg: '#dbe7df', ink: '#22302a', accent: '#ef6f4c' },
+  palette: { bg: '#e6c79c', ink: '#3a2416', accent: '#d9573a' },
   fields: [
     { key: 'to', label: 'Untuk siapa', placeholder: 'Nama dia', max: 20 },
     { key: 'from', label: 'Dari', placeholder: 'Namamu', max: 20 },
@@ -37,6 +37,6 @@ export const meta: TemplateMeta = {
     ],
     message:
       'Empat tahun, satu dapur, dan rice cooker yang entah punya siapa.\n\nAku nggak tahu nanti kita bakal kerja di kota mana. Yang aku tahu, grup ini jangan sampai sepi.\n\nMakasih sudah jadi keluarga yang aku pilih sendiri.',
-    photos: ['/sample/kopi.svg', '/sample/kota.svg', '/sample/senja.svg', '/sample/taman.svg', '/sample/pantai.svg', '/sample/gunung.svg'],
+    photos: ['/art/foto-kopi.webp', '/art/foto-kota.webp', '/art/foto-senja.webp', '/art/foto-taman.webp', '/art/foto-pantai.webp', '/art/foto-gunung.webp'],
   },
 };

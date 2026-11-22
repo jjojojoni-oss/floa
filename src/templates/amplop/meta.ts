@@ -6,7 +6,7 @@ export const meta: TemplateMeta = {
   tagline: 'Surat bersegel lilin. Segelnya ditekan sampai patah, baru isinya terbaca.',
   steps: ['Balik amplop', 'Tahan segelnya', 'Baca surat'],
   occasions: ['ortu', 'maaf', 'kangen', 'sahabat', 'anniv'],
-  palette: { bg: '#efe5d4', ink: '#2e2a26', accent: '#b3261e' },
+  palette: { bg: '#d5dbc0', ink: '#2c3122', accent: '#b3261e' },
   fields: [
     { key: 'to', label: 'Untuk siapa', placeholder: 'Nama dia', max: 20 },
     { key: 'from', label: 'Dari', placeholder: 'Namamu', max: 20 },
@@ -21,6 +21,6 @@ export const meta: TemplateMeta = {
     notes: [],
     message:
       'Ma, aku jarang ngomong langsung, jadi aku tulis aja.\n\nMakasih buat bekal yang selalu ada padahal Mama juga buru-buru. Makasih sudah pura-pura nggak capek. Makasih buat doa yang aku tahu dikirim tiap malam, walau aku jarang nelpon.\n\nAku baik-baik di sini. Makan teratur (hampir). Nanti kalau pulang, aku yang masak. Mama duduk aja.',
-    photos: ['/sample/kopi.svg', '/sample/gunung.svg'],
+    photos: ['/art/foto-kopi.webp', '/art/foto-gunung.webp'],
   },
 };

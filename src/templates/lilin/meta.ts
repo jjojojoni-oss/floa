@@ -6,7 +6,7 @@ export const meta: TemplateMeta = {
   tagline: 'Nyalakan lilinnya, buat permohonan, lalu tiup. Lampu menyala, pestanya mulai.',
   steps: ['Nyalakan lilin', 'Tahan untuk meniup', 'Baca ucapan'],
   occasions: ['ultah'],
-  palette: { bg: '#2a1b3d', ink: '#fff3e0', accent: '#ffb347' },
+  palette: { bg: '#2c1840', ink: '#fff1dc', accent: '#ffb347' },
   fields: [
     { key: 'to', label: 'Yang ulang tahun', placeholder: 'Nama dia', max: 20 },
     { key: 'from', label: 'Dari', placeholder: 'Namamu', max: 20 },

@@ -1,76 +1,56 @@
+/* Stage memakai tinta gelap (vignette & petunjuk); ikon suara tetap terang di ruang temaram */
+.stage > button {
+  color: #fff1dc;
+}
+
 .wrap {
   --lit: 0;
+  --dim: 0.56;
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: #fff3e0;
-  transition: color 0.8s ease;
+  color: #fff1dc;
+  opacity: 0;
+  transition: opacity 0.5s ease;
 }
-.wrap.party {
-  color: #4a2238;
-}
+.wrap.ready { opacity: 1; }
+.wrap.party { color: #4a2238; }
 
-/* ── ruangan: gelap → terang ── */
-.dark,
+/* ── ruang terang: lukisan kedua yang muncul saat lampu menyala ── */
 .bright {
   position: absolute;
   inset: 0;
+  background: url('/art/bg-lilin-terang.webp') center bottom / cover no-repeat;
+  opacity: 0;
+  transition: opacity 1s ease;
   pointer-events: none;
 }
-.dark {
-  background:
-    radial-gradient(0.22em 0.22em at 14% 16%, rgba(255, 220, 170, 0.5) 50%, transparent 52%),
-    radial-gradient(0.16em 0.16em at 82% 11%, rgba(255, 220, 170, 0.4) 50%, transparent 52%),
-    radial-gradient(0.18em 0.18em at 90% 34%, rgba(255, 220, 170, 0.35) 50%, transparent 52%),
-    radial-gradient(0.14em 0.14em at 8% 40%, rgba(255, 220, 170, 0.35) 50%, transparent 52%),
-    radial-gradient(0.16em 0.16em at 24% 74%, rgba(255, 220, 170, 0.25) 50%, transparent 52%),
-    radial-gradient(0.2em 0.2em at 88% 70%, rgba(255, 220, 170, 0.25) 50%, transparent 52%),
-    radial-gradient(90% 55% at 50% 58%, #4b2e60 0%, #2a1b3d 62%, #1a1029 100%);
-}
-.bright {
-  opacity: 0;
-  transition: opacity 0.9s ease;
-  background:
-    radial-gradient(0.5em 0.5em at 12% 22%, #ffd36e 50%, transparent 52%),
-    radial-gradient(0.36em 0.36em at 86% 17%, #ff8fa3 50%, transparent 52%),
-    radial-gradient(0.42em 0.42em at 92% 46%, #7fd1c7 50%, transparent 52%),
-    radial-gradient(0.34em 0.34em at 7% 52%, #b7a2ee 50%, transparent 52%),
-    radial-gradient(0.4em 0.4em at 18% 84%, #ff9d5c 50%, transparent 52%),
-    radial-gradient(0.36em 0.36em at 84% 82%, #ffd36e 50%, transparent 52%),
-    radial-gradient(80% 45% at 50% 60%, #fffaf0 0%, transparent 100%),
-    linear-gradient(#fff1dc, #ffd6c6);
-}
-.party .bright {
-  opacity: 1;
-}
+.party .bright { opacity: 1; }
 
 /* ── bendera pesta ── */
 .bunting {
   position: absolute;
   z-index: 2;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 5.6em;
-  overflow: visible;
+  top: -0.3em;
+  left: -2%;
+  width: 104%;
+  max-width: none;
+  transform: translateY(-115%);
   transform-origin: 50% 0;
-  animation: buntingIn 0.9s cubic-bezier(0.34, 1.4, 0.64, 1) both;
-  pointer-events: none;
+  filter: drop-shadow(0 0.5em 0.4em rgba(90, 40, 40, 0.25));
+}
+.party .bunting {
+  animation: buntingIn 0.95s cubic-bezier(0.34, 1.4, 0.64, 1) both, buntingSway 5s 1s ease-in-out infinite;
 }
 @keyframes buntingIn {
-  from { transform: translateY(-110%); }
+  from { transform: translateY(-115%); }
   to { transform: none; }
 }
-.flag {
-  transform-origin: 0 0;
-  animation: flagSwing 2.6s ease-in-out infinite;
-  animation-delay: calc(var(--i) * -0.37s);
-}
-@keyframes flagSwing {
-  0%, 100% { transform: rotate(-5deg); }
-  50% { transform: rotate(5deg); }
+@keyframes buntingSway {
+  0%, 100% { rotate: -0.7deg; }
+  50% { rotate: 0.7deg; }
 }
 
 /* ── kepala ── */
@@ -85,28 +65,26 @@
 .eyebrow {
   font-size: 0.74em;
   font-weight: 800;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  opacity: 0.6;
+  opacity: 0.66;
 }
 .name {
-  margin-top: 0.15em;
+  margin-top: 0.12em;
   font-family: var(--font-serif, Georgia, serif);
   font-variation-settings: 'SOFT' 100;
-  font-size: 3em;
+  font-size: 3.1em;
   line-height: 1.02;
   font-weight: 600;
   letter-spacing: -0.025em;
   text-wrap: balance;
   overflow-wrap: anywhere;
+  text-shadow: 0 0.06em 0.5em rgba(20, 8, 30, 0.6);
   animation: up 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
-.name.small {
-  font-size: 2.2em;
-  line-height: 1.08;
-}
+.name.small { font-size: 2.2em; line-height: 1.08; }
 .title {
-  margin-top: 0.2em;
+  margin-top: 0.18em;
   font-family: var(--font-serif, Georgia, serif);
   font-variation-settings: 'SOFT' 100;
   font-size: 2.3em;
@@ -117,14 +95,13 @@
   overflow-wrap: anywhere;
   animation: pop 0.8s cubic-bezier(0.34, 1.5, 0.64, 1) both;
 }
-.title.small {
-  font-size: 1.9em;
-}
+.title.small { font-size: 1.9em; }
 .from {
-  margin-top: 0.45em;
-  font-size: 0.92em;
+  margin-top: 0.1em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.55em;
   font-weight: 600;
-  opacity: 0.66;
+  opacity: 0.85;
   animation: up 0.7s 0.1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 @keyframes up {
@@ -136,103 +113,130 @@
   to { opacity: 1; transform: none; }
 }
 
-/* ── kue ── */
+/* ── adegan kue: semua lapis memakai kanvas 440×480 ── */
 .art {
   position: relative;
   z-index: 1;
   flex: 1;
   min-height: 0;
   width: 100%;
+  container-type: size;
+  display: grid;
+  place-items: center;
 }
+.bq {
+  --p: 0;
+  position: relative;
+  width: min(94cqw, calc(100cqh * 440 / 480));
+  aspect-ratio: 440 / 480;
+  flex: none;
+  animation: settle 1s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+@keyframes settle {
+  from { opacity: 0; transform: translateY(1.8em) scale(0.95); }
+  to { opacity: 1; transform: none; }
+}
+.layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+/* meja 700×310 dengan pusat permukaan (350,70) tepat di bawah kaki tatakan (220,452) */
+.table {
+  position: absolute;
+  left: -29.55%;
+  top: 79.6%;
+  width: 159.1%;
+  max-width: none;
+}
+.tableShade { aspect-ratio: 525 / 233; }
+
+/* redup: siluet sprite yang sama diisi warna malam, hanya opacity yang berubah */
+.shade {
+  background: #170b22;
+  opacity: var(--dim);
+  transition: opacity 0.9s ease;
+  pointer-events: none;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
 .glow {
   position: absolute;
   left: 50%;
-  top: 30%;
-  width: 26em;
-  height: 26em;
-  margin: -13em 0 0 -13em;
+  top: 22%;
+  width: 190%;
+  aspect-ratio: 1;
+  margin: -95% 0 0 -95%;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(255, 190, 92, 0.5), rgba(255, 160, 70, 0.16) 55%, transparent);
-  opacity: calc(var(--lit) * 0.95);
+  background: radial-gradient(closest-side, rgba(255, 200, 112, 0.5), rgba(255, 150, 70, 0.17) 48%, transparent);
+  opacity: var(--lit);
   transition: opacity 0.7s ease;
   pointer-events: none;
 }
-.party .glow {
-  opacity: 0;
-}
-.cake,
-.flames {
-  position: absolute;
-  inset: 0 1.2em;
-  width: calc(100% - 2.4em);
-  height: 100%;
-  overflow: visible;
-}
-.cake {
-  filter: brightness(calc(0.56 + var(--lit) * 0.36)) saturate(calc(0.9 + var(--lit) * 0.1));
-  transition: filter 0.8s ease;
-  animation: settle 0.9s cubic-bezier(0.2, 0.9, 0.2, 1) both;
-}
-.party .cake {
-  filter: brightness(1.02) saturate(1.05);
-}
-@keyframes settle {
-  from { opacity: 0; transform: translateY(1.6em) scale(0.95); }
-  to { opacity: 1; transform: none; }
-}
-.flames {
-  --p: 0;
-}
 
+/* ── lilin ── */
 .candle {
+  position: absolute;
+  width: 10%;
+  aspect-ratio: 44 / 150;
   cursor: pointer;
   outline: none;
 }
-.candle.isLit,
-.locked .candle {
-  cursor: default;
+.candle::before {
+  content: '';
+  position: absolute;
+  inset: -16% -58% -4%;
 }
-.candle:focus-visible .spark {
-  fill: #fff;
-  stroke: #fff;
-  stroke-width: 3;
+.candle:disabled { cursor: default; }
+.stick {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
-.hit {
-  pointer-events: all;
-}
-.spark {
-  fill: #ffcf7a;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: spark 1.5s ease-in-out infinite;
-  animation-delay: calc(var(--i) * -0.3s);
-}
-.isLit .spark,
-.locked .spark {
-  display: none;
-}
-@keyframes spark {
-  0%, 100% { transform: scale(0.7); opacity: 0.55; }
-  50% { transform: scale(1.5); opacity: 1; }
-}
+.isLit .stickShade { opacity: 0.05; }
+.out .stickShade { opacity: var(--dim); }
 
 .halo {
+  position: absolute;
+  left: 50%;
+  top: 6%;
+  width: 440%;
+  aspect-ratio: 1;
+  margin: -220% 0 0 -220%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 232, 160, 0.9), rgba(255, 176, 76, 0.34) 36%, transparent);
   opacity: 0;
   transition: opacity 0.5s ease;
   pointer-events: none;
 }
 .isLit .halo {
-  opacity: calc(0.9 - var(--p) * 0.75);
+  opacity: calc(0.9 - var(--p) * 0.72);
+  animation: haloPulse 1.7s ease-in-out infinite alternate;
+  animation-delay: calc(var(--i) * -0.4s);
 }
-.out .halo {
-  opacity: 0;
+.out .halo { opacity: 0; }
+@keyframes haloPulse {
+  from { transform: scale(0.94); }
+  to { transform: scale(1.06); }
 }
 
-/* tiga lapis <g> supaya tiap transform punya satu tugas */
+/* api: tiga lapis supaya tiap transform punya satu tugas (menyala, condong ditiup, berkedip) */
 .fl {
+  position: absolute;
+  left: 14%;
+  top: -11.5%;
+  width: 72%;
+  aspect-ratio: 70 / 110;
+  transform-origin: 50% 94.5%;
   opacity: 0;
   transform: scale(0);
   transition: opacity 0.2s ease, transform 0.45s cubic-bezier(0.34, 1.8, 0.64, 1);
+  pointer-events: none;
 }
 .isLit .fl {
   opacity: 1;
@@ -244,85 +248,99 @@
   transition: opacity 0.18s ease, transform 0.2s ease-in;
 }
 .lean {
-  transform: skewX(calc(var(--p) * -42deg)) scale(calc(1 - var(--p) * 0.55));
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 94.5%;
+  transform: skewX(calc(var(--p) * -40deg)) scale(calc(1 - var(--p) * 0.5));
 }
 .flick {
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 94.5%;
   animation: flick 0.5s ease-in-out infinite alternate;
   animation-delay: calc(var(--i) * -0.13s);
 }
 @keyframes flick {
-  0% { transform: scale(1, 1) rotate(-2.5deg); }
-  50% { transform: scale(0.94, 1.07) rotate(1.5deg); }
-  100% { transform: scale(1.04, 0.95) rotate(3deg); }
+  0% { transform: scale(1, 1) rotate(-3deg); }
+  50% { transform: scale(0.93, 1.08) rotate(1.5deg); }
+  100% { transform: scale(1.05, 0.94) rotate(3.5deg); }
 }
 
 .smoke {
-  fill: none;
-  stroke: #fff;
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-dasharray: 70;
-  stroke-dashoffset: 70;
+  position: absolute;
+  left: 8%;
+  top: -30%;
+  width: 84%;
   opacity: 0;
+  transform-origin: 50% 100%;
 }
 .out .smoke {
-  animation: smoke 1.5s ease-out both;
-  animation-delay: calc(var(--i) * 0.06s);
+  animation: smoke 1.7s ease-out both;
+  animation-delay: calc(var(--i) * 0.07s);
 }
 @keyframes smoke {
-  0% { stroke-dashoffset: 70; opacity: 0.6; transform: translateY(0); }
-  60% { opacity: 0.4; }
-  100% { stroke-dashoffset: 0; opacity: 0; transform: translateY(-14px); }
+  0% { opacity: 0; transform: translateY(12%) scaleY(0.4); }
+  22% { opacity: 0.85; }
+  100% { opacity: 0; transform: translateY(-46%) scaleY(1.15); }
+}
+
+.spark {
+  position: absolute;
+  left: 50%;
+  top: 18.7%;
+  width: 34%;
+  aspect-ratio: 1;
+  margin: -17% 0 0 -17%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, #fff6d6, rgba(255, 196, 96, 0.7) 45%, transparent);
+  animation: spark 1.5s ease-in-out infinite;
+  animation-delay: calc(var(--i) * -0.3s);
+  pointer-events: none;
+}
+.isLit .spark,
+.locked .spark { display: none; }
+.candle:focus-visible .spark {
+  background: radial-gradient(closest-side, #fff, #fff 55%, transparent);
+}
+@keyframes spark {
+  0%, 100% { transform: scale(0.7); opacity: 0.5; }
+  50% { transform: scale(1.5); opacity: 1; }
 }
 
 /* ── balon ── */
 .balloon {
   position: absolute;
-  z-index: 0;
-  width: 3.5em;
-  height: 4.3em;
-  border-radius: 50% 50% 50% 50% / 46% 46% 54% 54%;
-  background: var(--c);
-  box-shadow: inset -0.5em -0.55em 0 rgba(74, 34, 56, 0.1);
-  animation: balloonIn 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) both, bob 3.6s 1.5s ease-in-out infinite;
-  animation-delay: var(--d), calc(1.5s + var(--d));
+  width: 23%;
+  opacity: 0;
+  transform: translateY(210%);
   pointer-events: none;
 }
-.balloon::before {
-  content: '';
-  position: absolute;
-  left: 22%;
-  top: 16%;
-  width: 22%;
-  height: 26%;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.5);
-  transform: rotate(-24deg);
+.balloon img {
+  width: 100%;
+  filter: drop-shadow(0 0.5em 0.5em rgba(90, 40, 40, 0.22));
 }
-.balloon::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  top: 99%;
-  width: 0.1em;
-  height: 7em;
-  background: linear-gradient(rgba(74, 34, 56, 0.45), rgba(74, 34, 56, 0));
-  border-top: 0.42em solid var(--c);
-  margin-left: -0.05em;
+.party .balloon {
+  animation: balloonIn 1.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: var(--d);
+}
+.party .balloon img {
+  animation: bob 3.8s ease-in-out infinite;
+  animation-delay: var(--d);
 }
 @keyframes balloonIn {
-  from { transform: translateY(34em); }
-  to { transform: translateY(0); }
+  from { opacity: 1; transform: translateY(210%); }
+  to { opacity: 1; transform: translateY(0); }
 }
 @keyframes bob {
-  0%, 100% { translate: 0 0; rotate: -2deg; }
-  50% { translate: 0 -0.55em; rotate: 2deg; }
+  0%, 100% { transform: translateY(0) rotate(-2.5deg); }
+  50% { transform: translateY(-5%) rotate(2.5deg); }
 }
 
 /* ── bagian bawah ── */
 .foot {
   position: relative;
-  z-index: 3;
+  z-index: 4;
   width: 100%;
   height: 11em;
   flex: none;
@@ -332,67 +350,52 @@
   justify-content: flex-start;
   padding: 0.2em 1.5em 0;
 }
+/* doa per lilin: secarik kertas bertulisan tangan */
 .wish {
+  composes: paper from '../kit/kit.module.css';
   position: relative;
   max-width: 100%;
-  padding: 0.8em 1.15em 0.85em 2.6em;
-  border-radius: 0.6em;
-  background: #fff6e6;
+  padding: 0.55em 1.1em 0.6em 2.3em;
+  border-radius: 0.3em;
   color: #3d2440;
-  box-shadow: 0 1.1em 2em -1.1em rgba(0, 0, 0, 0.7);
-  font-family: var(--font-serif, Georgia, serif);
-  font-style: italic;
-  font-size: 1.1em;
-  line-height: 1.32;
-  font-weight: 500;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.62em;
+  line-height: 1.12;
+  font-weight: 600;
   text-align: left;
   text-wrap: pretty;
   overflow-wrap: anywhere;
-  transform-origin: 1.2em 50%;
+  transform-origin: 1em 50%;
   animation: wishIn 0.55s cubic-bezier(0.34, 1.5, 0.64, 1) both;
 }
-.wish::before {
-  content: '';
+.wishIcon {
   position: absolute;
-  left: 0.95em;
+  left: 0.72em;
   top: 50%;
-  width: 0.56em;
-  height: 1.5em;
-  margin-top: -0.6em;
-  border-radius: 0.14em;
-  background: var(--dot, #ffb347);
-}
-.wish::after {
-  content: '';
-  position: absolute;
-  left: 0.95em;
-  top: 50%;
-  width: 0.56em;
-  height: 0.62em;
-  margin-top: -1.3em;
-  border-radius: 50% 50% 50% 50% / 62% 62% 38% 38%;
-  background: #ffb347;
+  width: 0.6em;
+  transform: translateY(-56%) rotate(-7deg);
 }
 @keyframes wishIn {
   from { opacity: 0; transform: rotate(-6deg) translateY(0.9em) scale(0.9); }
-  to { opacity: 1; transform: rotate(-1deg); }
+  to { opacity: 1; transform: rotate(-1.2deg); }
 }
 .count {
   margin-top: 1em;
   display: flex;
-  gap: 0.42em;
+  gap: 0.45em;
 }
 .count i {
   width: 0.5em;
   height: 0.5em;
   border-radius: 50%;
-  background: color-mix(in srgb, currentColor 22%, transparent);
+  background: rgba(255, 241, 220, 0.4);
+  box-shadow: 0 0.05em 0.2em rgba(10, 4, 20, 0.5);
   transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
 }
 .count i.on {
-  background: #ffb347;
-  transform: scale(1.15);
-  box-shadow: 0 0 0.6em #ffb347;
+  background: #ffc15a;
+  transform: scale(1.2);
+  box-shadow: 0 0 0.7em #ffb347;
 }
 
 .blowBox {
@@ -402,31 +405,40 @@
   animation: up 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 .prompt {
-  font-family: var(--font-serif, Georgia, serif);
-  font-style: italic;
-  font-size: 1.12em;
-  font-weight: 500;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.7em;
+  line-height: 1.1;
+  font-weight: 600;
   text-align: center;
+  text-shadow: 0 0.06em 0.5em rgba(20, 8, 30, 0.7);
 }
 .blowBtn {
-  margin-top: 1.05em;
+  margin-top: 0.85em;
   width: 4.9em;
   height: 4.9em;
-  background: radial-gradient(circle at 35% 30%, #ffd08a, #ffb347 60%, #f0962a);
+  background: radial-gradient(circle at 35% 28%, #ffe0a0, #ffb347 58%, #e88a22);
   color: #4a2238;
-  box-shadow: 0 0.9em 1.6em -0.7em rgba(255, 179, 71, 0.9);
+  box-shadow:
+    inset 0 0.1em 0 rgba(255, 255, 255, 0.5),
+    0 0.2em 0 #b96a14,
+    0 1em 1.7em -0.7em rgba(255, 179, 71, 0.95);
   animation: blowPulse 1.8s ease-in-out infinite;
 }
 .blowBtn:active {
   animation: none;
   scale: 0.96;
 }
-.blowBtn b {
+.blowLabel {
+  display: block;
+  text-align: center;
+}
+.blowLabel b {
+  display: block;
   font-size: 1.05em;
   font-weight: 800;
   line-height: 1;
 }
-.blowBtn small {
+.blowLabel small {
   display: block;
   margin-top: 0.25em;
   font-size: 0.6em;
@@ -435,48 +447,54 @@
   text-transform: uppercase;
   opacity: 0.75;
 }
-.blowLabel {
-  display: block;
-  text-align: center;
-}
 @keyframes blowPulse {
   0%, 100% { scale: 1; }
   50% { scale: 1.06; }
 }
 .alt {
-  margin-top: 0.95em;
+  margin-top: 0.9em;
   font-size: 0.78em;
   font-weight: 600;
   color: inherit;
-  opacity: 0.7;
+  opacity: 0.75;
   text-decoration: underline;
   text-underline-offset: 0.2em;
   cursor: pointer;
   animation: up 0.5s ease both;
 }
 
+.sub {
+  composes: paper from '../kit/kit.module.css';
+  padding: 0.18em 0.8em 0.26em;
+  border-radius: 0.2em;
+  color: #3d2440;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.5em;
+  font-weight: 600;
+  line-height: 1.1;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: center;
+  rotate: -1.5deg;
+  animation: up 0.6s 0.5s ease both;
+}
 .cta {
-  margin-top: 0.6em;
-  padding: 0.95em 1.6em;
+  position: relative;
+  margin-top: 0.75em;
+  padding: 0.95em 1.7em;
   border-radius: 99em;
-  background: #ff7a59;
+  background: linear-gradient(180deg, #f7735d, #e0503c);
   color: #fff;
   font-weight: 800;
   font-size: 1em;
   cursor: pointer;
-  box-shadow: 0 0.18em 0 #d9553a, 0 1.2em 1.6em -0.9em rgba(255, 122, 89, 0.9);
+  box-shadow:
+    inset 0 0.08em 0 rgba(255, 255, 255, 0.45),
+    0 0.2em 0 #a83324,
+    0 1.3em 1.8em -0.9em rgba(224, 80, 60, 0.95);
   animation: ctaIn 0.6s 0.9s cubic-bezier(0.34, 1.5, 0.64, 1) both, ctaPulse 1.8s 1.8s ease-in-out infinite;
 }
-.cta:active {
-  transform: translateY(0.1em);
-}
-.sub {
-  margin-top: 0.3em;
-  font-size: 0.92em;
-  font-weight: 600;
-  opacity: 0.7;
-  animation: up 0.6s 0.5s ease both;
-}
+.cta:active { transform: translateY(0.1em); }
 @keyframes ctaIn {
   from { opacity: 0; transform: translateY(0.8em) scale(0.9); }
   to { opacity: 1; transform: none; }
@@ -486,24 +504,6 @@
   50% { scale: 1.04; }
 }
 
-/* ── kartu katalog ── */
-.cover {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  background: radial-gradient(90% 60% at 50% 55%, #4b2e60 0%, #2a1b3d 62%, #1a1029 100%);
-}
-.cover svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.coverFlame {
-  animation: flick 0.6s ease-in-out infinite alternate;
-  animation-delay: calc(var(--i) * -0.13s);
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .flick, .coverFlame, .flag, .spark, .blowBtn, .cta { animation: none; }
+  .flick, .spark, .blowBtn, .cta, .halo { animation: none; }
 }

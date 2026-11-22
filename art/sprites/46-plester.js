@@ -27,10 +27,9 @@
       const L = 34 + R() * 96;
       const bend = (R() - 0.5) * L * 0.5;
       const x2 = x + tx * L, y2 = y + ty * L;
-      const shade = Math.max(0, Math.min(1, ((x - 40) / 520) * 0.55 + ((y - 36) / 488) * 0.55 - 0.08 + (R() - 0.5) * 0.22));
+      const shade = Math.max(0, Math.min(1, ((x - 40) / 520) * 0.55 + ((y - 36) / 488) * 0.55 - 0.08 + (R() - 0.5) * 0.13));
       let c = ramp(pal.ramp, shade);
       if (R() < 0.07) c = mix(c, pal.hi, 0.6);
-      if (R() < 0.05) c = mix(c, pal.deep, 0.5);
       return { d: `M${x},${y}Q${(x + x2) / 2 + (dx / m) * bend},${(y + y2) / 2 + (dy / m) * bend} ${x2},${y2}`, color: jitter(c, 6, R), width: 12 + R() * 26, opacity: 0.4 + R() * 0.45 };
     };
   }
@@ -156,20 +155,32 @@
   // ── latar: dinding biru pucat + meja bertaplak, dengan seikat kamboja di sudut ──
   const TABLE = 944;
   function room(svg, R, { flora = true } = {}) {
-    const wall = [[0, '#c9dfea'], [0.3, '#d9e9ee'], [0.52, '#e9f0ee'], [0.63, '#f1efe6']];
-    F.latar.sky(svg, R, wall, { n: 520, sun: { x: 170, y: 330, r: 90, c: '#fffdf2' }, glow: '#fff9e6' });
-    F.latar.clouds(svg, R, '#ffffff', [[540, 250, 460, 110, 0.5], [230, 620, 520, 90, 0.42], [620, 800, 360, 60, 0.3]]);
-    F.latar.clouds(svg, R, '#f7c9cf', [[360, 440, 420, 44, 0.22]]);
+    // dinding: sapuan tegak biru pucat yang menghangat ke arah meja
+    const wall = [[0, '#bfd8e6'], [0.4, '#d3e5ec'], [0.75, '#e6efec'], [1, '#f1efe3']];
+    wash(svg, { x: -40, y: -30, w: W + 80, h: TABLE + 50, R, n: 560, angle: 84, len: [0.1, 0.26], width: [26, 62], opacity: [0.3, 0.7], base: F.linGrad(svg, wall, 0, 0, 0, TABLE), color: (u, v) => ramp(wall, v + (u - 0.5) * 0.1) });
+    // cahaya jendela jatuh miring di dinding: empat petak terang
+    const light = el('g', { filter: 'url(#softer)', opacity: 0.34 }, svg);
+    for (const d of ['M60,170L300,128L334,420L94,462Z', 'M330,122L560,82L594,374L364,414Z', 'M100,500L340,458L372,740L132,782Z', 'M370,452L600,412L632,694L402,734Z']) el('path', { d, fill: '#fffbea' }, light);
+    dabs(svg, { n: 26, R, filter: 'soft', place: (i, R2) => ({ x: 80 + R2() * 540, y: 120 + R2() * 640, rx: 22 + R2() * 40, ry: 14 + R2() * 22, rot: -10, color: '#ffffff', opacity: 0.12 }) });
     // taplak: sapuan mendatar krem dengan lajur merah muda dan biru
     const cloth = (u, v) => {
-      const stripe = Math.sin(v * 42) > 0.72 ? '#f4c3c8' : Math.sin(v * 42 + 2.1) > 0.9 ? '#bcd6e6' : null;
-      const c = ramp([[0, '#f7ecdc'], [0.5, '#f3e4d0'], [1, '#e6d2ba']], v);
-      return stripe ? mix(c, stripe, 0.55) : c;
+      const stripe = Math.sin(v * 30) > 0.8 ? '#f2b9c0' : Math.sin(v * 30 + 2.1) > 0.93 ? '#b4d0e2' : null;
+      const c = ramp([[0, '#f8eede'], [0.5, '#f4e6d2'], [1, '#e7d4bd']], v);
+      return stripe ? mix(c, stripe, 0.5) : c;
     };
-    wash(svg, { x: -40, y: TABLE, w: W + 80, h: H - TABLE + 20, R, n: 520, angle: 0, len: [0.14, 0.42], width: [8, 22], opacity: [0.4, 0.85], base: '#f3e6d3', filter: 'canvas', color: cloth, clip: `M-40,${TABLE}H${W + 40}V${H + 20}H-40Z` });
-    // tepi meja: garis terang + bayangan dinding di belakangnya
-    el('path', { d: `M-20,${TABLE - 10}H${W + 20}`, stroke: INK, 'stroke-width': 26, 'stroke-opacity': 0.1, filter: 'url(#soft)' }, svg);
-    el('path', { d: `M-20,${TABLE + 2}H${W + 20}`, stroke: '#fffaf0', 'stroke-width': 4, 'stroke-opacity': 0.8, filter: 'url(#blur2)' }, svg);
+    wash(svg, { x: -40, y: TABLE, w: W + 80, h: H - TABLE + 20, R, n: 520, angle: 0, len: [0.14, 0.42], width: [8, 22], opacity: [0.4, 0.85], base: '#f4e7d4', filter: 'canvas', color: cloth, clip: `M-40,${TABLE}H${W + 40}V${H + 20}H-40Z` });
+    // motif kawung samar di taplak
+    const id = F.uid('k');
+    const pt = el('pattern', { id, width: 92, height: 92, patternUnits: 'userSpaceOnUse' }, (svg.ownerSVGElement || svg).querySelector('defs'));
+    for (const [cx, cy] of [[0, 0], [92, 0], [0, 92], [92, 92], [46, 46]]) {
+      for (const an of [45, 135, 225, 315]) el('ellipse', { cx, cy, rx: 18, ry: 8, fill: 'none', stroke: '#a9744f', 'stroke-width': 1.6, transform: `rotate(${an} ${cx} ${cy}) translate(21 0)` }, pt);
+      el('circle', { cx, cy, r: 2.4, fill: '#a9744f' }, pt);
+    }
+    el('rect', { x: -40, y: TABLE, width: W + 80, height: H - TABLE + 20, fill: `url(#${id})`, opacity: 0.2 }, svg);
+    // tepi meja: bayangan di dinding + bibir taplak yang kena cahaya
+    el('path', { d: `M-20,${TABLE - 14}H${W + 20}`, stroke: INK, 'stroke-width': 34, 'stroke-opacity': 0.13, filter: 'url(#soft)' }, svg);
+    el('path', { d: `M-20,${TABLE + 3}H${W + 20}`, stroke: '#fffdf6', 'stroke-width': 6, 'stroke-opacity': 0.9, filter: 'url(#blur2)' }, svg);
+    el('path', { d: `M-20,${TABLE + 22}H${W + 20}`, stroke: '#c9ab8c', 'stroke-width': 10, 'stroke-opacity': 0.25, filter: 'url(#soft)' }, svg);
     if (!flora) return;
     const fr = F.flora;
     // kiri: kamboja dengan dua daun, tergeletak di meja
@@ -193,7 +204,7 @@
     el('ellipse', { cx: 240, cy: 498, rx: 120, ry: 15, fill: INK, opacity: 0.2, filter: 'url(#soft)' }, svg);
     const h = el('g', { transform: 'translate(36 92) scale(0.68) rotate(-3 300 280)' }, svg);
     healed(h, R);
-    [[300, 162, -22, 0], [300, 268, 17, 1], [298, 430, -14, 2]].forEach(([x, y, r, k]) => plaster(el('g', { transform: `translate(${x} ${y}) rotate(${r}) scale(0.82)` }, h), R, KAIN[k]));
+    [[300, 162, -22, 0], [300, 268, 17, 1], [298, 430, -14, 2]].forEach(([x, y, r, k]) => plaster(el('g', { transform: `translate(${x} ${y}) rotate(${r})` }, h), R, KAIN[k]));
     // plester cadangan dan bunga di meja
     plaster(el('g', { transform: 'translate(396 540) rotate(-16) scale(0.6)' }, svg), R, KAIN[3]);
     const fr = F.flora;

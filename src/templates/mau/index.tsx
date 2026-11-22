@@ -1,9 +1,9 @@
 'use client';
 
 import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Confetti, Finale, Hint, Stage, Typewriter, cx, haptic, sfx, useTimers } from '../kit';
+import { Confetti, Finale, Hint, Petals, Sprite, Stage, Typewriter, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
-import { HEART, Pulse, TwoHearts } from './art';
+import { HeartIcon, Pulse } from './art';
 import { meta } from './meta';
 import s from './style.module.css';
 
@@ -22,21 +22,13 @@ const LAST = NO_LABELS.length - 1;
 const WORDS = ['satu', 'dua', 'tiga'];
 const BPM = [82, 96, 111, 127];
 
-/* hati-hati kecil yang melayang di latar: [kiri %, ukuran em, durasi s, jeda s] */
-const FLOATERS: [number, number, number, number][] = [
-  [8, 1.5, 13, 0],
-  [22, 0.9, 10, -4],
-  [38, 1.2, 15, -9],
-  [54, 0.8, 11, -2],
-  [68, 1.6, 14, -7],
-  [82, 1, 12, -11],
-  [93, 1.3, 16, -5],
-];
+const BG = '/art/bg-mau.webp';
+const ART = [BG, 'mau-sudut-atas', 'mau-sudut-bawah'];
 
 export default function Mau(props: TemplateProps) {
   const [run, setRun] = useState(0);
   return (
-    <Stage {...meta.palette}>
+    <Stage {...meta.palette} backdrop={BG}>
       <Scene key={run} {...props} onReplay={() => setRun((v) => v + 1)} />
     </Stage>
   );
@@ -45,6 +37,7 @@ export default function Mau(props: TemplateProps) {
 function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void }) {
   const notes = data.notes.map((t) => t.trim()).filter(Boolean).slice(0, 3);
   const qStep = notes.length + 1;
+  const ready = useArtReady(ART);
   const [step, setStep] = useState(0);
   const [typed, setTyped] = useState(false);
   const [skip, setSkip] = useState(false);
@@ -163,7 +156,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   return (
     <div
       ref={wrap}
-      className={s.wrap}
+      className={cx(s.wrap, ready && s.ready)}
       style={{ ['--beat' as string]: `${(60 / bpm).toFixed(3)}s` } as CSSProperties}
       onClick={story ? advance : undefined}
       role={story ? 'button' : undefined}
@@ -180,23 +173,13 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           : undefined
       }
     >
-      <div className={s.floaters} aria-hidden>
-        {FLOATERS.map(([x, z, dur, delay], i) => (
-          <svg
-            key={i}
-            viewBox="-52 -54 104 94"
-            style={{ left: `${x}%`, width: `${z}em`, animationDuration: `${dur}s`, animationDelay: `${delay}s` }}
-          >
-            <path d={HEART} />
-          </svg>
-        ))}
-      </div>
+      <Petals kinds={['pink', 'merah', 'putih']} count={8} />
+      <Sprite name="mau-sudut-atas" className={s.cornerTop} />
+      <Sprite name="mau-sudut-bawah" className={s.cornerBottom} />
 
       <div className={s.monitor}>
         <div className={s.pill}>
-          <svg viewBox="-52 -54 104 94" className={s.pillHeart} aria-hidden>
-            <path d={HEART} />
-          </svg>
+          <HeartIcon className={s.pillHeart} />
           <span>{data.from ? `detak jantung ${data.from}` : 'detak jantung'}</span>
           <b key={bpm}>{yes ? 'lega' : `${bpm} bpm`}</b>
         </div>
@@ -209,17 +192,27 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
             <>
               <div className={s.eyebrow}>{data.from ? `dari ${data.from}` : 'sebentar ya'}</div>
               <div className={cx(s.hai, (data.to || '').length > 10 && s.haiSmall)}>Hai, {data.to || 'kamu'}.</div>
+              <div className={s.lineSub}>
+                {skip ? text : <Typewriter text={text} speed={34} onDone={() => setTyped(true)} />}
+              </div>
             </>
           ) : (
-            <div className={s.eyebrow}>{WORDS[step - 1] ?? step}</div>
+            <div className={cx(s.note, step % 2 ? s.noteL : s.noteR)}>
+              <span className={s.tape} />
+              <span className={s.noteNo}>{WORDS[step - 1] ?? step}</span>
+              {skip ? text : <Typewriter text={text} speed={30} onDone={() => setTyped(true)} />}
+            </div>
           )}
-          <div className={cx(s.line, step === 0 && s.lineSub)}>
-            {skip ? text : <Typewriter text={text} speed={step === 0 ? 34 : 30} onDone={() => setTyped(true)} />}
-          </div>
         </div>
       ) : yes ? (
         <div className={s.body} key="yes">
-          <TwoHearts className={s.hearts} />
+          <div className={s.hearts} aria-hidden>
+            <Sprite name="mau-hati-kecil" className={s.heartB} />
+            <Sprite name="mau-hati-besar" className={s.heartA} />
+            <Sprite name="mau-kilau" className={cx(s.spark, s.spark1)} />
+            <Sprite name="mau-kilau" className={cx(s.spark, s.spark2)} />
+            <Sprite name="mau-kilau" className={cx(s.spark, s.spark3)} />
+          </div>
           <div className={s.yeay}>Yeay!</div>
           <div className={s.pair}>
             {data.to || 'Kamu'} <i>&amp;</i> {data.from || 'aku'}
@@ -227,7 +220,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         </div>
       ) : (
         <div className={cx(s.body, s.ask)} key="ask">
-          <div ref={askRef}>
+          <div ref={askRef} className={s.qcard}>
+            <span className={s.tape} />
             <div className={s.eyebrow}>jadi, {data.to || 'kamu'}…</div>
             <div className={cx(s.question, question.length > 26 && s.questionSmall)}>{question}</div>
             <div className={s.tease} key={tries}>
@@ -272,34 +266,33 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       </div>
 
       {asking ? (
-        <button
-          ref={noRef}
-          type="button"
-          className={cx(s.no, tries >= LAST && s.noGiveUp, tries > 0 && tries < LAST && s.noRun)}
-          style={
-            {
-              left: pos ? `${pos.x}%` : '50%',
-              top: pos ? `${pos.y}%` : '50%',
-              visibility: pos ? 'visible' : 'hidden',
-              '--tilt': `${tries === 0 || tries >= LAST ? 0 : tries % 2 ? -7 : 6}deg`,
-            } as CSSProperties
-          }
-          onPointerEnter={(e) => {
-            if (e.pointerType === 'mouse') dodge();
-          }}
-          onPointerDown={(e) => {
-            if (triesRef.current >= LAST) return;
-            e.preventDefault();
-            dodge();
-          }}
-          onClick={() => {
-            if (performance.now() - lastTry.current < 420) return;
-            if (triesRef.current >= LAST) sayYes();
-            else dodge();
-          }}
+        // lapis seukuran stage: translate dalam % = posisi tombol di stage
+        <div
+          className={s.noLayer}
+          style={{ transform: `translate(${pos ? pos.x : 50}%, ${pos ? pos.y : 50}%)`, visibility: pos ? 'visible' : 'hidden' }}
         >
-          {NO_LABELS[Math.min(tries, LAST)]}
-        </button>
+          <button
+            ref={noRef}
+            type="button"
+            className={cx(s.no, tries >= LAST && s.noGiveUp, tries > 0 && tries < LAST && s.noRun)}
+            style={{ '--tilt': `${tries === 0 || tries >= LAST ? 0 : tries % 2 ? -7 : 6}deg` } as CSSProperties}
+            onPointerEnter={(e) => {
+              if (e.pointerType === 'mouse') dodge();
+            }}
+            onPointerDown={(e) => {
+              if (triesRef.current >= LAST) return;
+              e.preventDefault();
+              dodge();
+            }}
+            onClick={() => {
+              if (performance.now() - lastTry.current < 420) return;
+              if (triesRef.current >= LAST) sayYes();
+              else dodge();
+            }}
+          >
+            {NO_LABELS[Math.min(tries, LAST)]}
+          </button>
+        </div>
       ) : null}
 
       {story ? <Hint>Ketuk untuk lanjut</Hint> : null}
@@ -317,7 +310,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           data={{ ...data, title: 'Kamu bilang mau.' }}
           mode={mode}
           eyebrow={data.from ? `Pesan dari ${data.from}` : 'Pesan buatmu'}
-          theme={{ bg: 'linear-gradient(#ffe6ec, #ffc6d4)', ink: '#4a1830', paper: '#fffafb', paperInk: '#4a1830' }}
+          flower="bunga-kamboja-pink"
+          theme={{ backdrop: BG, ink: '#5a1730', paper: '#fffaf6', paperInk: '#4a1830' }}
           onReplay={onReplay}
         />
       ) : null}

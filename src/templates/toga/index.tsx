@@ -1,37 +1,38 @@
 'use client';
 
-import { type CSSProperties, type PointerEvent, type ReactNode, useEffect, useRef, useState } from 'react';
-import { Confetti, Finale, Hint, Stage, cx, haptic, sfx, useTimers } from '../kit';
+import { type CSSProperties, type PointerEvent, useRef, useState } from 'react';
+import { Confetti, Finale, Hint, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
-import { CapArt, RollArt, Seal } from './art';
 import { meta } from './meta';
 import s from './style.module.css';
 
 type Phase = 'ready' | 'thrown' | 'scroll' | 'open';
 
 const GOLD = ['#f2c14e', '#ffe08a', '#fff7dd', '#d99f2b', '#7fa4f0', '#ffffff'];
+const ART = ['bg-toga', 'toga-topi', 'toga-rumbai', 'toga-topi-kecil', 'toga-gulungan', 'toga-pita', 'toga-batang', 'toga-segel', 'toga-bintang'];
 
+/** Bintang lukisan yang berkelip: [kiri, atas, ukuran]. */
 const STARS: [string, string, string][] = [
-  ['8%', '9%', '0.7em'], ['24%', '4%', '0.45em'], ['78%', '7%', '0.55em'], ['91%', '21%', '0.8em'], ['5%', '31%', '0.5em'],
-  ['86%', '43%', '0.45em'], ['12%', '55%', '0.75em'], ['93%', '62%', '0.6em'], ['6%', '76%', '0.45em'], ['82%', '81%', '0.7em'],
-  ['30%', '88%', '0.4em'], ['64%', '92%', '0.5em'],
+  ['7%', '8%', '1.5em'], ['25%', '3.5%', '0.9em'], ['76%', '6%', '1.1em'], ['90%', '20%', '1.6em'], ['4%', '30%', '1em'],
+  ['85%', '42%', '0.9em'], ['10%', '52%', '1.4em'], ['92%', '60%', '1.1em'],
 ];
 
 /** Topi-topi lain yang ikut dilempar: [x, lebar, tunda, durasi, puncak, putaran, geser]. */
 const FLYERS: [string, string, string, string, string, string, string][] = [
-  ['4%', '4.6em', '0.05s', '2.3s', '-36em', '420deg', '2em'],
-  ['72%', '5.2em', '0.12s', '2.5s', '-41em', '-500deg', '-2.5em'],
-  ['30%', '3.4em', '0.22s', '2.1s', '-30em', '-380deg', '-1.5em'],
-  ['52%', '3.8em', '0.3s', '2.4s', '-44em', '560deg', '1.5em'],
-  ['84%', '3.2em', '0.4s', '2.2s', '-28em', '360deg', '-1em'],
-  ['14%', '3.6em', '0.5s', '2.6s', '-46em', '-620deg', '3em'],
-  ['60%', '4.2em', '0.62s', '2.3s', '-33em', '440deg', '-2em'],
+  ['2%', '5.6em', '0.05s', '2.3s', '-36em', '420deg', '2em'],
+  ['68%', '6.2em', '0.12s', '2.5s', '-41em', '-500deg', '-2.5em'],
+  ['28%', '4.2em', '0.22s', '2.1s', '-30em', '-380deg', '-1.5em'],
+  ['50%', '4.8em', '0.3s', '2.4s', '-44em', '560deg', '1.5em'],
+  ['82%', '4em', '0.4s', '2.2s', '-28em', '360deg', '-1em'],
+  ['12%', '4.4em', '0.5s', '2.6s', '-46em', '-620deg', '3em'],
+  ['58%', '5.2em', '0.62s', '2.3s', '-33em', '440deg', '-2em'],
 ];
 
 export default function Toga(props: TemplateProps) {
   const [run, setRun] = useState(0);
   return (
-    <Stage {...meta.palette}>
+    // tinta Stage sengaja gelap (untuk vignette & petunjuk); warna teks adegan diatur di .wrap
+    <Stage bg={meta.palette.bg} ink="#0d1638" accent={meta.palette.accent} backdrop="/art/bg-toga.webp" className={s.stage}>
       <Scene key={run} {...props} onReplay={() => setRun((v) => v + 1)} />
     </Stage>
   );
@@ -39,6 +40,7 @@ export default function Toga(props: TemplateProps) {
 
 function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void }) {
   const notes = data.notes.map((n) => n.trim()).filter(Boolean).slice(0, 3);
+  const ready = useArtReady(ART);
   const [phase, setPhase] = useState<Phase>('ready');
   const [shown, setShown] = useState(0);
   const [finale, setFinale] = useState(false);
@@ -126,16 +128,16 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const title = data.title || 'Selamat wisuda!';
 
   return (
-    <div className={cx(s.wrap, after && s.thrown)}>
+    <div className={cx(s.wrap, ready && s.ready, after && s.thrown)}>
       {STARS.map(([left, top, size], i) => (
-        <span key={i} className={s.star} style={{ left, top, '--s': size, '--i': i } as CSSProperties} />
+        <Sprite key={i} name="toga-bintang" className={s.star} style={{ left, top, width: size, '--i': i } as CSSProperties} />
       ))}
 
       {after ? (
         <div className={s.sky} aria-hidden>
           {FLYERS.map(([x, w, d, t, peak, rot, dx], i) => (
             <span key={i} className={s.flyer} style={{ '--x': x, '--w': w, '--d': d, '--t': t, '--peak': peak, '--rot': rot, '--dx': dx } as CSSProperties}>
-              <CapArt swing={false} />
+              <Sprite name="toga-topi-kecil" />
             </span>
           ))}
         </div>
@@ -147,61 +149,63 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         {data.from ? <div className={s.from}>dari {data.from}</div> : null}
       </div>
 
-      <div className={cx(s.mid, (phase === 'open' || (!notes.length && phase === 'scroll')) && s.center)}>
+      <div className={cx(s.mid, !notes.length && phase === 'scroll' && s.center)}>
         {notes.length ? (
-          <div className={cx(s.ribWrap, phase === 'open' && s.hide)} aria-live="polite">
-            <div className={s.ribbons}>
-              {notes.slice(0, shown).map((t, i) => (
-                <div key={i} className={s.ribbon}>
-                  <span className={s.face}>{t}</span>
-                </div>
-              ))}
-            </div>
+          <div className={cx(s.ribbons, phase === 'open' && s.hide)} aria-live="polite">
+            {notes.slice(0, shown).map((t, i) => (
+              <div key={i} className={s.ribbon}>
+                {t}
+              </div>
+            ))}
           </div>
         ) : null}
 
         {phase === 'scroll' || phase === 'open' ? (
-          <div className={s.scrollBox}>
-            <button
-              type="button"
-              className={cx(s.rolled, phase === 'open' && s.gone)}
-              onClick={openScroll}
-              aria-label="Buka gulungan ucapan"
-              tabIndex={phase === 'open' ? -1 : 0}
-            >
-              <RollArt />
-            </button>
-            {phase === 'open' ? (
-              <div className={s.sheet}>
-                <div className={s.rod} />
-                <Unroll>
-                  <div className={s.paperIn}>
-                    <div className={s.pEyebrow}>dengan bangga</div>
-                    <div className={cx(s.pTitle, title.length > 22 && s.small)}>{title}</div>
-                    <div className={s.rule}>
-                      <i />
+          <button
+            type="button"
+            className={cx(s.rolled, phase === 'open' && s.gone)}
+            onClick={openScroll}
+            aria-label="Buka gulungan ucapan"
+            tabIndex={phase === 'open' ? -1 : 0}
+          >
+            <Sprite name="toga-gulungan" />
+          </button>
+        ) : null}
+
+        {phase === 'open' ? (
+          <div className={s.sheetBox}>
+            <div className={s.sheet}>
+              <Sprite name="toga-batang" className={s.rod} />
+              <div className={s.unroll}>
+                {/* jendela yang turun sementara isinya diam: kertas terbuka dari atas tanpa meregang */}
+                <div className={s.reveal}>
+                  <div className={s.revealIn}>
+                    <div className={s.paper}>
+                      <div className={s.paperIn}>
+                        <div className={s.pEyebrow}>dengan bangga</div>
+                        <div className={cx(s.pTitle, title.length > 22 && s.small)}>{title}</div>
+                        <div className={s.rule}>
+                          <i />
+                        </div>
+                        <div className={s.pFor}>
+                          {data.to ? `untuk ${data.to}` : 'untuk kamu'}
+                          {data.from ? (
+                            <>
+                              <br />
+                              dari {data.from}
+                            </>
+                          ) : null}
+                        </div>
+                      </div>
                     </div>
-                    <div className={s.pFor}>
-                      {data.to ? (
-                        <>
-                          untuk <b>{data.to}</b>
-                        </>
-                      ) : (
-                        'untuk kamu'
-                      )}
-                      {data.from ? (
-                        <>
-                          <br />
-                          dari {data.from}
-                        </>
-                      ) : null}
-                    </div>
-                    <Seal className={s.seal} />
                   </div>
-                </Unroll>
-                <div className={s.rod} />
+                </div>
+                <div className={s.rodTrack}>
+                  <Sprite name="toga-batang" className={cx(s.rod, s.rodBottom)} />
+                  <Sprite name="toga-segel" className={s.seal} />
+                </div>
               </div>
-            ) : null}
+            </div>
           </div>
         ) : null}
 
@@ -232,7 +236,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               }}
               tabIndex={after ? -1 : 0}
             >
-              <CapArt />
+              <Sprite name="toga-topi" className={s.capImg} />
+              <Sprite name="toga-rumbai" className={s.tassel} />
             </button>
           </div>
         ) : null}
@@ -263,25 +268,11 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           data={data}
           mode={mode}
           eyebrow="Isi gulungannya"
-          theme={{ bg: 'linear-gradient(#1b3464, #0d1a36)', ink: '#fdf6e3', paper: '#fff9ea', paperInk: '#24304f' }}
+          flower="bunga-kamboja"
+          theme={{ backdrop: '/art/bg-toga.webp', ink: '#fdf6e3', paper: '#fff7e6', paperInk: '#24304f' }}
           onReplay={onReplay}
         />
       ) : null}
-    </div>
-  );
-}
-
-/** Kertas yang membuka dari atas ke bawah setelah terpasang. */
-function Unroll({ children }: { children: ReactNode }) {
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    // buka di frame berikutnya supaya transisinya berjalan
-    const id = requestAnimationFrame(() => setOpen(true));
-    return () => cancelAnimationFrame(id);
-  }, []);
-  return (
-    <div className={cx(s.unroll, open && s.open)}>
-      <div className={s.paper}>{children}</div>
     </div>
   );
 }

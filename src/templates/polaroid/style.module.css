@@ -5,55 +5,11 @@
   flex-direction: column;
   align-items: center;
   overflow: hidden;
-  background:
-    radial-gradient(75% 42% at 50% 56%, #edf4ee 0%, transparent 100%),
-    repeating-linear-gradient(90deg, rgba(34, 48, 42, 0.022) 0 0.06em, transparent 0.06em 1.7em),
-    linear-gradient(#e2ece5, #cbdbd0);
+  opacity: 0;
+  transition: opacity 0.5s ease;
 }
-
-/* ── hiasan meja ── */
-.ring {
-  position: absolute;
-  left: -3.4em;
-  bottom: 3.2em;
-  width: 9em;
-  height: 9em;
-  border-radius: 50%;
-  border: 0.42em solid rgba(110, 78, 46, 0.1);
-  box-shadow: 0.3em 0.2em 0 -0.12em rgba(110, 78, 46, 0.07);
-  pointer-events: none;
-}
-.scrap {
-  position: absolute;
-  pointer-events: none;
-  opacity: 0.75;
-}
-.scrap1 {
-  right: 1.4em;
-  top: 10.6em;
-  width: 3.4em;
-  height: 1.15em;
-  background: #f2c94c;
-  transform: rotate(24deg);
-  opacity: 0.55;
-}
-.scrap2 {
-  left: 1.1em;
-  top: 12.4em;
-  width: 1.1em;
-  height: 1.1em;
-  background: #ef6f4c;
-  transform: rotate(-18deg);
-  opacity: 0.4;
-}
-.scrap3 {
-  right: -0.9em;
-  bottom: 8.4em;
-  width: 4.2em;
-  height: 1.15em;
-  background: #7fb2a0;
-  transform: rotate(-32deg);
-  opacity: 0.6;
+.wrap.ready {
+  opacity: 1;
 }
 
 /* ── kepala ── */
@@ -61,7 +17,7 @@
   position: relative;
   z-index: 2;
   margin-top: 4.2em;
-  min-height: 7em;
+  min-height: 7.2em;
   padding: 0 1.5em;
   text-align: center;
   pointer-events: none;
@@ -72,9 +28,9 @@
 .eyebrow {
   font-size: 0.74em;
   font-weight: 800;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  opacity: 0.55;
+  opacity: 0.66;
 }
 .name {
   margin-top: 0.15em;
@@ -92,10 +48,12 @@
   line-height: 1.1;
 }
 .from {
-  margin-top: 0.4em;
-  font-size: 0.92em;
+  margin-top: 0.05em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.55em;
   font-weight: 600;
-  opacity: 0.62;
+  line-height: 1.1;
+  opacity: 0.82;
 }
 @keyframes up {
   from { opacity: 0; transform: translateY(0.7em); }
@@ -120,24 +78,23 @@
   left: 50%;
   top: 50%;
   width: 16.6em;
-  height: 19.4em;
-  margin: -9.7em 0 0 -8.3em;
+  height: 19.6em;
+  margin: -9.8em 0 0 -8.3em;
   padding: 0.8em 0.8em 0;
   display: block;
-  background: linear-gradient(#fffefb, #f8f5ee);
-  border-radius: 0.22em;
-  box-shadow: 0 0 0 1px rgba(34, 48, 42, 0.06), 0 0.1em 0.15em rgba(34, 48, 42, 0.12), 0 1.2em 2em -1.2em rgba(34, 48, 42, 0.5);
-  color: #2b2a26;
+  composes: paper from '../kit/kit.module.css';
+  --paper: #fbf6ea;
+  border-radius: 0.2em;
+  color: #3b2a22;
   text-align: center;
   transform: translate(var(--x), var(--y)) rotate(var(--r)) scale(var(--s));
-  transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.15), opacity 0.35s ease, box-shadow 0.3s;
+  transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.15), opacity 0.35s ease;
   touch-action: none;
   -webkit-touch-callout: none;
   outline-offset: 0.3em;
 }
 .card.top {
   cursor: grab;
-  box-shadow: 0 0 0 1px rgba(34, 48, 42, 0.06), 0 0.1em 0.15em rgba(34, 48, 42, 0.12), 0 1.8em 2.6em -1.4em rgba(34, 48, 42, 0.6);
 }
 .card.top:active {
   cursor: grabbing;
@@ -151,20 +108,15 @@
   pointer-events: none;
   transition: transform 0.6s cubic-bezier(0.3, 0.1, 0.55, 1), opacity 0.25s 0.33s;
 }
+/* selotip kertas yang dilukis */
 .tape {
   position: absolute;
   left: 50%;
-  top: -0.7em;
-  width: 4.6em;
-  height: 1.45em;
-  margin-left: -2.3em;
-  background:
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.28) 0 0.16em, transparent 0.16em 0.5em),
-    var(--tape);
-  opacity: 0.86;
-  transform: rotate(-2.5deg);
-  box-shadow: 0 0.05em 0.1em rgba(0, 0, 0, 0.12);
-  pointer-events: none;
+  top: -1.25em;
+  width: 6.2em;
+  max-width: none;
+  margin-left: -3.1em;
+  transform: rotate(var(--tr, -3deg));
 }
 .photo {
   position: relative;
@@ -172,137 +124,173 @@
   width: 100%;
   aspect-ratio: 1;
   overflow: hidden;
-  background: #e9e6df;
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(60, 30, 20, 0.1), inset 0 0.12em 0.3em rgba(60, 30, 20, 0.22);
   pointer-events: none;
 }
-.photo img {
+.photo:not(.blank) {
+  background: #e9e2d2;
+}
+.photo:not(.blank) img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+/* kilap tipis + bayangan dalam, supaya foto terasa menempel di kertas */
 .photo::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.22), transparent 38%);
+  background: linear-gradient(135deg, rgba(255, 252, 240, 0.2), transparent 40%);
+  box-shadow: inset 0 0 0 1px rgba(60, 30, 20, 0.1), inset 0 0.12em 0.3em rgba(60, 30, 20, 0.22);
   pointer-events: none;
 }
+/* kartu tanpa foto: kertas berwarna dengan tulisan tangan */
 .blank {
   display: grid;
   place-items: center;
-  padding: 1.2em;
-  background-image:
-    radial-gradient(rgba(255, 255, 255, 0.55) 0.12em, transparent 0.13em);
-  background-size: 1.1em 1.1em;
+  padding: 1.1em;
+  composes: paper from '../kit/kit.module.css';
+  box-shadow: inset 0 0 0 1px rgba(60, 30, 20, 0.08);
+  overflow: visible;
+}
+.blank::after {
+  display: none;
 }
 .quote {
-  font-family: var(--font-serif, Georgia, serif);
-  font-style: italic;
-  font-weight: 500;
-  font-size: 1.5em;
-  line-height: 1.22;
+  font-family: var(--font-hand, cursive);
+  font-weight: 600;
+  font-size: 2.15em;
+  line-height: 1.05;
   text-wrap: balance;
   overflow-wrap: anywhere;
-  color: #2b2a26;
+  color: #3b2a22;
+}
+.blankFlower {
+  position: absolute;
+  right: -0.7em;
+  bottom: -0.7em;
+  width: 3.6em;
+  height: auto;
+  max-width: none;
+  transform: rotate(18deg);
+  filter: drop-shadow(0 0.15em 0.15em rgba(60, 30, 20, 0.25));
 }
 .cap {
   display: grid;
   place-items: center;
-  height: 3.1em;
-  padding: 0 0.2em;
-  font-family: var(--font-serif, Georgia, serif);
-  font-style: italic;
-  font-weight: 500;
-  font-size: 1.04em;
-  line-height: 1.15;
+  height: 2.05em;
+  padding: 0 0.1em;
+  font-family: var(--font-hand, cursive);
+  font-weight: 600;
+  font-size: 1.62em;
+  line-height: 0.95;
   text-wrap: balance;
   overflow-wrap: anywhere;
   pointer-events: none;
 }
 
-/* ── surat di paling bawah ── */
+/* ── surat di paling bawah: kertas terlipat, disegel sekuntum kamboja ── */
 .note {
   position: absolute;
   left: 50%;
   top: 50%;
   width: 16em;
-  height: 11.6em;
-  margin: -5.8em 0 0 -8em;
+  height: 11.8em;
+  margin: -5.9em 0 0 -8em;
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-radius: 0.3em;
-  background: #fffdf6;
-  color: #2b2a26;
-  box-shadow: 0 0 0 1px rgba(34, 48, 42, 0.07), 0 1.2em 2em -1.2em rgba(34, 48, 42, 0.5);
+  border-radius: 0.25em;
+  composes: paper from '../kit/kit.module.css';
+  --paper: #fffaf0;
+  color: #3b2a22;
   transform: rotate(-2.5deg) scale(0.94);
-  transition: transform 0.6s cubic-bezier(0.34, 1.5, 0.64, 1), box-shadow 0.4s;
-  overflow: hidden;
+  transition: transform 0.6s cubic-bezier(0.34, 1.5, 0.64, 1);
   pointer-events: none;
 }
 .noteTop {
   pointer-events: auto;
   cursor: pointer;
   transform: rotate(-1.5deg) scale(1.06);
-  box-shadow: 0 0 0 1px rgba(34, 48, 42, 0.07), 0 1.8em 2.6em -1.3em rgba(34, 48, 42, 0.6);
   animation: nudge 2.4s 0.9s ease-in-out infinite;
 }
 @keyframes nudge {
   0%, 100% { transform: rotate(-1.5deg) scale(1.06); }
   50% { transform: rotate(1.2deg) scale(1.09); }
 }
+/* lipatan atas: sedikit lebih teduh, dengan bayangan di tepinya */
 .noteFlap {
   position: absolute;
   left: 0;
   right: 0;
   top: 0;
-  height: 46%;
-  background: linear-gradient(#f4eddd, #f9f3e6);
-  box-shadow: 0 0.12em 0.3em rgba(34, 48, 42, 0.14);
+  height: 45%;
+  border-radius: 0.25em 0.25em 0 0;
+  background: linear-gradient(rgba(120, 80, 40, 0.1), rgba(120, 80, 40, 0.02));
+  box-shadow: 0 0.14em 0.3em rgba(60, 30, 20, 0.2);
 }
 .noteEyebrow {
   position: relative;
-  margin-top: 1.9em;
+  margin-top: 1.5em;
   font-size: 0.66em;
   font-weight: 800;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  opacity: 0.5;
+  opacity: 0.55;
 }
 .sticker {
   position: absolute;
   left: 50%;
-  top: 46%;
-  width: 2.7em;
-  height: 2.7em;
-  margin: -1.35em 0 0 -1.35em;
-  filter: drop-shadow(0 0.1em 0.12em rgba(120, 50, 30, 0.35));
-  transform: rotate(-8deg);
+  top: 45%;
+  width: 5.4em;
+  height: 5.4em;
+  margin: -2.9em 0 0 -2.7em;
+  filter: drop-shadow(0 0.25em 0.25em rgba(60, 30, 20, 0.3));
+  pointer-events: none;
+}
+.sticker img {
+  position: absolute;
+  max-width: none;
+}
+.stickerLeaf {
+  width: 34%;
+  left: 2%;
+  top: 30%;
+  transform: rotate(-72deg);
+}
+.stickerLeaf2 {
+  width: 32%;
+  left: 62%;
+  top: 28%;
+  transform: rotate(106deg);
+}
+.stickerFlower {
+  width: 66%;
+  left: 17%;
+  top: 14%;
 }
 .noteTo {
   position: relative;
-  margin-top: 3.3em;
-  padding: 0 0.8em;
-  font-family: var(--font-serif, Georgia, serif);
-  font-style: italic;
-  font-weight: 500;
-  font-size: 1.5em;
-  line-height: 1.1;
+  margin-top: 2.05em;
+  padding: 0 0.6em;
+  font-family: var(--font-hand, cursive);
+  font-weight: 700;
+  font-size: 2.1em;
+  line-height: 1;
   overflow-wrap: anywhere;
   text-wrap: balance;
 }
 .noteTo.long {
-  margin-top: 4.2em;
-  font-size: 1.15em;
+  margin-top: 2.7em;
+  font-size: 1.6em;
 }
 .noteOpen {
   position: relative;
-  margin-top: 0.5em;
+  margin-top: 0.35em;
   font-size: 0.74em;
   font-weight: 700;
-  opacity: 0.5;
+  opacity: 0.55;
 }
 
 /* ── kaki ── */
@@ -320,39 +308,15 @@
 .count {
   padding: 0.38em 0.95em;
   border-radius: 99em;
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 250, 236, 0.78);
+  box-shadow: 0 0.1em 0.4em rgba(60, 30, 20, 0.18);
   font-size: 0.86em;
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: color-mix(in srgb, var(--ink) 70%, transparent);
+  color: color-mix(in srgb, var(--ink) 75%, transparent);
   font-variant-numeric: tabular-nums;
 }
 .count b {
   color: var(--accent);
   font-weight: 800;
-}
-
-/* ── kartu katalog ── */
-.cover {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  background:
-    radial-gradient(75% 45% at 50% 55%, #edf4ee 0%, transparent 100%),
-    linear-gradient(#e2ece5, #cbdbd0);
-}
-.cover > svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.coverTop {
-  transform-box: fill-box;
-  transform-origin: 50% 80%;
-  animation: coverSway 5s ease-in-out infinite;
-}
-@keyframes coverSway {
-  0%, 100% { transform: rotate(-1.2deg); }
-  50% { transform: rotate(1.4deg); }
 }

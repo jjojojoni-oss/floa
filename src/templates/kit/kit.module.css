@@ -229,14 +229,16 @@
   position: absolute;
   inset: 0;
   z-index: 40;
-  background-size: cover;
-  background-position: center bottom;
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y;
   scrollbar-width: none;
   background: var(--f-bg, var(--bg, #fbf6ee));
+  /* setelah shorthand di atas, supaya latar lukisan (theme.backdrop) tetap memenuhi layar */
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
   color: var(--f-ink, var(--ink, #1e1b18));
   animation: finaleIn 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }

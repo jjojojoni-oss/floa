@@ -4,41 +4,31 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='56'%3E%3Cpath d='M28 22v12M22 28h12' stroke='%2324323b' stroke-opacity='.07' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E") 0 0 / 3.5em 3.5em,
-    radial-gradient(70% 40% at 50% 46%, #ffffff 0%, transparent 100%),
-    linear-gradient(#eef6f9, #d6e7ef);
+  opacity: 0;
+  transition: opacity 0.5s ease;
 }
-.blob {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(2.6em);
-  opacity: 0.6;
-  pointer-events: none;
-}
-.blob1 { width: 14em; height: 14em; left: -6em; top: 4em; background: #ffd9dc; }
-.blob2 { width: 16em; height: 16em; right: -7em; bottom: 6em; background: #c7e3f1; }
+.wrap.ready { opacity: 1; }
 
 .head {
   position: relative;
-  z-index: 2;
-  margin-top: 4.3em;
-  min-height: 7em;
-  padding: 0 2.4em;
+  z-index: 3;
+  margin-top: 4.2em;
+  min-height: 7.2em;
+  padding: 0 2.2em;
   text-align: center;
 }
 .eyebrow {
   font-size: 0.74em;
   font-weight: 800;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  opacity: 0.55;
+  opacity: 0.62;
 }
 .name {
-  margin-top: 0.15em;
+  margin-top: 0.12em;
   font-family: var(--font-serif, Georgia, serif);
   font-variation-settings: 'SOFT' 100;
-  font-size: 3em;
+  font-size: 3.1em;
   line-height: 1.03;
   font-weight: 600;
   letter-spacing: -0.025em;
@@ -48,10 +38,11 @@
 }
 .name.small { font-size: 2.15em; line-height: 1.1; }
 .from {
-  margin-top: 0.45em;
-  font-size: 0.92em;
+  margin-top: 0.1em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.55em;
   font-weight: 600;
-  opacity: 0.62;
+  opacity: 0.8;
   animation: up 0.7s 0.1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 @keyframes up {
@@ -59,175 +50,183 @@
   to { opacity: 1; transform: none; }
 }
 
+/* ── papan 600×800: hati lukisan di atas, nampan di bawah ── */
 .art {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   flex: 1;
   min-height: 0;
   width: 100%;
+  container-type: size;
+  display: grid;
+  place-items: center;
 }
-.svg {
-  position: absolute;
-  inset: 0 0.2em;
-  width: calc(100% - 0.4em);
-  height: 100%;
-  overflow: visible;
-  animation: settle 0.8s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+.board {
+  position: relative;
+  width: min(100cqw, calc(100cqh * 0.75));
+  aspect-ratio: 3 / 4;
+  flex: none;
+  animation: settle 0.9s cubic-bezier(0.2, 0.9, 0.2, 1) both;
 }
 @keyframes settle {
   from { opacity: 0; transform: translateY(1.6em) scale(0.95); }
   to { opacity: 1; transform: none; }
 }
+.shadow {
+  position: absolute;
+  left: 24%;
+  top: 66.5%;
+  width: 52%;
+  height: 5.5%;
+  background: radial-gradient(closest-side, rgba(58, 29, 18, 0.3), transparent);
+  transform: scaleX(calc(1 + var(--gap) * 0.12));
+  transition: transform 0.8s ease;
+}
+.tray {
+  position: absolute;
+  left: 3.33%;
+  top: 73%;
+  width: 93.34%;
+  transition: opacity 0.9s 0.3s ease, transform 0.9s 0.3s ease;
+}
+.healed .tray {
+  opacity: 0;
+  transform: translateY(6%) scale(0.96);
+}
 
-/* ── hati ── */
-.heart {
-  transform-origin: 150px 150px;
-  animation: ache 3.2s ease-in-out infinite;
+/* hati + plester berdenyut bersama setelah pulih */
+.beat {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 35%;
+  pointer-events: none;
 }
-@keyframes ache {
-  0%, 100% { transform: rotate(-1.2deg); }
-  50% { transform: rotate(1.2deg) translateY(2px); }
-}
-.healed .heart {
-  animation: beat 1.15s ease-in-out infinite;
-}
+.healed .beat { animation: beat 1.15s 0.9s ease-in-out infinite; }
 @keyframes beat {
   0%, 100% { transform: scale(1); }
-  14% { transform: scale(1.07); }
+  14% { transform: scale(1.06); }
   28% { transform: scale(1); }
-  42% { transform: scale(1.05); }
+  42% { transform: scale(1.04); }
   60% { transform: scale(1); }
 }
+.heart {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  aspect-ratio: 600 / 560;
+}
+.layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+/* belahan merapat seiring plester ditempel; porosnya di ujung bawah hati */
 .halfL,
 .halfR {
-  transform-origin: 150px 262px;
-  transition: transform 0.8s cubic-bezier(0.34, 1.4, 0.64, 1);
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 93.6%;
+  transition: transform 0.8s cubic-bezier(0.34, 1.4, 0.64, 1), opacity 0.9s 0.25s ease;
 }
-.halfL { transform: translateX(calc(var(--gap) * -11px)) rotate(calc(var(--gap) * -5.5deg)); }
-.halfR { transform: translateX(calc(var(--gap) * 11px)) rotate(calc(var(--gap) * 5.5deg)); }
-.fillL { fill: #dba4ab; transition: fill 1s ease; }
-.fillR { fill: #cf959d; transition: fill 1s ease; }
-.healed .fillL { fill: #f46f72; }
-.healed .fillR { fill: #ea5f65; }
-
-.cracks path {
-  fill: none;
-  stroke: #7c4a52;
-  stroke-opacity: 0.5;
-  stroke-width: 2.2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  transition: opacity 0.8s ease;
-}
-.seam {
-  fill: none;
-  stroke: #7c4a52;
-  stroke-opacity: 0.55;
-  stroke-width: 2.4;
-  stroke-linejoin: round;
-  stroke-linecap: round;
-  opacity: calc(1 - var(--gap));
-  transition: opacity 0.6s ease;
-}
-.healed .cracks path,
-.healed .seam {
+.halfL { transform: translateX(calc(var(--gap) * -3.6%)) rotate(calc(var(--gap) * -5.5deg)); }
+.halfR { transform: translateX(calc(var(--gap) * 3.6%)) rotate(calc(var(--gap) * 5.5deg)); }
+.healed .halfL,
+.healed .halfR { opacity: 0; }
+/* versi pulih memudar masuk di atas belahan pucat */
+.whole {
   opacity: 0;
+  transition: opacity 0.9s ease;
 }
+.healed .whole { opacity: 1; }
 
-.sad { fill: #24323b; transition: opacity 0.4s ease; }
-.brow { fill: none; stroke: #24323b; stroke-width: 4.2; stroke-linecap: round; }
 .tear {
-  fill: #8ecbee;
-  transform-box: fill-box;
-  transform-origin: 50% 0;
-  animation: tear 2.6s ease-in infinite;
+  position: absolute;
+  left: 25.2%;
+  top: 47%;
+  width: 8.4%;
+  animation: tear 2.8s ease-in infinite;
 }
 @keyframes tear {
-  0% { transform: translateY(-4px) scale(0.3); opacity: 0; }
-  25% { transform: translateY(0) scale(1); opacity: 1; }
-  70% { transform: translateY(26px) scale(1); opacity: 1; }
-  100% { transform: translateY(42px) scale(0.8); opacity: 0; }
+  0% { transform: translateY(-20%) scale(0.3); opacity: 0; }
+  22% { transform: translateY(0) scale(1); opacity: 1; }
+  70% { transform: translateY(110%) scale(1); opacity: 1; }
+  100% { transform: translateY(190%) scale(0.8); opacity: 0; }
 }
-.happy {
-  fill: none;
-  stroke: #24323b;
-  stroke-width: 5;
-  stroke-linecap: round;
-  opacity: 0;
-  transition: opacity 0.4s 0.3s ease;
-}
-.cheek { fill: #ffb1bb; opacity: 0; transition: opacity 0.8s 0.4s ease; }
-.mouth {
-  fill: none;
-  stroke: #24323b;
-  stroke-width: 5;
-  stroke-linecap: round;
-  transition: opacity 0.4s ease;
-}
-.mouthHappy { opacity: 0; }
-.healed .sad,
-.healed .mouthSad { opacity: 0; }
-.healed .happy,
-.healed .mouthHappy { opacity: 1; }
-.healed .cheek { opacity: 0.85; }
+.healed .tear { display: none; }
 
-/* ── nampan ── */
-.tray { transition: opacity 0.9s 0.3s ease; }
-.healed .tray { opacity: 0; }
-
-/* ── plester ── */
-.plaster {
-  transition: transform 0.75s cubic-bezier(0.34, 1.35, 0.64, 1);
+/* ── plester: lapis seukuran papan (posisi) → gambar (putar + skala) ── */
+.pl {
+  position: absolute;
+  inset: 0;
   pointer-events: none;
-  filter: drop-shadow(0 2px 2px rgba(36, 50, 59, 0.18));
+  transition: transform 0.75s cubic-bezier(0.34, 1.3, 0.64, 1);
 }
-.hit { cursor: grab; touch-action: none; outline: none; }
+.pl.dragging { transition: none; z-index: 2; }
+.plImg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 33.33%;
+  transition: transform 0.75s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+.dragging .plImg { transition: transform 0.2s ease; }
+.hit {
+  position: absolute;
+  top: 86.5%;
+  height: 21%;
+  transform: translate(-50%, -50%);
+  border-radius: 1em;
+  cursor: grab;
+  touch-action: none;
+  outline: none;
+}
 .hit:focus-visible {
-  stroke: var(--accent);
-  stroke-width: 2.5;
-  stroke-dasharray: 5 4;
+  box-shadow: 0 0 0 0.16em var(--accent);
 }
 
-/* ── kartu maaf ── */
+/* ── kartu maaf: secarik kertas bertulisan tangan ── */
 .foot {
   position: relative;
-  z-index: 3;
+  z-index: 4;
   width: 100%;
-  height: 9.4em;
+  height: 10.8em;
   flex: none;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0.5em 1.5em 0;
+  padding: 0.3em 1.5em 0;
 }
 .tag {
   position: relative;
   max-width: 100%;
-  padding: 0.8em 1.2em 0.85em 2.1em;
-  border-radius: 0.5em;
-  background: #fffdf9;
-  box-shadow: 0 0.1em 0 rgba(0, 0, 0, 0.05), 0 1.1em 2em -1.2em rgba(36, 50, 59, 0.55);
-  font-family: var(--font-serif, Georgia, serif);
-  font-style: italic;
-  font-size: 1.1em;
-  line-height: 1.3;
-  font-weight: 500;
+  padding: 0.55em 1.1em 0.6em 2.3em;
+  composes: paper from '../kit/kit.module.css';
+  --paper: #fffdf6;
+  border-radius: 0.3em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.62em;
+  line-height: 1.12;
+  font-weight: 600;
   text-wrap: pretty;
   overflow-wrap: anywhere;
   animation: tag 0.55s 0.25s cubic-bezier(0.34, 1.5, 0.64, 1) both;
   transform-origin: 1em 50%;
 }
+/* plester mungil sebagai penanda */
 .tag::before {
   content: '';
   position: absolute;
-  left: 0.7em;
+  left: 0.6em;
   top: 50%;
-  width: 0.72em;
-  height: 0.36em;
-  margin-top: -0.18em;
+  width: 1.05em;
+  height: 0.42em;
+  margin-top: -0.21em;
   border-radius: 99em;
-  background: var(--dot, var(--accent));
-  transform: rotate(-28deg);
+  background: linear-gradient(90deg, var(--dot, var(--accent)) 30%, #fffaf0 30% 70%, var(--dot, var(--accent)) 70%);
+  box-shadow: 0 0.05em 0.1em rgba(60, 30, 20, 0.35);
+  transform: rotate(-24deg);
 }
 @keyframes tag {
   from { opacity: 0; transform: rotate(5deg) translateY(0.9em) scale(0.9); }
@@ -236,29 +235,34 @@
 .count {
   margin-top: 0.9em;
   display: flex;
-  gap: 0.42em;
+  gap: 0.45em;
 }
 .count i {
   width: 0.5em;
   height: 0.5em;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--ink) 18%, transparent);
+  background: rgba(255, 252, 244, 0.85);
+  box-shadow: 0 0.05em 0.2em rgba(60, 30, 20, 0.4);
   transition: background 0.3s, transform 0.3s;
 }
 .count i.on {
   background: var(--accent);
-  transform: scale(1.15);
+  transform: scale(1.2);
 }
 .cta {
-  margin-top: 0.9em;
-  padding: 0.95em 1.6em;
+  position: relative;
+  margin-top: 0.8em;
+  padding: 0.95em 1.7em;
   border-radius: 99em;
-  background: var(--accent);
+  background: linear-gradient(180deg, #f4687c, #dc3f5c);
   color: #fff;
   font-weight: 800;
   font-size: 1em;
   cursor: pointer;
-  box-shadow: 0 0.18em 0 #cf4f52, 0 1.2em 1.6em -0.9em rgba(239, 106, 106, 0.9);
+  box-shadow:
+    inset 0 0.08em 0 rgba(255, 255, 255, 0.45),
+    0 0.2em 0 #a92742,
+    0 1.3em 1.8em -0.9em rgba(220, 63, 92, 0.95);
   animation: ctaIn 0.6s 0.6s cubic-bezier(0.34, 1.5, 0.64, 1) both, ctaPulse 1.8s 1.5s ease-in-out infinite;
 }
 .cta:active { transform: translateY(0.1em); }
@@ -271,26 +275,6 @@
   50% { scale: 1.04; }
 }
 
-/* ── kartu katalog ── */
-.cover {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  background:
-    radial-gradient(70% 50% at 50% 50%, #ffffff 0%, transparent 100%),
-    linear-gradient(#eef6f9, #d6e7ef);
-}
-.cover > svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.cvHeart {
-  transform-origin: 150px 150px;
-  animation: beat 1.4s ease-in-out infinite;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .heart, .tear, .cvHeart { animation: none; }
+  .beat, .tear { animation: none; }
 }
