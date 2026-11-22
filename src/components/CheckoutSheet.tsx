@@ -2,23 +2,54 @@
 
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { type MyGift, api, clearDraft, upsertMyGift, uploadPhotos } from '@/lib/client';
-import { PLANS, type PlanId, rupiah } from '@/lib/site';
+import { type MyGift, type OrderInfo, api, clearDraft, upsertMyGift, uploadPhotos } from '@/lib/client';
+import { MARKET_CURRENCY, type Market, PLANS, type PlanId, money, planAmount } from '@/lib/site';
 import { slugProblem, slugify, suggestSlug } from '@/lib/slug';
 import { Confetti } from '@/templates/kit';
 import type { GiftData, TemplateMeta } from '@/templates/types';
 
-type Order = { id: string; slug: string; amount: number; editKey: string; qr: string; expiresAt: string; demo: boolean };
 type SlugState = { s: 'idle' | 'checking' | 'ok' | 'bad'; reason?: string; suggestion?: string };
+type MarketInfo = { available: boolean; test: boolean; provider: string | null };
+export type PaymentOptions = { country: string | null; suggested: Market; options: Record<Market, MarketInfo> };
 
 async function qrDataUrl(text: string, size = 720) {
   const QR = (await import('qrcode')).default;
   return QR.toDataURL(text, { margin: 2, width: size, errorCorrectionLevel: 'M', color: { dark: '#1e1b18', light: '#ffffff' } });
 }
 
+/** Menyimpan pesanan ke daftar "Kado saya" di perangkat ini. */
+export function rememberOrder(
+  o: OrderInfo,
+  status: 'pending' | 'live',
+  extra: { template: string; to: string; from: string; createdAt?: string },
+) {
+  upsertMyGift({
+    id: o.id,
+    slug: o.slug,
+    template: extra.template,
+    to: extra.to,
+    from: extra.from,
+    editKey: o.editKey,
+    amount: o.amount,
+    currency: o.currency,
+    status,
+    createdAt: extra.createdAt ?? new Date().toISOString(),
+    pay:
+      status === 'pending'
+        ? { provider: o.provider, test: o.test, kind: o.kind, qr: o.qr, payUrl: o.payUrl, url: o.url, expiresAt: o.expiresAt }
+        : undefined,
+  });
+}
+
+function orderFromMyGift(g: MyGift): OrderInfo | null {
+  if (!g.pay) return null;
+  return { id: g.id, slug: g.slug, amount: g.amount, currency: g.currency ?? 'IDR', editKey: g.editKey, ...g.pay };
+}
+
 /**
- * Checkout satu layar: alamat kado → paket → bayar QRIS → kado terbit.
- * `resume` dipakai untuk melanjutkan pembayaran dari halaman Kado saya.
+ * Checkout satu layar: alamat kado → paket & cara bayar → bayar → kado terbit.
+ * Indonesia: QRIS lewat BorderPay, ditampilkan di sini. Luar negeri: kartu lewat Creem (pindah ke halaman Creem,
+ * lalu kembali ke /bayar/selesai). `resume` melanjutkan pembayaran QRIS dari halaman Kado saya.
  */
 export function CheckoutSheet({
   meta,
@@ -37,19 +68,19 @@ export function CheckoutSheet({
   onClose: (finished: boolean) => void;
   onPhotos?: (photos: string[]) => void;
 }) {
-  const [order, setOrder] = useState<Order | null>(
-    resume?.qr && resume.expiresAt
-      ? { id: resume.id, slug: resume.slug, amount: resume.amount, editKey: resume.editKey, qr: resume.qr, expiresAt: resume.expiresAt, demo: !!resume.demo }
-      : null,
-  );
+  const [order, setOrder] = useState<OrderInfo | null>(resume ? orderFromMyGift(resume) : null);
   const [step, setStep] = useState<'form' | 'pay' | 'done'>(resume ? (resume.status === 'live' ? 'done' : 'pay') : 'form');
   const [slug, setSlug] = useState(() => resume?.slug ?? suggestSlug(data.to));
   const [slugState, setSlugState] = useState<SlugState>({ s: 'idle' });
   const [plan, setPlan] = useState<PlanId>((PLANS.find((p) => p.popular) ?? PLANS[0]).id);
+  const [market, setMarket] = useState<Market>('id');
+  const [options, setOptions] = useState<PaymentOptions | null>(null);
   const [contact, setContact] = useState('');
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const price = PLANS.find((p) => p.id === plan)!.price;
+  const currency = MARKET_CURRENCY[market];
+  const price = planAmount(PLANS.find((p) => p.id === plan)!, currency);
+  const extra = { template: meta.id, to: data.to, from: data.from, createdAt: resume?.createdAt };
 
   // kunci scroll halaman di belakang sheet
   useEffect(() => {
@@ -59,6 +90,22 @@ export function CheckoutSheet({
       document.body.style.overflow = prev;
     };
   }, []);
+
+  // cara bayar yang aktif + saran berdasarkan negara pembeli
+  useEffect(() => {
+    if (resume) return;
+    let alive = true;
+    api<PaymentOptions>('/api/payment-options')
+      .then((o) => {
+        if (!alive) return;
+        setOptions(o);
+        setMarket(o.suggested);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, [resume]);
 
   // cek ketersediaan alamat
   useEffect(() => {
@@ -86,27 +133,14 @@ export function CheckoutSheet({
     };
   }, [slug, step, order]);
 
-  const remember = useCallback(
-    (o: Order, status: 'pending' | 'live') => {
-      upsertMyGift({
-        id: o.id,
-        slug: o.slug,
-        template: meta.id,
-        to: data.to,
-        editKey: o.editKey,
-        amount: o.amount,
-        status,
-        createdAt: resume?.createdAt ?? new Date().toISOString(),
-        ...(status === 'pending' ? { qr: o.qr, expiresAt: o.expiresAt, demo: o.demo } : {}),
-      });
-    },
-    [meta.id, data.to, resume?.createdAt],
-  );
-
   const submit = async () => {
     if (busy) return;
     if (slugState.s === 'bad' || slugProblem(slug)) {
       setError('Alamat kadonya belum bisa dipakai. Ganti dulu ya.');
+      return;
+    }
+    if (options && !options.options[market].available) {
+      setError('Cara bayar ini belum aktif. Pilih yang lain ya.');
       return;
     }
     setError(null);
@@ -114,34 +148,48 @@ export function CheckoutSheet({
       setBusy('Menyiapkan…');
       const photos = await uploadPhotos(data.photos, (d, t) => setBusy(`Mengunggah foto ${d}/${t}…`));
       onPhotos?.(photos);
-      setBusy('Membuat QRIS…');
-      const o = await api<Order>('/api/orders', {
+      setBusy(market === 'id' ? 'Membuat QRIS…' : 'Menyiapkan pembayaran kartu…');
+      const o = await api<OrderInfo>('/api/orders', {
         method: 'POST',
         body: JSON.stringify({
           template: meta.id,
           data: { ...data, photos },
           slug,
           plan,
+          market,
           contact,
           replaces: order ? { id: order.id, key: order.editKey } : undefined,
         }),
       });
       setOrder(o);
-      remember(o, 'pending');
+      rememberOrder(o, 'pending', extra);
+      if (o.kind === 'redirect' && o.url) {
+        setBusy('Membuka halaman pembayaran…');
+        window.location.assign(o.url);
+        return; // tetap "sibuk" sampai halaman berpindah
+      }
       setStep('pay');
+      setBusy(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Ada yang tidak beres. Coba lagi ya.');
-    } finally {
       setBusy(null);
     }
   };
 
-  const onPaid = useCallback(() => {
-    if (!order) return;
-    remember(order, 'live');
-    void clearDraft(meta.id);
-    setStep('done');
-  }, [order, remember, meta.id]);
+  const onPaid = useCallback(
+    (finalSlug: string) => {
+      setOrder((cur) => {
+        if (!cur) return cur;
+        const next = { ...cur, slug: finalSlug || cur.slug };
+        rememberOrder(next, 'live', extra);
+        return next;
+      });
+      void clearDraft(meta.id);
+      setStep('done');
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [meta.id, data.to, data.from],
+  );
 
   const canClose = step !== 'pay';
   const close = () => onClose(step === 'done');
@@ -173,6 +221,12 @@ export function CheckoutSheet({
               slugState={slugState}
               plan={plan}
               setPlan={setPlan}
+              market={market}
+              setMarket={(m) => {
+                setMarket(m);
+                setError(null);
+              }}
+              options={options}
               contact={contact}
               setContact={setContact}
               sampleFields={sampleFields}
@@ -218,7 +272,12 @@ function StepDot({ on, done, n }: { on: boolean; done: boolean; n: number }) {
   );
 }
 
-/* ───────────────────────── 1. link + paket ───────────────────────── */
+/* ───────────────────────── 1. link + paket + cara bayar ───────────────────────── */
+
+const MARKETS: { id: Market; title: string; sub: string }[] = [
+  { id: 'id', title: 'Indonesia', sub: 'QRIS · Rupiah' },
+  { id: 'intl', title: 'Luar negeri', sub: 'Kartu · USD' },
+];
 
 function FormStep(p: {
   to: string;
@@ -228,6 +287,9 @@ function FormStep(p: {
   slugState: SlugState;
   plan: PlanId;
   setPlan: (v: PlanId) => void;
+  market: Market;
+  setMarket: (m: Market) => void;
+  options: PaymentOptions | null;
   contact: string;
   setContact: (v: string) => void;
   sampleFields: string[];
@@ -240,6 +302,8 @@ function FormStep(p: {
   const [host, setHost] = useState('floa.site');
   useEffect(() => setHost(window.location.host), []);
   const st = p.slugState;
+  const currency = MARKET_CURRENCY[p.market];
+  const info = p.options?.options[p.market];
 
   return (
     <form
@@ -301,6 +365,43 @@ function FormStep(p: {
         {st.s === 'idle' || st.s === 'checking' ? <span className="text-muted">Huruf kecil, angka, dan tanda hubung.</span> : null}
       </p>
 
+      <fieldset className="mt-3">
+        <legend className="text-[14px] font-extrabold">Bayar dari mana?</legend>
+        <div className="mt-1.5 grid grid-cols-2 gap-1 rounded-2xl bg-paper-2 p-1" role="radiogroup">
+          {MARKETS.map((m) => {
+            const on = p.market === m.id;
+            const off = p.options ? !p.options.options[m.id].available : false;
+            return (
+              <label
+                key={m.id}
+                className={
+                  'cursor-pointer rounded-[0.85rem] px-3 py-2.5 text-center transition-all ' +
+                  (on ? 'bg-white shadow-card' : 'text-ink-2') +
+                  (off ? ' cursor-not-allowed opacity-50' : '')
+                }
+              >
+                <input
+                  type="radio"
+                  name="market"
+                  value={m.id}
+                  checked={on}
+                  disabled={off}
+                  onChange={() => p.setMarket(m.id)}
+                  className="sr-only"
+                />
+                <span className="block text-[14px] font-extrabold leading-tight">{m.title}</span>
+                <span className="mt-0.5 block text-[11.5px] font-semibold text-muted">{off ? 'Belum aktif' : m.sub}</span>
+              </label>
+            );
+          })}
+        </div>
+        <p className="mt-1.5 text-[12.5px] leading-snug text-muted">
+          {p.market === 'id'
+            ? 'QRIS diproses BorderPay. Bisa dibayar dari GoPay, OVO, DANA, ShopeePay, atau m-banking.'
+            : 'Kamu akan diarahkan ke halaman pembayaran Creem untuk bayar pakai kartu kredit/debit. Pajak bisa ditambahkan sesuai negaramu.'}
+        </p>
+      </fieldset>
+
       <fieldset className="mt-4">
         <legend className="text-[14px] font-extrabold">Link aktif berapa lama?</legend>
         <div className="mt-1.5 grid grid-cols-2 gap-2.5">
@@ -319,7 +420,7 @@ function FormStep(p: {
                   <span className="absolute -top-2 right-3 rounded-full bg-butter px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider">Disarankan</span>
                 ) : null}
                 <span className="block text-[13px] font-bold text-ink-2">{pl.name}</span>
-                <span className="font-display mt-0.5 block text-[1.45rem] font-semibold leading-none">{rupiah(pl.price)}</span>
+                <span className="font-display mt-0.5 block text-[1.45rem] font-semibold leading-none">{money(planAmount(pl, currency), currency)}</span>
                 <span className="mt-1 block text-[12px] leading-tight text-muted">{pl.note}</span>
               </label>
             );
@@ -337,10 +438,16 @@ function FormStep(p: {
         inputMode="tel"
         autoComplete="tel"
         maxLength={20}
-        placeholder="08xxxxxxxxxx"
+        placeholder={p.market === 'id' ? '08xxxxxxxxxx' : '+1 555 000 0000'}
         className="mt-1.5 w-full rounded-2xl bg-white px-4 py-3 text-[16px] shadow-[inset_0_0_0_1.5px_var(--color-line)] outline-none focus:shadow-[inset_0_0_0_2px_var(--color-ink)]"
       />
       <p className="mt-1 text-[12.5px] text-muted">Hanya dipakai kalau kamu butuh bantuan soal kado ini.</p>
+
+      {info?.test ? (
+        <p className="mt-4 rounded-2xl bg-butter/60 px-3.5 py-2.5 text-[12.5px] font-semibold leading-snug">
+          Mode uji: pembayaran ini tidak memakai uang sungguhan.
+        </p>
+      ) : null}
 
       {p.error ? (
         <p className="mt-4 rounded-2xl bg-tomato/10 px-3.5 py-2.5 text-[13.5px] font-bold text-tomato-dark" role="alert">
@@ -351,7 +458,7 @@ function FormStep(p: {
       <button type="submit" disabled={!!p.busy || p.slugState.s === 'checking'} className="btn btn-primary mt-5 h-14 w-full text-[16px]">
         {p.busy ?? (
           <>
-            Bayar {rupiah(p.price)} pakai QRIS <span aria-hidden>→</span>
+            Bayar {money(p.price, currency)} pakai {p.market === 'id' ? 'QRIS' : 'kartu'} <span aria-hidden>→</span>
           </>
         )}
       </button>
@@ -370,9 +477,19 @@ function FormStep(p: {
   );
 }
 
-/* ───────────────────────── 2. bayar ───────────────────────── */
+/* ───────────────────────── 2. bayar (QRIS) ───────────────────────── */
 
-function PayStep({ order, onPaid, onChange, onLater }: { order: Order; onPaid: () => void; onChange?: () => void; onLater: () => void }) {
+function PayStep({
+  order,
+  onPaid,
+  onChange,
+  onLater,
+}: {
+  order: OrderInfo;
+  onPaid: (slug: string) => void;
+  onChange?: () => void;
+  onLater: () => void;
+}) {
   const [img, setImg] = useState<string | null>(null);
   const [left, setLeft] = useState(() => Math.max(0, new Date(order.expiresAt).getTime() - Date.now()));
   const [simulating, setSimulating] = useState(false);
@@ -382,7 +499,7 @@ function PayStep({ order, onPaid, onChange, onLater }: { order: Order; onPaid: (
 
   useEffect(() => {
     let alive = true;
-    qrDataUrl(order.qr).then((u) => alive && setImg(u));
+    if (order.qr) qrDataUrl(order.qr).then((u) => alive && setImg(u));
     return () => {
       alive = false;
     };
@@ -399,15 +516,15 @@ function PayStep({ order, onPaid, onChange, onLater }: { order: Order; onPaid: (
     let timer: ReturnType<typeof setTimeout>;
     const poll = async () => {
       try {
-        const r = await api<{ status: string }>(`/api/orders/${order.id}`);
+        const r = await api<{ status: string; slug: string }>(`/api/orders/${order.id}`);
         if (!alive) return;
-        if (r.status === 'live') return paid.current();
+        if (r.status === 'live') return paid.current(r.slug);
       } catch {
         /* jaringan putus sebentar: coba lagi */
       }
-      if (alive) timer = setTimeout(poll, 2500);
+      if (alive) timer = setTimeout(poll, 3000);
     };
-    timer = setTimeout(poll, 2000);
+    timer = setTimeout(poll, 2500);
     return () => {
       alive = false;
       clearTimeout(timer);
@@ -420,9 +537,14 @@ function PayStep({ order, onPaid, onChange, onLater }: { order: Order; onPaid: (
 
   const simulate = async () => {
     setSimulating(true);
+    setNote(null);
     try {
-      await api('/api/pay/demo', { method: 'POST', body: JSON.stringify({ id: order.id }) });
-      paid.current();
+      const r = await api<{ status: string; slug: string }>('/api/pay/simulate', { method: 'POST', body: JSON.stringify({ id: order.id }) });
+      if (r.status === 'live') paid.current(r.slug);
+      else {
+        setNote('Simulasi terkirim, menunggu konfirmasi…');
+        setSimulating(false);
+      }
     } catch (e) {
       setNote(e instanceof Error ? e.message : 'Gagal.');
       setSimulating(false);
@@ -436,9 +558,13 @@ function PayStep({ order, onPaid, onChange, onLater }: { order: Order; onPaid: (
         Buka e-wallet atau m-banking, pilih <b>Scan QRIS</b>.
       </p>
 
-      {order.demo ? (
+      {order.provider === 'demo' ? (
         <p className="mt-3 rounded-2xl bg-butter/60 px-3.5 py-2.5 text-left text-[13px] font-semibold leading-snug">
           Mode simulasi: payment gateway belum disambungkan, jadi QR ini bukan QRIS asli dan tidak ada uang yang berpindah.
+        </p>
+      ) : order.test ? (
+        <p className="mt-3 rounded-2xl bg-butter/60 px-3.5 py-2.5 text-left text-[13px] font-semibold leading-snug">
+          Mode uji BorderPay: QR ini dari sandbox, tidak ada uang yang berpindah. Pakai tombol simulasi di bawah.
         </p>
       ) : null}
 
@@ -451,7 +577,7 @@ function PayStep({ order, onPaid, onChange, onLater }: { order: Order; onPaid: (
           {/* eslint-disable-next-line @next/next/no-img-element */}
           {img ? <img src={img} alt="Kode QRIS untuk pembayaran" className="h-full w-full" /> : <span className="floa-loader absolute inset-0 m-auto text-muted" />}
         </div>
-        <div className="font-display mt-2.5 text-[1.7rem] font-semibold leading-none">{rupiah(order.amount)}</div>
+        <div className="font-display mt-2.5 text-[1.7rem] font-semibold leading-none">{money(order.amount, order.currency)}</div>
       </div>
 
       {expired ? (
@@ -463,10 +589,15 @@ function PayStep({ order, onPaid, onChange, onLater }: { order: Order; onPaid: (
       )}
 
       <div className="mt-4 flex flex-col gap-2">
-        {order.demo && !expired ? (
+        {order.test && !expired ? (
           <button type="button" onClick={simulate} disabled={simulating} className="btn btn-primary h-13 w-full py-4 text-[15px]">
             {simulating ? 'Memproses…' : 'Simulasikan pembayaran berhasil'}
           </button>
+        ) : null}
+        {order.payUrl && !expired ? (
+          <a href={order.payUrl} className="btn btn-ghost h-12 w-full text-[14px]">
+            Bayar di halaman BorderPay
+          </a>
         ) : null}
         {img && !expired ? (
           <a href={img} download={`qris-floa-${order.slug}.png`} className="btn btn-ghost h-12 w-full text-[14px]">
@@ -475,11 +606,11 @@ function PayStep({ order, onPaid, onChange, onLater }: { order: Order; onPaid: (
         ) : null}
         {onChange ? (
           <button type="button" onClick={onChange} className="btn h-11 w-full text-[13.5px] text-ink-2 underline underline-offset-2">
-            {expired ? 'Buat QR baru' : 'Ganti link atau paket'}
+            {expired ? 'Buat QR baru' : 'Ganti link, paket, atau cara bayar'}
           </button>
         ) : null}
       </div>
-      {note ? <p className="mt-2 text-[13px] font-bold text-tomato-dark">{note}</p> : null}
+      {note ? <p className="mt-2 text-[13px] font-bold text-ink-2">{note}</p> : null}
       <p className="mt-3 text-[12.5px] leading-snug text-muted">
         Halaman ini otomatis lanjut begitu pembayaran masuk. Kalau tertutup, lanjutkan dari menu{' '}
         <button type="button" onClick={onLater} className="font-bold underline">
@@ -493,7 +624,17 @@ function PayStep({ order, onPaid, onChange, onLater }: { order: Order; onPaid: (
 
 /* ───────────────────────── 3. terbit ───────────────────────── */
 
-function DoneStep({ order, to, from, templateId }: { order: Order; to: string; from: string; templateId: string }) {
+export function DoneStep({
+  order,
+  to,
+  from,
+  templateId,
+}: {
+  order: { id: string; slug: string; editKey?: string };
+  to: string;
+  from: string;
+  templateId?: string;
+}) {
   const [origin, setOrigin] = useState('https://floa.site');
   const [qr, setQr] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -566,11 +707,18 @@ function DoneStep({ order, to, from, templateId }: { order: Order; to: string; f
       </div>
 
       <p className="mt-4 text-[12.5px] leading-snug text-muted">
-        QR-nya bisa dicetak dan diselipkan di kado fisik. Mau ubah isinya nanti?{' '}
-        <Link href={`/buat/${templateId}?edit=${order.id}&key=${encodeURIComponent(order.editKey)}`} className="font-bold underline">
-          Ubah isi
-        </Link>{' '}
-        atau buka{' '}
+        QR-nya bisa dicetak dan diselipkan di kado fisik.{' '}
+        {order.editKey && templateId ? (
+          <>
+            Mau ubah isinya nanti?{' '}
+            <Link href={`/buat/${templateId}?edit=${order.id}&key=${encodeURIComponent(order.editKey)}`} className="font-bold underline">
+              Ubah isi
+            </Link>{' '}
+            atau buka{' '}
+          </>
+        ) : (
+          'Daftar kadomu ada di '
+        )}
         <Link href="/kado-saya" className="font-bold underline">
           Kado saya
         </Link>

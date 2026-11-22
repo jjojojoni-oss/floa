@@ -7,6 +7,8 @@ export interface Store {
   /** false kalau slug sudah dipakai */
   insertGift(gift: Gift): Promise<boolean>;
   updateGift(id: string, patch: Partial<Gift>): Promise<Gift | null>;
+  /** memindahkan kado ke alamat lain; false kalau alamat baru sudah dipakai */
+  renameSlug(id: string, slug: string): Promise<boolean>;
   deleteGift(id: string): Promise<void>;
   /** menyimpan foto, mengembalikan URL publiknya */
   putPhoto(bytes: Uint8Array, contentType: string, ext: string): Promise<string>;

@@ -27,7 +27,11 @@ export const fileStore: Store = {
   kind: 'file',
 
   async getGift(id) {
-    return readJson<Gift>(path.join(dir('gifts'), `${safe(id)}.json`));
+    const g = await readJson<Omit<Gift, 'currency' | 'providerRef' | 'payExpiresAt'> & Partial<Gift>>(
+      path.join(dir('gifts'), `${safe(id)}.json`),
+    );
+    // pesanan lama (sebelum ada pilihan mata uang) selalu rupiah
+    return g ? { ...g, currency: g.currency ?? 'IDR', providerRef: g.providerRef ?? null, payExpiresAt: g.payExpiresAt ?? null } : null;
   },
 
   async getGiftBySlug(slug) {
@@ -54,6 +58,20 @@ export const fileStore: Store = {
     const next = { ...cur, ...patch, id: cur.id, slug: cur.slug };
     await writeFile(path.join(dir('gifts'), `${safe(id)}.json`), JSON.stringify(next, null, 2));
     return next;
+  },
+
+  async renameSlug(id, slug) {
+    const cur = await this.getGift(id);
+    if (!cur) return false;
+    if (cur.slug === slug) return true;
+    try {
+      await writeFile(path.join(dir('slugs'), `${safe(slug)}.json`), JSON.stringify({ id }), { flag: 'wx' });
+    } catch {
+      return false;
+    }
+    await rm(path.join(dir('slugs'), `${safe(cur.slug)}.json`), { force: true });
+    await writeFile(path.join(dir('gifts'), `${safe(id)}.json`), JSON.stringify({ ...cur, slug }, null, 2));
+    return true;
   },
 
   async deleteGift(id) {

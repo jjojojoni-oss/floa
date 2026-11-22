@@ -1,4 +1,4 @@
-import type { PlanId } from './site';
+import type { Currency, PlanId } from './site';
 import type { GiftData, TemplateMeta } from '@/templates/types';
 
 export type GiftStatus = 'pending' | 'live';
@@ -10,11 +10,18 @@ export type Gift = {
   data: GiftData;
   status: GiftStatus;
   plan: PlanId;
+  /** dalam satuan terkecil `currency` (rupiah, atau sen untuk USD) */
   amount: number;
+  currency: Currency;
   /** kunci rahasia untuk mengubah isi kado; hanya dipegang pembuatnya */
   editKey: string;
   contact: string | null;
+  /** 'borderpay' | 'creem' | 'demo' */
   provider: string;
+  /** ID transaksi di sisi penyedia (checkout Creem / reference BorderPay) */
+  providerRef: string | null;
+  /** batas waktu bayar dari penyedia; lewat dari ini pesanan berhenti menahan alamat kado */
+  payExpiresAt: string | null;
   createdAt: string;
   paidAt: string | null;
   /** null = tidak pernah kedaluwarsa */

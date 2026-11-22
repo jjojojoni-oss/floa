@@ -1,6 +1,7 @@
 'use client';
 
 import { del, get, set } from 'idb-keyval';
+import type { Currency } from '@/lib/site';
 import type { GiftData } from '@/templates/types';
 
 /* ───────── draf (IndexedDB, per template) ───────── */
@@ -37,20 +38,43 @@ export async function clearDraft(template: string) {
 
 /* ───────── "Kado saya" (localStorage) ───────── */
 
+/** Pesanan seperti yang dikembalikan POST /api/orders. */
+export type OrderInfo = {
+  id: string;
+  slug: string;
+  amount: number;
+  currency: Currency;
+  editKey: string;
+  provider: 'borderpay' | 'creem' | 'demo';
+  /** mode uji: tidak ada uang nyata */
+  test: boolean;
+  /** 'qr' = QRIS ditampilkan di floa, 'redirect' = bayar di halaman checkout penyedia */
+  kind: 'qr' | 'redirect';
+  qr: string | null;
+  payUrl: string | null;
+  url: string | null;
+  expiresAt: string;
+};
+
 export type MyGift = {
   id: string;
   slug: string;
   template: string;
   to: string;
+  from?: string;
   editKey: string;
   amount: number;
+  /** pesanan lama tanpa kolom ini selalu rupiah */
+  currency?: Currency;
   status: 'pending' | 'live';
   createdAt: string;
   /** hanya selama menunggu bayar, supaya bisa dilanjutkan */
-  qr?: string;
-  expiresAt?: string;
-  demo?: boolean;
+  pay?: Pick<OrderInfo, 'provider' | 'test' | 'kind' | 'qr' | 'payUrl' | 'url' | 'expiresAt'>;
 };
+
+export function findMyGift(id: string): MyGift | undefined {
+  return readMyGifts().find((g) => g.id === id);
+}
 
 const GIFTS_KEY = 'floa:gifts';
 

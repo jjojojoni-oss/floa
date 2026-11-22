@@ -1,12 +1,12 @@
 import Link from 'next/link';
 import { Catalog } from '@/components/Catalog';
 import { SiteFooter, SiteHeader } from '@/components/SiteChrome';
-import { CHEAPEST, PLANS, rupiah, rupiahShort } from '@/lib/site';
+import { CHEAPEST, PLANS, money, rupiah, rupiahShort } from '@/lib/site';
 
 const STEPS = [
   { t: 'Pilih template', d: 'Coba demonya dulu, persis seperti yang nanti dibuka penerima.' },
   { t: 'Ganti isinya', d: 'Semua sudah terisi contoh. Tinggal ganti nama, pesan, dan foto.' },
-  { t: 'Bayar, lalu kirim', d: 'Scan QRIS dari e-wallet atau m-banking. Link dan QR kadomu langsung jadi.' },
+  { t: 'Bayar, lalu kirim', d: 'Scan QRIS dari e-wallet atau m-banking, atau pakai kartu dari luar negeri. Link dan QR kadomu langsung jadi.' },
 ];
 
 const FAQ = [
@@ -17,7 +17,7 @@ const FAQ = [
   { q: 'Penerima perlu install aplikasi?', a: 'Tidak. Cukup ketuk link-nya, langsung terbuka di browser HP. Tidak perlu daftar akun juga.' },
   {
     q: 'Bayarnya pakai apa?',
-    a: 'QRIS. Bisa dari GoPay, OVO, DANA, ShopeePay, LinkAja, atau aplikasi m-banking apa pun. Begitu pembayaran masuk, kadomu otomatis terbit.',
+    a: 'Dari Indonesia: QRIS (lewat BorderPay), bisa dari GoPay, OVO, DANA, ShopeePay, LinkAja, atau aplikasi m-banking apa pun. Dari luar negeri: kartu kredit/debit dalam dolar AS (lewat Creem). Begitu pembayaran masuk, kadomu otomatis terbit.',
   },
   {
     q: 'Bisa diubah setelah terbit?',
@@ -71,7 +71,7 @@ export default function Home() {
             .
           </h1>
           <p className="mt-3 max-w-[19rem] text-[15px] font-medium leading-snug text-ink-2 sm:mx-auto sm:mt-5 sm:max-w-xl sm:text-lg">
-            Pilih template, ganti nama dan pesannya, bayar pakai QRIS. Link kadomu langsung jadi.
+            Pilih template, ganti nama dan pesannya, bayar pakai QRIS atau kartu. Link kadomu langsung jadi.
           </p>
           <ul className="mt-3.5 flex flex-wrap gap-1.5 text-[12px] font-bold sm:mt-6 sm:justify-center sm:text-[13px]">
             <li className="glass rounded-full px-3 py-1.5">Tanpa daftar akun</li>
@@ -112,7 +112,7 @@ export default function Home() {
             Sekali bayar per kado.
           </h2>
           <p className="mt-2 text-[15px] text-ink-2 sm:text-center">
-            Semua template dan fitur sama. Bedanya cuma berapa lama link-nya aktif.
+            Semua template dan fitur sama. Bedanya cuma berapa lama link-nya aktif. Bayar QRIS dari Indonesia, atau kartu dari luar negeri.
           </p>
           <div className="mx-auto mt-7 grid max-w-2xl gap-4 sm:grid-cols-2 sm:gap-6">
             {PLANS.map((p) =>
@@ -127,6 +127,7 @@ export default function Home() {
                     <div className="text-sm font-bold opacity-80">{p.name}</div>
                     <div className="font-display mt-1 text-[2.6rem] font-semibold leading-none">{rupiah(p.price)}</div>
                     <div className="mt-2 text-[15px] opacity-90">{p.note}</div>
+                    <div className="mt-3 text-[13px] font-semibold opacity-75">Dari luar negeri {money(p.usd, 'USD')}</div>
                   </div>
                 </div>
               ) : (
@@ -134,6 +135,7 @@ export default function Home() {
                   <div className="text-sm font-bold text-ink-2">{p.name}</div>
                   <div className="font-display mt-1 text-[2.6rem] font-semibold leading-none">{rupiah(p.price)}</div>
                   <div className="mt-2 text-[15px] text-ink-2">{p.note}</div>
+                  <div className="mt-3 text-[13px] font-semibold text-muted">Dari luar negeri {money(p.usd, 'USD')}</div>
                 </div>
               ),
             )}

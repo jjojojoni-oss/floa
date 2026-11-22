@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { Legal } from '@/components/Legal';
-import { PLANS, SITE, rupiah } from '@/lib/site';
+import { PLANS, SITE, money, rupiah } from '@/lib/site';
 
 export const metadata: Metadata = { title: 'Syarat layanan' };
 
@@ -19,11 +19,16 @@ export default function SyaratPage() {
         <ul>
           {PLANS.map((p) => (
             <li key={p.id}>
-              {p.name}: {rupiah(p.price)}. {p.note}.
+              {p.name}: {rupiah(p.price)} dari Indonesia, atau {money(p.usd, 'USD')} dari luar negeri. {p.note}.
             </li>
           ))}
           <li>Satu pembayaran berlaku untuk satu link kado. Bukan langganan, tidak ada tagihan berulang.</li>
-          <li>Pembayaran diproses lewat QRIS oleh penyedia pembayaran resmi. floa tidak menyimpan data kartu atau rekeningmu.</li>
+          <li>Pembayaran dari Indonesia memakai QRIS dan diproses oleh BorderPay beserta mitra pembayarannya yang berlisensi Bank Indonesia.</li>
+          <li>
+            Pembayaran dari luar negeri memakai kartu kredit/debit dalam dolar AS dan diproses oleh Creem di halaman pembayarannya sendiri.
+            Pajak dapat ditambahkan sesuai negaramu dan akan terlihat sebelum kamu membayar.
+          </li>
+          <li>floa tidak pernah menerima atau menyimpan data kartu maupun rekeningmu.</li>
           <li>Kado terbit otomatis setelah pembayaran diterima.</li>
         </ul>
       </section>

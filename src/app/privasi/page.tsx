@@ -34,7 +34,11 @@ export default function PrivasiPage() {
         <h2>Untuk apa datamu dipakai</h2>
         <ul>
           <li>Menampilkan kado kepada penerima.</li>
-          <li>Memproses pembayaran lewat penyedia pembayaran.</li>
+          <li>
+            Memproses pembayaran. Untuk pembayaran dari Indonesia, BorderPay menerima ID pesanan dan nominalnya. Untuk pembayaran dari luar
+            negeri, Creem menerima ID pesanan, nominal, dan alamat link kado; email dan data kartu kamu isi langsung di halaman Creem dan
+            tidak pernah sampai ke floa.
+          </li>
           <li>Membantu kamu kalau ada masalah dengan kado atau pembayaranmu.</li>
         </ul>
         <p className="mt-2">Kami tidak menjual datamu dan tidak memakainya untuk iklan.</p>

@@ -26,7 +26,14 @@ export function slugProblem(slug: string): string | null {
   if (slug.length > SLUG_MAX) return `Maksimal ${SLUG_MAX} karakter`;
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) return 'Hanya huruf kecil, angka, dan tanda hubung';
   if (RESERVED.has(slug)) return 'Alamat ini tidak bisa dipakai';
+  // alamat cadangan untuk pesanan yang slug-nya dilepas (lihat releaseHold di lib/orders.ts)
+  if (slug.startsWith('floa-')) return 'Alamat ini tidak bisa dipakai';
   return null;
+}
+
+/** Alamat yang boleh dibuka sebagai halaman kado: pilihan pembeli, atau alamat cadangan floa-<id pesanan>. */
+export function isGiftPath(slug: string) {
+  return !slugProblem(slug) || /^floa-[a-f0-9]{18}$/.test(slug);
 }
 
 /** Saran awal dari nama penerima: "untuk-laras". */

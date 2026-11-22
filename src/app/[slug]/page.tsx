@@ -5,7 +5,7 @@ import { cache } from 'react';
 import { GiftFrame } from '@/components/GiftFrame';
 import { Logo } from '@/components/Logo';
 import { isExpired } from '@/lib/gift';
-import { slugProblem } from '@/lib/slug';
+import { isGiftPath } from '@/lib/slug';
 import { getStore } from '@/lib/store';
 import { TemplatePlayer } from '@/templates/Player';
 import { getTemplate } from '@/templates/registry';
@@ -14,7 +14,7 @@ import { getTemplate } from '@/templates/registry';
 export const dynamic = 'force-dynamic';
 
 const loadGift = cache(async (slug: string) => {
-  if (slugProblem(slug)) return null;
+  if (!isGiftPath(slug)) return null;
   const gift = await getStore().getGiftBySlug(slug);
   return gift && gift.status === 'live' ? gift : null;
 });

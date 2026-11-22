@@ -1,21 +1,45 @@
 import 'server-only';
+import { type Market, MARKET_CURRENCY } from '../site';
+import { borderpayProvider } from './borderpay';
+import { creemProvider } from './creem';
 import { demoProvider } from './demo';
-import { midtransProvider } from './midtrans';
-import type { PaymentProvider } from './types';
+import type { PaymentProvider, ProviderId } from './types';
 
-export type { Charge, ChargeStatus, PaymentProvider } from './types';
+export type { Charge, ChargeStatus, OrderRef, PaymentProvider, ProviderId } from './types';
 
 /**
- * Memilih payment gateway.
- * - PAYMENT_PROVIDER=midtrans (atau MIDTRANS_SERVER_KEY terisi) → Midtrans QRIS
- * - PAYMENT_PROVIDER=demo → simulasi (untuk mencoba alur)
- * - Tanpa keduanya: simulasi di lokal, dan MATI di produksi supaya tidak ada yang terbit gratis.
+ * PAYMENT_PROVIDER=demo memaksa simulasi untuk semua pembeli (hanya untuk mencoba alur).
+ * Tanpa itu: penyedia asli dipakai kalau kuncinya terisi; kalau belum, simulasi hanya di lokal,
+ * dan di produksi pilihan itu dimatikan supaya tidak ada kado yang terbit gratis.
  */
-export function getPaymentProvider(): PaymentProvider | null {
-  const want = process.env.PAYMENT_PROVIDER;
-  if (want === 'demo') return demoProvider;
-  if (want === 'midtrans' || (!want && process.env.MIDTRANS_SERVER_KEY)) {
-    return process.env.MIDTRANS_SERVER_KEY ? midtransProvider : null;
-  }
-  return process.env.NODE_ENV === 'production' ? null : demoProvider;
+function demoAllowed() {
+  return process.env.PAYMENT_PROVIDER === 'demo' || process.env.NODE_ENV !== 'production';
+}
+
+/** Penyedia untuk pembeli baru: BorderPay (QRIS, rupiah) di Indonesia, Creem (kartu, dolar) di luar negeri. */
+export function providerFor(market: Market): PaymentProvider | null {
+  const currency = MARKET_CURRENCY[market];
+  if (process.env.PAYMENT_PROVIDER === 'demo') return demoProvider(currency);
+  const real = market === 'id' ? borderpayProvider() : creemProvider();
+  if (real) return real;
+  return demoAllowed() ? demoProvider(currency) : null;
+}
+
+/** Penyedia yang dulu dipakai sebuah pesanan (untuk cek status, webhook, simulasi). */
+export function providerById(id: ProviderId | string, market: Market): PaymentProvider | null {
+  if (id === 'borderpay') return borderpayProvider();
+  if (id === 'creem') return creemProvider();
+  if (id === 'demo') return demoAllowed() ? demoProvider(MARKET_CURRENCY[market]) : null;
+  return null;
+}
+
+export type MarketInfo = { available: boolean; test: boolean; provider: ProviderId | null };
+
+/** Pilihan pembayaran yang aktif saat ini, untuk ditampilkan di checkout. */
+export function paymentOptions(): Record<Market, MarketInfo> {
+  const info = (m: Market): MarketInfo => {
+    const p = providerFor(m);
+    return { available: !!p, test: p?.test ?? false, provider: p?.id ?? null };
+  };
+  return { id: info('id'), intl: info('intl') };
 }

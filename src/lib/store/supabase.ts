@@ -16,9 +16,12 @@ type Row = {
   status: Gift['status'];
   plan: Gift['plan'];
   amount: number;
+  currency: Gift['currency'] | null;
   edit_key: string;
   contact: string | null;
   provider: string;
+  provider_ref: string | null;
+  pay_expires_at: string | null;
   created_at: string;
   paid_at: string | null;
   expires_at: string | null;
@@ -32,9 +35,12 @@ const toGift = (r: Row): Gift => ({
   status: r.status,
   plan: r.plan,
   amount: r.amount,
+  currency: r.currency ?? 'IDR',
   editKey: r.edit_key,
   contact: r.contact,
   provider: r.provider,
+  providerRef: r.provider_ref ?? null,
+  payExpiresAt: r.pay_expires_at ?? null,
   createdAt: r.created_at,
   paidAt: r.paid_at,
   expiresAt: r.expires_at,
@@ -49,9 +55,12 @@ function toRow(g: Partial<Gift>): Partial<Row> {
   if (g.status !== undefined) r.status = g.status;
   if (g.plan !== undefined) r.plan = g.plan;
   if (g.amount !== undefined) r.amount = g.amount;
+  if (g.currency !== undefined) r.currency = g.currency;
   if (g.editKey !== undefined) r.edit_key = g.editKey;
   if (g.contact !== undefined) r.contact = g.contact;
   if (g.provider !== undefined) r.provider = g.provider;
+  if (g.providerRef !== undefined) r.provider_ref = g.providerRef;
+  if (g.payExpiresAt !== undefined) r.pay_expires_at = g.payExpiresAt;
   if (g.createdAt !== undefined) r.created_at = g.createdAt;
   if (g.paidAt !== undefined) r.paid_at = g.paidAt;
   if (g.expiresAt !== undefined) r.expires_at = g.expiresAt;
@@ -93,6 +102,13 @@ export function supabaseStore(url: string, serviceKey: string, bucket: string): 
       const { data, error } = await db.from('gifts').update(toRow(rest)).eq('id', id).select('*').maybeSingle();
       if (error) throw new Error(`supabase updateGift: ${error.message}`);
       return data ? toGift(data as Row) : null;
+    },
+
+    async renameSlug(id, slug) {
+      const { data, error } = await db.from('gifts').update({ slug }).eq('id', id).select('id').maybeSingle();
+      if (!error) return !!data;
+      if (error.code === '23505') return false;
+      throw new Error(`supabase renameSlug: ${error.message}`);
     },
 
     async deleteGift(id) {

@@ -23,9 +23,10 @@ export function MyGifts() {
       .filter((g) => g.status === 'pending')
       .forEach(async (g) => {
         try {
-          const r = await api<{ status: 'pending' | 'live' }>(`/api/orders/${g.id}`);
+          const r = await api<{ status: 'pending' | 'live'; slug: string }>(`/api/orders/${g.id}`);
           if (r.status === 'live') {
-            upsertMyGift({ ...g, status: 'live', qr: undefined, expiresAt: undefined });
+            // slug bisa berbeda kalau pembayarannya telat dan alamatnya sempat dilepas
+            upsertMyGift({ ...g, slug: r.slug, status: 'live', pay: undefined });
             setList(readMyGifts());
           }
         } catch {
@@ -66,7 +67,7 @@ export function MyGifts() {
           const meta = getTemplate(g.template);
           const Cover = COVERS[g.template];
           const pending = g.status === 'pending';
-          const payable = pending && !!g.qr && !!g.expiresAt && new Date(g.expiresAt).getTime() > Date.now();
+          const payable = pending && !!g.pay && new Date(g.pay.expiresAt).getTime() > Date.now();
           return (
             <li key={g.id} className="paper-card flex gap-3.5 rounded-3xl p-3">
               <div className="relative h-24 w-20 flex-none overflow-hidden rounded-2xl">{Cover ? <Cover /> : null}</div>
@@ -88,7 +89,11 @@ export function MyGifts() {
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {pending ? (
                     <>
-                      {payable ? (
+                      {payable && g.pay?.kind === 'redirect' && g.pay.url ? (
+                        <a href={g.pay.url} className="btn btn-primary h-9 px-3.5 text-[13px]">
+                          Lanjut bayar
+                        </a>
+                      ) : payable ? (
                         <button type="button" onClick={() => setResume(g)} className="btn btn-primary h-9 px-3.5 text-[13px]">
                           Lanjut bayar
                         </button>
@@ -130,7 +135,7 @@ export function MyGifts() {
       {resume && getTemplate(resume.template) ? (
         <CheckoutSheet
           meta={getTemplate(resume.template)!}
-          data={{ ...EMPTY_DATA, to: resume.to }}
+          data={{ ...EMPTY_DATA, to: resume.to, from: resume.from ?? '' }}
           resume={resume}
           onClose={() => {
             setResume(null);

@@ -18,6 +18,12 @@ create table if not exists public.gifts (
 
 create index if not exists gifts_status_created_idx on public.gifts (status, created_at);
 
+-- Pembayaran dua pasar: rupiah (BorderPay, QRIS) dan dolar AS (Creem, kartu).
+-- amount disimpan dalam satuan terkecil mata uangnya (rupiah / sen).
+alter table public.gifts add column if not exists currency text not null default 'IDR' check (currency in ('IDR', 'USD'));
+alter table public.gifts add column if not exists provider_ref text;
+alter table public.gifts add column if not exists pay_expires_at timestamptz;
+
 -- RLS aktif tanpa policy: tabel hanya bisa diakses server floa lewat service role key.
 alter table public.gifts enable row level security;
 
