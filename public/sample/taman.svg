@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" width="600" height="600" preserveAspectRatio="xMidYMid slice">
+<rect width="600" height="600" fill="#d7efff"/>
+<circle cx="110" cy="110" r="50" fill="#fff3c4"/>
+<g fill="#fff"><ellipse cx="400" cy="120" rx="80" ry="22"/><ellipse cx="450" cy="100" rx="50" ry="20"/><ellipse cx="240" cy="200" rx="60" ry="16"/></g>
+<path d="M-10,330 Q160,250 320,320 T610,300 L610,600 L-10,600Z" fill="#9bd08f"/>
+<path d="M-10,410 Q200,340 360,400 T610,380 L610,600 L-10,600Z" fill="#6fb86f"/>
+<path d="M-10,500 Q220,440 400,490 T610,470 L610,600 L-10,600Z" fill="#4c9a58"/>
+<defs><g id="f"><circle cx="0" cy="-11" r="9"/><circle cx="10.5" cy="-3.4" r="9"/><circle cx="6.5" cy="9" r="9"/><circle cx="-6.5" cy="9" r="9"/><circle cx="-10.5" cy="-3.4" r="9"/></g></defs>
+<g fill="#ff8fa3"><use href="#f" x="90" y="440"/><use href="#f" x="300" y="470"/><use href="#f" x="500" y="430"/><use href="#f" x="200" y="540"/></g>
+<g fill="#fff"><use href="#f" x="180" y="400"/><use href="#f" x="410" y="520"/><use href="#f" x="540" y="540"/><use href="#f" x="60" y="550"/></g>
+<g fill="#ffc94a"><use href="#f" x="380" y="410"/><use href="#f" x="120" y="500"/><use href="#f" x="470" y="560"/><use href="#f" x="300" y="560"/></g>
+<g fill="#f2a51f"><circle cx="90" cy="440" r="5"/><circle cx="300" cy="470" r="5"/><circle cx="500" cy="430" r="5"/><circle cx="200" cy="540" r="5"/><circle cx="180" cy="400" r="5"/><circle cx="410" cy="520" r="5"/><circle cx="540" cy="540" r="5"/><circle cx="60" cy="550" r="5"/></g>
+<g fill="#7a4a2b"><circle cx="380" cy="410" r="5"/><circle cx="120" cy="500" r="5"/><circle cx="470" cy="560" r="5"/><circle cx="300" cy="560" r="5"/></g>
+</svg>
