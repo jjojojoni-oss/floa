@@ -22,7 +22,9 @@ export const en: Dict = {
     footerTag: 'Little gifts, painted with care.',
   },
   plans: {
-    bulan: { name: '30 days', note: 'Link stays live for a month' },
+    minggu: { name: '7 days', note: 'Just right for one moment' },
+    bulan: { name: '1 month', note: 'Open it again and again' },
+    triwulan: { name: '90 days', note: 'Keep it around longer' },
     selamanya: { name: 'Forever', note: 'Link never expires' },
     recommended: 'Recommended',
   },

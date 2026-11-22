@@ -3,7 +3,7 @@ import { randomBytes, timingSafeEqual } from 'node:crypto';
 import { type Gift, isExpired, sanitizeData } from './gift';
 import { providerById, providerFor } from './payment';
 import { PAY_WINDOW_MIN } from './payment/types';
-import { type Currency, type Market, getPlan, planAmount } from './site';
+import { type Currency, type Market, anyPlan, getPlan, planAmount } from './site';
 import { slugProblem } from './slug';
 import { getStore } from './store';
 import { DEFAULT_LOCALE, isLocale } from '@/i18n/config';
@@ -144,7 +144,7 @@ export async function createOrder(input: {
 /** Menandai lunas dan menerbitkan kado. Aman dipanggil berkali-kali. */
 export async function activateGift(gift: Gift): Promise<Gift> {
   if (gift.status === 'live') return gift;
-  const plan = getPlan(gift.plan);
+  const plan = anyPlan(gift.plan);
   const now = new Date();
   const expiresAt = plan?.days ? new Date(now.getTime() + plan.days * 86_400_000).toISOString() : null;
   const next = await getStore().updateGift(gift.id, { status: 'live', paidAt: now.toISOString(), expiresAt });

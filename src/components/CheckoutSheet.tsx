@@ -411,24 +411,33 @@ function FormStep(p: {
 
       <fieldset className="mt-4">
         <legend className="text-[14px] font-extrabold">{t.checkout.howLong}</legend>
-        <div className="mt-1.5 grid grid-cols-2 gap-2.5">
+        <div className="mt-1.5 grid grid-cols-3 gap-2">
           {PLANS.map((pl) => {
             const on = p.plan === pl.id;
             return (
               <label
                 key={pl.id}
                 className={
-                  'relative cursor-pointer rounded-2xl p-3.5 transition-shadow ' +
+                  'relative cursor-pointer rounded-2xl px-2 py-3 transition-shadow min-[360px]:px-2.5 sm:p-3.5 ' +
                   (on ? 'bg-white shadow-[inset_0_0_0_2.5px_var(--color-ink)]' : 'bg-white shadow-[inset_0_0_0_1.5px_var(--color-line)]')
                 }
               >
                 <input type="radio" name="plan" value={pl.id} checked={on} onChange={() => p.setPlan(pl.id)} className="sr-only" />
                 {pl.popular ? (
-                  <span className="absolute -top-2 right-3 rounded-full bg-butter px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wider">{t.plans.recommended}</span>
+                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-butter px-2 py-0.5 text-[9.5px] font-extrabold uppercase tracking-wider">{t.plans.recommended}</span>
                 ) : null}
                 <span className="block text-[13px] font-bold text-ink-2">{t.plans[pl.id].name}</span>
-                <span className="font-display mt-0.5 block text-[1.45rem] font-semibold leading-none">{money(planAmount(pl, currency), currency)}</span>
-                <span className="mt-1 block text-[12px] leading-tight text-muted">{t.plans[pl.id].note}</span>
+                <span className="font-display mt-0.5 block whitespace-nowrap text-[1.02rem] font-semibold leading-none min-[360px]:text-[1.15rem] min-[400px]:text-[1.3rem]">
+                  {currency === 'IDR' ? (
+                    <>
+                      <span className="mr-0.5 align-[0.28em] text-[0.62em]">Rp</span>
+                      {planAmount(pl, currency).toLocaleString('id-ID')}
+                    </>
+                  ) : (
+                    money(planAmount(pl, currency), currency)
+                  )}
+                </span>
+                <span className="mt-1 block text-[11.5px] leading-tight text-muted">{t.plans[pl.id].note}</span>
               </label>
             );
           })}

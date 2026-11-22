@@ -20,7 +20,9 @@ export const id = {
     footerTag: 'Kado kecil, dilukis dengan niat.',
   },
   plans: {
-    bulan: { name: '30 hari', note: 'Link aktif sebulan' },
+    minggu: { name: '7 hari', note: 'Pas untuk satu momen' },
+    bulan: { name: '1 bulan', note: 'Bisa dibuka berulang-ulang' },
+    triwulan: { name: '90 hari', note: 'Untuk disimpan lebih lama' },
     selamanya: { name: 'Selamanya', note: 'Link tidak pernah mati' },
     recommended: 'Disarankan',
   },

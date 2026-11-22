@@ -16,7 +16,8 @@ export const SITE = {
   contact: { email: 'halo@floa.site' },
 } as const;
 
-export type PlanId = 'bulan' | 'selamanya';
+/** 'selamanya' hanya untuk pesanan lama: tidak dijual lagi. */
+export type PlanId = 'minggu' | 'bulan' | 'triwulan' | 'selamanya';
 
 /** Pembeli di Indonesia bayar rupiah lewat BorderPay (QRIS); pembeli luar negeri bayar dolar lewat Creem (kartu). */
 export type Market = 'id' | 'intl';
@@ -36,15 +37,26 @@ export type Plan = {
   popular?: boolean;
 };
 
+/** Paket yang dijual sekarang. */
 export const PLANS: Plan[] = [
-  { id: 'bulan', name: '30 hari', price: 19000, usd: 299, days: 30, note: 'Link aktif sebulan' },
-  { id: 'selamanya', name: 'Selamanya', price: 39000, usd: 499, days: null, note: 'Link tidak pernah mati', popular: true },
+  { id: 'minggu', name: '7 hari', price: 25000, usd: 299, days: 7, note: 'Pas untuk satu momen' },
+  { id: 'bulan', name: '1 bulan', price: 45000, usd: 499, days: 30, note: 'Bisa dibuka berulang-ulang', popular: true },
+  { id: 'triwulan', name: '90 hari', price: 75000, usd: 799, days: 90, note: 'Untuk disimpan lebih lama' },
 ];
+
+/** Paket yang sudah tidak dijual, tetap dikenali supaya pesanan lama yang dibayar belakangan tetap terbit benar. */
+const RETIRED_PLANS: Plan[] = [{ id: 'selamanya', name: 'Selamanya', price: 39000, usd: 499, days: null, note: 'Link tidak pernah mati' }];
 
 export const CHEAPEST = Math.min(...PLANS.map((p) => p.price));
 
+/** Paket yang bisa dibeli sekarang (untuk pesanan baru). */
 export function getPlan(id: string): Plan | undefined {
   return PLANS.find((p) => p.id === id);
+}
+
+/** Paket apa pun, termasuk yang sudah tidak dijual (untuk menerbitkan pesanan lama). */
+export function anyPlan(id: string): Plan | undefined {
+  return getPlan(id) ?? RETIRED_PLANS.find((p) => p.id === id);
 }
 
 /** Harga paket dalam satuan terkecil mata uangnya (rupiah, atau sen untuk USD). */
@@ -56,12 +68,12 @@ export function rupiah(n: number) {
   return 'Rp' + n.toLocaleString('id-ID');
 }
 
-/** "19rb" */
+/** "25rb" */
 export function rupiahShort(n: number) {
   return n % 1000 === 0 ? `${n / 1000}rb` : rupiah(n);
 }
 
-/** Rp19.000 atau $2.99. `amount` dalam satuan terkecil (rupiah / sen). */
+/** Rp25.000 atau $2.99. `amount` dalam satuan terkecil (rupiah / sen). */
 export function money(amount: number, currency: Currency) {
   return currency === 'IDR' ? rupiah(amount) : `$${(amount / 100).toFixed(2)}`;
 }
@@ -71,7 +83,7 @@ export function displayCurrency(locale: string): Currency {
   return locale === 'id' ? 'IDR' : 'USD';
 }
 
-/** Harga termurah yang ringkas untuk label ("19rb" atau "$2.99"). */
+/** Harga termurah yang ringkas untuk label ("25rb" atau "$2.99"). */
 export function cheapestLabel(locale: string) {
   return displayCurrency(locale) === 'IDR' ? rupiahShort(CHEAPEST) : money(Math.min(...PLANS.map((p) => p.usd)), 'USD');
 }

@@ -22,7 +22,9 @@ export const ms: Dict = {
     footerTag: 'Hadiah kecil, dilukis dengan sepenuh hati.',
   },
   plans: {
-    bulan: { name: '30 hari', note: 'Pautan aktif sebulan' },
+    minggu: { name: '7 hari', note: 'Sesuai untuk satu detik istimewa' },
+    bulan: { name: '1 bulan', note: 'Boleh dibuka berulang kali' },
+    triwulan: { name: '90 hari', note: 'Untuk disimpan lebih lama' },
     selamanya: { name: 'Selamanya', note: 'Pautan tak pernah tamat' },
     recommended: 'Disyorkan',
   },

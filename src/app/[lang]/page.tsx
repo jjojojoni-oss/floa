@@ -91,7 +91,7 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
           <p className="mt-2 text-[15px] text-ink-2 sm:text-center">
             {t.home.priceSub}
           </p>
-          <div className="mx-auto mt-7 grid max-w-2xl gap-4 sm:grid-cols-2 sm:gap-6">
+          <div className="mx-auto mt-7 grid max-w-4xl gap-4 sm:grid-cols-3 sm:gap-5">
             {PLANS.map((p) =>
               p.popular ? (
                 <div key={p.id} className="relative overflow-hidden rounded-[1.6rem] p-6 text-[#fff3dc] shadow-pop">
