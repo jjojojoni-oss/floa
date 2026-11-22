@@ -32,7 +32,7 @@ Salin `.env.example` dan isi nilainya (di Vercel: Project → Settings → Envir
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Database kado + penyimpanan foto |
 | `BORDERPAY_API_KEY`, `BORDERPAY_WEBHOOK_TOKEN` | Pembayaran dari Indonesia (QRIS, rupiah) |
 | `CREEM_API_KEY`, `CREEM_PRODUCT_ID`, `CREEM_WEBHOOK_SECRET` | Pembayaran dari luar negeri (kartu, dolar AS) |
-| `PAYMENT_PROVIDER` | `demo` = semua pembayaran disimulasikan; hapus sebelum situs dipromosikan |
+| `PAYMENT_PROVIDER` | `demo` = semua pembayaran disimulasikan; `live` (atau kosong) = BorderPay & Creem asli sesuai key yang terisi |
 
 ### Supabase
 
