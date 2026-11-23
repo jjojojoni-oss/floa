@@ -88,6 +88,11 @@
 .scale {
   font-size: min(1em, calc((100cqh - 16.6em) / 29.4));
   transform: translateX(0.6em);
+  transition: transform 0.9s cubic-bezier(0.3, 0.8, 0.25, 1);
+}
+/* buku yang terbuka bergeser ke kanan, supaya halaman yang sudah dibalik ikut terlihat */
+.scale.opened {
+  transform: translateX(clamp(0.6em, calc((100cqw - 20.6em) / 2 - 0.9em), 2.6em));
 }
 .book {
   position: relative;
@@ -283,33 +288,13 @@
   display: grid;
   place-items: center;
 }
-.plate {
-  width: 11em;
-  padding: 0.9em 0.8em 1em;
-  composes: paper from '../kit/kit.module.css';
-  --paper: #fbf3e0;
-  color: #3b2a22;
-  text-align: center;
-  transform: rotate(2deg);
-  outline: 0.06em solid rgba(176, 85, 63, 0.6);
-  outline-offset: -0.4em;
-}
-.plateEyebrow {
-  display: block;
-  font-size: 0.55em;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  opacity: 0.6;
-}
-.plateName {
-  display: block;
-  margin-top: 0.15em;
-  font-family: var(--font-hand, cursive);
-  font-size: 1.6em;
-  font-weight: 700;
-  line-height: 1;
-  overflow-wrap: anywhere;
+.linerEdge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 2.2em;
+  background: linear-gradient(to left, rgba(40, 60, 50, 0.38), rgba(40, 60, 50, 0));
 }
 
 /* ── halaman ── */
@@ -351,7 +336,7 @@
 }
 .holesBack {
   left: auto;
-  right: 0.84em;
+  right: 0.4em;
 }
 /* teduh di dekat jilid */
 .gutter {
@@ -637,6 +622,22 @@
   width: 1.8em;
   transform: rotate(-12deg);
 }
+.alt .stamp {
+  right: auto;
+  left: 2.8em;
+  top: 1.2em;
+  transform: rotate(-6deg);
+}
+.alt .postmark {
+  left: 5.9em;
+  top: 1.7em;
+  transform: rotate(8deg);
+}
+.alt .heartB {
+  left: 15.6em;
+  top: 24.2em;
+  transform: rotate(14deg);
+}
 
 /* variasi 3: foto dijepit klip + tiket */
 .backing {
@@ -747,6 +748,26 @@
   top: 20.4em;
   width: 1.05em;
   transform: rotate(16deg);
+}
+.alt .ticket {
+  left: 8.9em;
+  top: 22.6em;
+  transform: rotate(4deg);
+}
+.alt .melati {
+  left: 3.4em;
+  top: 22.9em;
+  transform: rotate(-24deg);
+}
+.alt .heartC1 {
+  left: 6.6em;
+  top: 25.6em;
+  transform: rotate(10deg);
+}
+.alt .heartC2 {
+  left: 2.9em;
+  top: 21.1em;
+  transform: rotate(-12deg);
 }
 
 /* ── halaman kantong ── */
@@ -866,13 +887,17 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 1.45em;
+  bottom: -1.7em;
   text-align: center;
-  font-size: 0.7em;
+  font-size: 0.72em;
   font-weight: 800;
-  letter-spacing: 0.04em;
-  color: #4a3118;
-  opacity: 0.7;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #3b2a22;
+  opacity: 0.5;
+}
+.pocketLive .pocketOpen {
+  opacity: 0.68;
 }
 .pocketFlower {
   position: absolute;

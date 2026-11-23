@@ -104,6 +104,9 @@ function buildWall(count: number) {
 
 type Card = { src: string | null; cap: string };
 
+/** caption untuk label pembaca layar, tanpa tanda baca penutup (labelnya sendiri sudah diakhiri titik) */
+const capLabel = (cap: string) => (cap ? `: ${cap.replace(/[.!?…\s]+$/u, '')}` : '');
+
 function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void }) {
   const t = TEXT[useLocale()];
   const photos = data.photos.filter(Boolean).slice(0, 6);
@@ -346,7 +349,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                   onClick={() => openView(i)}
                   tabIndex={on && view === null ? 0 : -1}
                   aria-hidden={!on}
-                  aria-label={fmt(c.src ? t.photo : t.note, { i: i + 1, total, cap: c.cap ? `: ${c.cap}` : '' })}
+                  aria-label={fmt(c.src ? t.photo : t.note, { i: i + 1, total, cap: capLabel(c.cap) })}
                 >
                   {c.src ? (
                     <span className={s.photo}>
@@ -358,7 +361,9 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                       <span className={s.quote}>{c.cap}</span>
                     </span>
                   )}
-                  <span className={s.cap}>{c.src ? c.cap : from ? `— ${from}` : ''}</span>
+                  <span className={s.cap}>
+                    <span className={s.capText}>{c.src ? c.cap : from ? `— ${from}` : ''}</span>
+                  </span>
                   <Sprite name="memories-hati" className={cx(s.seen, seen[i] && view !== i && s.isSeen)} />
                 </button>
                 <Sprite name="memories-jepit" className={s.pin} />
@@ -433,6 +438,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         <div className={cx(s.viewer, shown && s.vOpen)} role="dialog" aria-label={t.viewer}>
           <div className={s.veil} onClick={closeView} />
           <div ref={bigEl} className={s.big} onPointerDown={onSwipeDown} onPointerUp={onSwipeUp} onPointerCancel={() => (swipe.current = null)}>
+            <Sprite name="memories-jepit" className={s.bigPin} />
             <div key={view} className={cx(s.content, dir > 0 && s.fromRight, dir < 0 && s.fromLeft)}>
               {cur.src ? (
                 <span className={s.bigPhoto}>

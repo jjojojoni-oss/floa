@@ -30,6 +30,7 @@ const ART = [
   'scrapbook-sobekan',
   'scrapbook-pres-1',
   'scrapbook-pres-2',
+  'scrapbook-kantong',
 ];
 
 export default function Scrapbook(props: TemplateProps) {
@@ -226,8 +227,10 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     const a = angles.current[d.leaf] ?? 0;
     const wasTurned = d.leaf < posRef.current;
     let target = a > 90 ? 180 : 0;
-    if (d.v < -0.45) target = 180;
-    if (d.v > 0.45) target = 0;
+    // kibasan hanya dihitung kalau jari masih bergerak saat dilepas
+    const v = performance.now() - d.lastT > 90 ? 0 : d.v;
+    if (v < -0.45) target = 180;
+    if (v > 0.45) target = 0;
     if (cancelled) target = wasTurned ? 180 : 0;
     animate(d.leaf, target);
     commit(target === 180 ? d.leaf + 1 : d.leaf);
@@ -267,7 +270,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       </div>
 
       <div className={s.mid}>
-        <div className={s.scale}>
+        <div className={cx(s.scale, pos > 0 && s.opened)}>
           <div
             ref={bookRef}
             className={s.book}
@@ -348,17 +351,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                   />
                 </div>
                 <div className={cx(s.face, s.back, i === 0 ? s.liner : s.paperBack)} style={{ '--paper': PAPER[(i + 5) % PAPER.length] } as CSSProperties}>
-                  {i === 0 ? (
-                    <span className={s.plate}>
-                      <span className={s.plateEyebrow}>{t.bookplate}</span>
-                      <span className={s.plateName}>
-                        {to}
-                        {from ? ` & ${from}` : ''}
-                      </span>
-                    </span>
-                  ) : (
-                    <span className={s.holesBack} />
-                  )}
+                  {i === 0 ? <span className={s.linerEdge} /> : <span className={s.holesBack} />}
                   <span
                     className={s.backShade}
                     ref={(el) => {

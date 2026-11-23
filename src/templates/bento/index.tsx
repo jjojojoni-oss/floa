@@ -366,6 +366,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
       <div className={s.boxArea}>
         <div className={s.box}>
+          <Sprite name="bento-sumpit" className={s.sticks} />
           <Sprite name="bento-kotak" className={s.boxArt} />
 
           <div className={s.grid}>
@@ -375,7 +376,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               const hEm = (IH * h) / 100;
               const ratio = wEm / hEm;
               const shape: Shape = ratio > 1.42 ? 'wide' : ratio < 0.8 ? 'tall' : 'mid';
-              const base = Math.min(wEm, hEm);
+              // lauk sedikit lebih kecil dari sekatnya supaya alas selada/cup kertas tetap terlihat
+              const base = Math.min(wEm, hEm) * 0.86;
               const done = !!eaten[i];
               return (
                 <button
@@ -480,9 +482,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         </div>
       </div>
 
-      <div className={s.foot} aria-hidden>
-        <Sprite name="bento-sumpit" className={s.sticks} />
-      </div>
+      <div className={s.foot} aria-hidden />
 
       <Confetti burst={burst} shapes="hearts" origin={{ x: 0.5, y: 0.52 }} colors={['#e4572e', '#ffd36e', '#ffc9cf', '#8dbdae', '#ffffff', '#f6c84c']} />
 

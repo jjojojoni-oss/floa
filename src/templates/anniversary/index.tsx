@@ -272,7 +272,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
             </i>
           </span>
           {sh.photo ? (
-            <span className={s.snap}>
+            <span className={cx(s.snap, sh.note.length > 44 && s.compact)}>
               <Sprite name="anniversary-klip" className={s.clip} />
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={sh.photo} alt="" draggable={false} />
@@ -280,7 +280,9 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           ) : (
             <Sprite name={sh.n % 2 ? 'bunga-kamboja-pink' : 'bunga-kamboja'} className={s.sticker} />
           )}
-          {sh.note ? <span className={cx(s.note, !sh.photo && s.big, sh.note.length > 38 && s.long)}>{sh.note}</span> : null}
+          {sh.note ? (
+            <span className={cx(s.note, !sh.photo && s.big, sh.note.length > (sh.photo ? 38 : 24) && s.long, sh.note.length > 44 && s.xl)}>{sh.note}</span>
+          ) : null}
         </>
       );
     }
