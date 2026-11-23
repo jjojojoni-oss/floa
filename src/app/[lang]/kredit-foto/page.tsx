@@ -46,9 +46,9 @@ export default async function KreditFotoPage({ params }: Props) {
   return (
     <Legal title={t.title} updated={t.updated}>
       <p>{t.intro}</p>
-      <ul className="!mt-5 grid gap-3 sm:grid-cols-2 [&>li]:!ml-0 [&>li]:!list-none">
+      <ul className="!mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 [&>li]:!ml-0 [&>li]:!list-none">
         {CONTOH_PHOTOS.map((p) => (
-          <li key={p.file} className="flex gap-3 rounded-2xl bg-white/60 p-2.5 shadow-[inset_0_0_0_1px_var(--color-line)]">
+          <li key={p.file} className="flex min-w-0 gap-3 rounded-2xl bg-white/60 p-2.5 shadow-[inset_0_0_0_1px_var(--color-line)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={p.file} alt="" loading="lazy" className="h-16 w-16 flex-none rounded-xl object-cover" />
             <div className="min-w-0 text-[13px] leading-snug">
