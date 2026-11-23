@@ -11,13 +11,31 @@ import { clap, playSong, songTiming } from './song';
 import s from './style.module.css';
 
 /**
- * Alur: lampu sengaja dimatikan → nyalakan lilin satu per satu (tiap lilin membawa satu doa, kadang dengan foto)
+ * Alur: matikan lampu lewat saklar → nyalakan lilin satu per satu (tiap lilin membawa satu doa, kadang dengan foto)
  * → pejamkan mata & bikin permohonan → tiup (ada satu lilin bandel) → lampu menyala, nyanyi bareng
- * → potong kue → potongan pertama buat dia (plus colekan krim) → kartu di bawah piring.
+ * → foto dulu sebelum dipotong → potong kue → potongan pertama buat dia (plus colekan krim) → kartu di bawah piring.
  */
-type Phase = 'light' | 'wish' | 'wished' | 'blow' | 'puffed' | 'stubborn' | 'dark' | 'party' | 'cut' | 'slice' | 'smeared' | 'card';
+type Phase =
+  | 'intro'
+  | 'light'
+  | 'wish'
+  | 'wished'
+  | 'blow'
+  | 'puffed'
+  | 'stubborn'
+  | 'dark'
+  | 'party'
+  | 'photo'
+  | 'snap'
+  | 'cut'
+  | 'slice'
+  | 'smeared'
+  | 'card';
 
-const BRIGHT: Phase[] = ['party', 'cut', 'slice', 'smeared', 'card'];
+/** lampu ruangan menyala */
+const LIGHTS: Phase[] = ['intro', 'party', 'photo', 'snap', 'cut', 'slice', 'smeared', 'card'];
+/** bendera, balon, dan warna pesta */
+const PARTY: Phase[] = ['party', 'photo', 'snap', 'cut', 'slice', 'smeared', 'card'];
 const FLAMES_ON: Phase[] = ['light', 'wish', 'wished', 'blow'];
 
 /** Dasar tiap lilin di kanvas kue 440×480 (sama dengan art/sprites/41-lilin.js). */
@@ -59,11 +77,12 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const n = Math.min(5, Math.max(3, notes.length));
   const cs = candleSpots(n);
   const stub = Math.floor(n / 2); // si lilin bandel
-  const ready = useArtReady(['bg-lilin', 'lilin-kue', 'lilin-meja', 'lilin-api', ...cs.map((c) => c.stick)]);
+  const ready = useArtReady(['bg-lilin', 'bg-lilin-terang', 'lilin-kue', 'lilin-meja', 'lilin-api', ...cs.map((c) => c.stick)]);
 
   const [lit, setLit] = useState<boolean[]>(() => Array(n).fill(false));
   const [order, setOrder] = useState<number[]>([]);
-  const [phase, setPhase] = useState<Phase>('light');
+  const [phase, setPhase] = useState<Phase>('intro');
+  const [flipped, setFlipped] = useState(false);
   const [alt, setAlt] = useState(false);
   const [line, setLine] = useState(-1);
   const [finale, setFinale] = useState(false);
@@ -85,7 +104,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
   const litCount = order.length;
   const allLit = litCount >= n;
-  const bright = BRIGHT.includes(phase);
+  const bright = LIGHTS.includes(phase);
+  const party = PARTY.includes(phase);
   const flamesOn = FLAMES_ON.includes(phase);
   const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -128,6 +148,15 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       img.src = `/art/${name}.webp`;
     });
   }, [phase]);
+
+  /* ── 0. saklar ── */
+  const lightsOff = () => {
+    if (phase !== 'intro' || flipped) return;
+    setFlipped(true);
+    sfx.tap();
+    haptic(15);
+    later(() => setPhase('light'), reduce ? 50 : 320);
+  };
 
   /* ── 1. lilin ── */
   const light = (i: number) => {
@@ -225,7 +254,17 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     setClaps((c) => c + 1);
   };
 
-  /* ── 4. potong kue ── */
+  /* ── 4. foto dulu ── */
+  const snap = () => {
+    if (phase !== 'photo') return;
+    stopSong.current();
+    sfx.tap();
+    haptic(25);
+    setPhase('snap');
+    later(() => sfx.whoosh(), 450);
+  };
+
+  /* ── 5. potong kue ── */
   const cut = () => {
     if (phase !== 'cut') return;
     stopSong.current();
@@ -267,7 +306,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     scene.current?.style.setProperty('--k', '0');
   };
 
-  /* ── 5. potongan pertama & colekan krim ── */
+  /* ── 6. potongan pertama & colekan krim ── */
   const smear = () => {
     if (phase !== 'slice') return;
     setPhase('smeared');
@@ -291,6 +330,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const isLast = k === n;
   const title = data.title || `${t.happy}${data.to ? `, ${data.to}` : ''}!`;
 
+  const longSong = Math.max(...t.song.map((l) => fmt(l, { to }).length)) > 32;
   const pulled = phase === 'cut' || phase === 'slice' || phase === 'smeared' || phase === 'card';
   const flameOn = (i: number) => (flamesOn ? lit[i] : phase === 'stubborn' && i === stub);
   const puffing = (i: number) => (phase === 'puffed' && lit[i] && i !== stub) || (phase === 'puffed' && i === stub) || (phase === 'dark' && i === stub);
@@ -310,6 +350,13 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       <div key="cut">
         <div className={s.eyebrow}>{t.cutEyebrow}</div>
         <div className={s.title}>{t.cutTitle}</div>
+      </div>
+    );
+  } else if (phase === 'photo' || phase === 'snap') {
+    head = (
+      <div key={phase}>
+        <div className={s.eyebrow}>{t.photoEyebrow}</div>
+        <div className={s.title}>{phase === 'snap' ? t.snapTitle : t.photoTitle}</div>
       </div>
     );
   } else if (phase === 'party') {
@@ -332,7 +379,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   return (
     <div
       ref={wrap}
-      className={cx(s.wrap, ready && s.ready, bright && s.party, phase === 'wished' && s.opened, phase === 'smeared' && s.shook)}
+      className={cx(s.wrap, ready && s.ready, bright && s.lights, party && s.party, phase === 'wished' && s.opened, phase === 'smeared' && s.shook)}
       style={{ '--lit': glow, '--dim': dim } as CSSProperties}
     >
       <div className={s.bright} />
@@ -344,7 +391,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       <div className={s.art}>
         <div
           ref={scene}
-          className={cx(s.bq, phase !== 'light' && s.locked, pulled && s.pulled, (phase === 'slice' || phase === 'smeared' || phase === 'card') && s.aside)}
+          className={cx(s.bq, phase !== 'light' && s.locked, phase === 'photo' && s.posing, pulled && s.pulled, (phase === 'slice' || phase === 'smeared' || phase === 'card') && s.aside)}
           role="group"
           aria-label={t.cake}
         >
@@ -404,6 +451,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           ) : null}
         </div>
 
+        {phase === 'photo' ? <span className={s.finder} aria-hidden /> : null}
+
         {phase === 'slice' || phase === 'smeared' || phase === 'card' ? (
           <div className={s.plateWrap}>
             {phase === 'card' ? (
@@ -420,6 +469,15 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       </div>
 
       <div className={s.foot}>
+        {phase === 'intro' ? (
+          <div className={s.blowBox}>
+            <div className={s.prompt}>{t.intro}</div>
+            <button type="button" className={cx(s.switch, flipped && s.switchOff)} onClick={lightsOff} aria-label={t.switchLabel}>
+              <span className={s.rocker} />
+            </button>
+          </div>
+        ) : null}
+
         {phase === 'light' ? (
           <>
             {litCount === 0 ? <div className={s.darkLine}>{t.dark}</div> : null}
@@ -526,7 +584,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
         {phase === 'party' ? (
           <div className={s.songBox}>
-            <div className={s.songCard} aria-live="polite">
+            <div className={cx(s.songCard, longSong && s.songLong)} aria-live="polite">
               <div className={s.songEyebrow}>{t.songEyebrow}</div>
               {t.song.map((l, i) => (
                 <div key={i} className={cx(s.lyric, line === i && s.sing, line > i && s.sung)}>
@@ -535,8 +593,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               ))}
             </div>
             {line >= 4 ? (
-              <button type="button" className={s.cta} onClick={() => setPhase('cut')}>
-                {t.toCut}
+              <button type="button" className={s.cta} onClick={() => setPhase('photo')}>
+                {t.toPhoto}
               </button>
             ) : (
               <div className={s.songActions}>
@@ -549,6 +607,22 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               </div>
             )}
           </div>
+        ) : null}
+
+        {phase === 'photo' ? (
+          <div className={s.blowBox}>
+            <div className={s.prompt}>{t.photoSub}</div>
+            <button type="button" className={s.shutter} onClick={snap} aria-label={t.shutterLabel}>
+              <span className={s.shutterDot} />
+            </button>
+            <div className={s.shutterLabel}>{t.shutter}</div>
+          </div>
+        ) : null}
+
+        {phase === 'snap' ? (
+          <button type="button" className={cx(s.cta, s.ctaLate)} onClick={() => setPhase('cut')}>
+            {t.toCut}
+          </button>
         ) : null}
 
         {phase === 'slice' ? <div className={s.subNote}>{t.sliceSub}</div> : null}
@@ -572,13 +646,31 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
       {phase === 'wish' || phase === 'wished' ? <div className={s.lids} aria-hidden /> : null}
 
+      {phase === 'snap' ? (
+        <>
+          <div className={s.flash} aria-hidden />
+          <figure className={s.snapshot}>
+            <span className={s.shot} aria-hidden>
+              <Sprite name="lilin-bendera" className={s.shotFlag} />
+              <Sprite name="lilin-balon-1" className={s.shotBalloonL} />
+              <Sprite name="lilin-balon-3" className={s.shotBalloonR} />
+              <Sprite name="lilin-kue" className={s.shotCake} />
+              <span className={s.develop} />
+            </span>
+            <figcaption className={s.snapCap}>{fmt(t.snapCap, { to })}</figcaption>
+          </figure>
+        </>
+      ) : null}
+
       {phase === 'smeared' ? (
         <button type="button" className={cx(s.cream, wiping && s.wiped)} onClick={wipe} aria-label={t.wipeLabel}>
           <Sprite name="lilin-colek" />
         </button>
       ) : null}
 
-      {phase === 'light' && litCount === 0 ? <Hint>{t.hint}</Hint> : null}
+      {phase === 'intro' && !flipped ? <Hint key="sw">{t.switchHint}</Hint> : null}
+      {phase === 'light' && litCount === 0 ? <Hint key="lt">{t.hint}</Hint> : null}
+      {phase === 'photo' ? <Hint key="ph">{t.photoHint}</Hint> : null}
       {phase === 'cut' ? <Hint>{t.cutHint}</Hint> : null}
       {phase === 'slice' ? <Hint key="sl">{t.sliceHint}</Hint> : null}
       {phase === 'smeared' && !wiping ? <Hint key="wp">{t.wipeHint}</Hint> : null}

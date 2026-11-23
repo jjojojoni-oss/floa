@@ -36,6 +36,8 @@ type LampionText = {
   letterTo: string;
   letterAria: string;
   photoAlt: string;
+  photoOpen: string;
+  photoClose: string;
   finaleEyebrow: string;
 };
 
@@ -73,6 +75,8 @@ export const TEXT: Record<Locale, LampionText> = {
     letterTo: 'untuk {to}',
     letterAria: 'Ambil surat dari lampion',
     photoAlt: 'Foto untuk harapan {n}',
+    photoOpen: 'Perbesar foto harapan {n}',
+    photoClose: 'Tutup foto',
     finaleEyebrow: 'Dititipkan lewat lampion',
   },
   ms: {
@@ -108,6 +112,8 @@ export const TEXT: Record<Locale, LampionText> = {
     letterTo: 'untuk {to}',
     letterAria: 'Ambil surat daripada tanglung',
     photoAlt: 'Gambar untuk harapan {n}',
+    photoOpen: 'Besarkan gambar harapan {n}',
+    photoClose: 'Tutup gambar',
     finaleEyebrow: 'Dikirim bersama tanglung',
   },
   en: {
@@ -143,6 +149,8 @@ export const TEXT: Record<Locale, LampionText> = {
     letterTo: 'for {to}',
     letterAria: 'Take the letter from the lantern',
     photoAlt: 'Photo for wish {n}',
+    photoOpen: 'Enlarge the photo for wish {n}',
+    photoClose: 'Close photo',
     finaleEyebrow: 'Sent up with the lanterns',
   },
 };

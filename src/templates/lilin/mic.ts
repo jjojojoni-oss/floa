@@ -70,4 +70,19 @@ export function listenForBlow(cb: { level: (p: number) => void; blow: () => void
   return { ready, stop };
 }
 
-export const canUseMic = () => typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia;
+type Policy = { allowsFeature(feature: string): boolean };
+
+/**
+ * Tombol mikrofon hanya muncul kalau peramban bisa memastikan mikrofon diizinkan oleh Permissions-Policy situs.
+ * (Selama header situs masih `microphone=()`, tombolnya tersembunyi dan tiup tetap lewat tombol tahan.)
+ */
+export const canUseMic = () => {
+  if (typeof navigator === 'undefined' || !navigator.mediaDevices?.getUserMedia) return false;
+  const d = document as Document & { permissionsPolicy?: Policy; featurePolicy?: Policy };
+  const policy = d.permissionsPolicy ?? d.featurePolicy;
+  try {
+    return !!policy && policy.allowsFeature('microphone');
+  } catch {
+    return false;
+  }
+};

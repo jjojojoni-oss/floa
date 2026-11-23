@@ -94,6 +94,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const [bursts, setBursts] = useState(0);
   const [confetti, setConfetti] = useState(0);
   const [reread, setReread] = useState<number | null>(null);
+  /** foto polaroid yang sedang diperbesar (indeks harapan) */
+  const [big, setBig] = useState<number | null>(null);
   const [finale, setFinale] = useState(false);
   /** jeda hening sebelum narasi penutup, supaya hati dari lampion sempat terbentuk */
   const [calm, setCalm] = useState(false);
@@ -283,6 +285,22 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   });
 
   const skyish = phase === 'sky' || phase === 'letter';
+
+  /** polaroid kecil di kartu; diketuk untuk diperbesar */
+  const snapBtn = (i: number) => (
+    <button
+      type="button"
+      className={s.snap}
+      aria-label={fmt(t.photoOpen, { n: i + 1 })}
+      onClick={() => {
+        sfx.tap();
+        setBig(i);
+      }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={photos[i]} alt={fmt(t.photoAlt, { n: i + 1 })} draggable={false} />
+    </button>
+  );
   const long = (data.to || '').length > 12;
   const isLast = cur === n - 1;
   const note = phase === 'wish' && !preLast && cur < n ? notes[cur] ?? null : null;
@@ -468,12 +486,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           </button>
         ) : phase === 'letter' && reread !== null && notes[reread] ? (
           <div key={`r${reread}`} className={cx(s.card, s.recall, notes[reread].length > 58 && s.cardLong, photos[reread] && s.cardPhoto)} role="status">
-            {photos[reread] ? (
-              <span className={s.snap}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photos[reread]} alt={fmt(t.photoAlt, { n: reread + 1 })} draggable={false} />
-              </span>
-            ) : null}
+            {photos[reread] ? snapBtn(reread) : null}
             <span className={cx(s.cardNo, reread === n - 1 && n >= 2 && s.cardNoSpecial)}>
               {reread === n - 1 && n >= 2 ? t.lastWish : fmt(t.wishNo, { n: reread + 1, total: n })}
             </span>
@@ -481,12 +494,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           </div>
         ) : phase === 'wish' && cur < n && !preLast ? (
           <div key={`w${cur}`} className={cx(s.card, isLast && n >= 2 && s.cardSpecial, notes[cur] && notes[cur].length > 58 && s.cardLong, photo && s.cardPhoto)}>
-            {photo ? (
-              <span className={s.snap}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photo} alt={fmt(t.photoAlt, { n: cur + 1 })} draggable={false} />
-              </span>
-            ) : null}
+            {photo ? snapBtn(cur) : null}
             <span className={cx(s.cardNo, isLast && n >= 2 && s.cardNoSpecial)}>{isLast && n >= 2 ? t.lastWish : fmt(t.wishNo, { n: cur + 1, total: n })}</span>
             {note ? (
               lit ? (
@@ -504,7 +512,17 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         ) : null}
       </div>
 
-      {hint ? <Hint key={hint}>{hint}</Hint> : null}
+      {hint && big === null ? <Hint key={hint}>{hint}</Hint> : null}
+
+      {big !== null && photos[big] ? (
+        <button type="button" className={s.bigWrap} aria-label={t.photoClose} onClick={() => setBig(null)}>
+          <span className={s.big}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={photos[big]} alt={fmt(t.photoAlt, { n: big + 1 })} draggable={false} />
+            {notes[big] ? <span className={s.bigCap}>{notes[big]}</span> : null}
+          </span>
+        </button>
+      ) : null}
 
       {confetti ? (
         <Confetti burst={confetti} origin={{ x: 0.5, y: 0.7 }} count={60} shapes="hearts" colors={['#ffd27a', '#ffb85c', '#ffe9b8', '#ff9a6b', '#fff3d6']} />

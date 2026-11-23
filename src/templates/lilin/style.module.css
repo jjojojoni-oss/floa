@@ -17,7 +17,7 @@
   transition: opacity 0.5s ease, color 0.8s ease;
 }
 .wrap.ready { opacity: 1; }
-.wrap.party { color: #4a2238; }
+.wrap.lights { color: #4a2238; }
 .shook { animation: shook 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
 @keyframes shook {
   0%, 100% { translate: 0 0; }
@@ -33,19 +33,19 @@
   inset: 0;
   background: url('/art/bg-lilin-terang.webp') center bottom / cover no-repeat;
   opacity: 0;
-  transition: opacity 1.1s ease;
+  transition: opacity 0.45s ease;
   pointer-events: none;
 }
-.party .bright { opacity: 1; }
+.lights .bright { opacity: 1; }
 /* sudut ruangan yang tenggelam dalam gelap */
 .vig {
   position: absolute;
   inset: 0;
   background: radial-gradient(120% 75% at 50% 42%, transparent 40%, rgba(9, 3, 16, 0.62));
-  transition: opacity 1.1s ease;
+  transition: opacity 0.45s ease;
   pointer-events: none;
 }
-.party .vig { opacity: 0; }
+.lights .vig { opacity: 0; }
 
 /* ── kelopak mata: layar ikut terpejam saat menahan tombol permohonan ── */
 .lids {
@@ -867,7 +867,7 @@
 .songCard {
   composes: paper from '../kit/kit.module.css';
   width: 100%;
-  max-width: 19.5em;
+  max-width: 21em;
   padding: 0.55em 1.1em 0.65em;
   border-radius: 0.35em;
   color: #3d2440;
@@ -892,6 +892,7 @@
   opacity: 0.38;
   transition: opacity 0.35s ease, color 0.35s ease, scale 0.35s ease;
 }
+.songLong .lyric { font-size: 1.08em; }
 .lyric.sung { opacity: 0.78; }
 .lyric.sing {
   opacity: 1;
@@ -924,6 +925,209 @@
   text-decoration: underline;
   text-underline-offset: 0.2em;
   cursor: pointer;
+}
+
+/* ── saklar lampu di dinding ── */
+.switch {
+  composes: paper from '../kit/kit.module.css';
+  --paper: #f4ecdd;
+  position: relative;
+  margin-top: 0.9em;
+  width: 3.7em;
+  height: 5.3em;
+  border-radius: 0.55em;
+  cursor: pointer;
+  outline: none;
+  box-shadow:
+    inset 0 0 0 0.08em rgba(120, 90, 60, 0.28),
+    inset 0 -0.25em 0.4em -0.2em rgba(120, 90, 60, 0.3),
+    0 0.4em 0.8em -0.2em rgba(60, 30, 20, 0.45);
+  animation: up 0.6s 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.switch::before,
+.switch::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  width: 0.38em;
+  height: 0.38em;
+  margin-left: -0.19em;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff, #c9b89c);
+  box-shadow: inset 0 0 0 0.04em rgba(110, 80, 50, 0.4);
+}
+.switch::before { top: 0.45em; }
+.switch::after { bottom: 0.45em; }
+.switch:focus-visible { box-shadow: 0 0 0 0.18em #fff, 0 0.4em 0.8em -0.2em rgba(60, 30, 20, 0.45); }
+.rocker {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 1.55em;
+  height: 2.7em;
+  margin: -1.35em 0 0 -0.775em;
+  border-radius: 0.3em;
+  background: linear-gradient(180deg, #fffdf7 0%, #f3eadb 48%, #d9cbb2 52%, #ece2d0 100%);
+  box-shadow: inset 0 0 0 0.06em rgba(120, 90, 60, 0.3), 0 0.12em 0.2em rgba(60, 30, 20, 0.25);
+  transform: perspective(6em) rotateX(16deg);
+  transition: transform 0.12s ease-in;
+}
+.rocker::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0.35em;
+  width: 0.3em;
+  height: 0.3em;
+  margin-left: -0.15em;
+  border-radius: 50%;
+  background: #f0a23c;
+  box-shadow: 0 0 0.4em #ffb347;
+}
+.switchOff .rocker {
+  background: linear-gradient(0deg, #fffdf7 0%, #f3eadb 48%, #d9cbb2 52%, #ece2d0 100%);
+  transform: perspective(6em) rotateX(-16deg);
+}
+.switchOff .rocker::after {
+  background: #b9a88c;
+  box-shadow: none;
+}
+
+/* ── foto dulu: bidik kamera, cekrek, polaroid keluar ── */
+.finder {
+  position: absolute;
+  inset: 4% 9% 16%;
+  z-index: 5;
+  pointer-events: none;
+  --c: rgba(255, 255, 255, 0.95);
+  background:
+    linear-gradient(var(--c), var(--c)) top left / 1.6em 0.2em no-repeat,
+    linear-gradient(var(--c), var(--c)) top left / 0.2em 1.6em no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 1.6em 0.2em no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 0.2em 1.6em no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 1.6em 0.2em no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 0.2em 1.6em no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 1.6em 0.2em no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 0.2em 1.6em no-repeat;
+  filter: drop-shadow(0 0.05em 0.2em rgba(60, 20, 30, 0.45));
+  animation: finderIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.finder::after {
+  content: '';
+  position: absolute;
+  right: 1em;
+  top: 0.9em;
+  width: 0.55em;
+  height: 0.55em;
+  border-radius: 50%;
+  background: #ff5a4a;
+  animation: blink 1.1s steps(2, jump-none) infinite;
+}
+@keyframes finderIn {
+  from { opacity: 0; transform: scale(1.12); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes blink {
+  50% { opacity: 0.15; }
+}
+.shutter {
+  position: relative;
+  margin-top: 0.7em;
+  width: 4.4em;
+  height: 4.4em;
+  border-radius: 50%;
+  background: #fffaf0;
+  cursor: pointer;
+  outline: none;
+  box-shadow:
+    inset 0 0 0 0.28em #fffaf0,
+    inset 0 0 0 0.4em rgba(74, 34, 56, 0.18),
+    0 0.2em 0 rgba(120, 70, 60, 0.35),
+    0 1em 1.6em -0.7em rgba(90, 40, 50, 0.6);
+  animation: ctaIn 0.6s 0.4s cubic-bezier(0.34, 1.5, 0.64, 1) both;
+}
+.shutter:active { scale: 0.94; }
+.shutter:focus-visible { box-shadow: 0 0 0 0.2em #4a2238, 0 1em 1.6em -0.7em rgba(90, 40, 50, 0.6); }
+.shutterDot {
+  position: absolute;
+  inset: 0.55em;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff8a72, #e0503c 60%, #b93a2a);
+  animation: blowPulse 1.6s 1s ease-in-out infinite;
+}
+.shutterLabel {
+  margin-top: 0.45em;
+  font-size: 0.72em;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.flash {
+  position: absolute;
+  inset: 0;
+  z-index: 45;
+  background: #fffdf6;
+  pointer-events: none;
+  animation: flash 0.75s ease-out both;
+}
+@keyframes flash {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  100% { opacity: 0; }
+}
+.snapshot {
+  position: absolute;
+  z-index: 30;
+  left: 50%;
+  top: 27%;
+  width: 64%;
+  margin: 0;
+  padding: 3.4% 3.4% 0;
+  background: #fffdf7;
+  translate: -50% 0;
+  rotate: -3deg;
+  box-shadow: 0 1.2em 2.2em -0.8em rgba(70, 30, 40, 0.55), 0 0.1em 0.3em rgba(70, 30, 40, 0.18);
+  animation: printIn 0.95s 0.35s cubic-bezier(0.2, 1.15, 0.4, 1) both;
+}
+@keyframes printIn {
+  from { opacity: 0; transform: translateY(45%) rotate(5deg) scale(0.86); }
+  to { opacity: 1; transform: none; }
+}
+.shot {
+  position: relative;
+  display: block;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #f3e3cf url('/art/bg-lilin-terang.webp') center 80% / cover no-repeat;
+}
+.shot img { position: absolute; max-width: none; }
+.shotFlag { left: -8%; top: -6%; width: 116%; }
+.shotBalloonL { left: 3%; top: 15%; width: 23%; rotate: -6deg; }
+.shotBalloonR { right: 3%; top: 11%; width: 23%; rotate: 5deg; }
+.shotCake { left: 13%; bottom: -3%; width: 74%; }
+/* foto instan yang pelan-pelan "jadi" */
+.develop {
+  position: absolute;
+  inset: 0;
+  background: #efe7da;
+  animation: develop 2.6s 1s ease-out both;
+}
+@keyframes develop {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+.snapCap {
+  padding: 0.3em 0.4em 0.5em;
+  color: #3d2440;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.55em;
+  font-weight: 600;
+  line-height: 1.1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .subNote {
@@ -961,6 +1165,7 @@
   animation: ctaIn 0.6s 0.7s cubic-bezier(0.34, 1.5, 0.64, 1) both, ctaPulse 1.8s 1.6s ease-in-out infinite;
 }
 .cta:active { transform: translateY(0.1em); }
+.cta.ctaLate { animation-delay: 2.6s, 3.6s; }
 @keyframes ctaIn {
   from { opacity: 0; transform: translateY(0.8em) scale(0.9); }
   to { opacity: 1; transform: none; }
@@ -971,6 +1176,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .flick, .spark, .blowBtn, .cta, .again, .halo, .naughty, .plate:not(:disabled), .shook, .balloon img { animation: none; }
+  .flick, .spark, .blowBtn, .cta, .again, .halo, .naughty, .plate:not(:disabled), .shook, .balloon img, .shutterDot, .finder::after, .flash { animation: none; }
+  .flash { opacity: 0; }
+  .develop { animation-duration: 0.01s; animation-delay: 0s; }
   .lids::before, .lids::after { transition: none; }
 }
