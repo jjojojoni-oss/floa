@@ -277,6 +277,7 @@
 }
 .letter {
   position: relative;
+  display: flow-root;
   width: 100%;
   margin-top: 2.6em;
   padding: 1.7em 1.4em 1.5em;
@@ -335,6 +336,15 @@
 .decoLeaf { width: 46%; left: -4%; top: 34%; transform: rotate(-64deg); }
 .decoLeaf2 { width: 40%; left: 52%; top: 44%; transform: rotate(118deg); }
 .decoFlower { width: 78%; left: 12%; top: 8%; }
+/* Mengapung di kanan atas mengikuti garis bawah daun (polygon, dalam em surat), jadi nama panjang
+   di sapaan turun ke baris berikutnya alih-alih masuk ke bawah bunga. */
+.decoSpace {
+  float: right;
+  width: 7.6em;
+  height: 3.6em;
+  shape-outside: polygon(0.27em 0, 100% 0, 100% 100%, 6.76em 3.37em, 5.34em 2.9em, 3.46em 2.07em, 1.81em 1.37em, 0 0.59em);
+  shape-margin: 0.35em;
+}
 @keyframes decoIn {
   from { opacity: 0; transform: scale(0.4) rotate(-50deg); }
   to { opacity: 1; transform: none; }
@@ -344,6 +354,7 @@
   font-size: 1.75em;
   line-height: 1.2;
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 .pesan {
   margin-top: 0.55em;
@@ -372,6 +383,7 @@
 }
 .showAll {
   display: block;
+  clear: both;
   margin: 1.1em 0 0 auto;
   font-size: 0.76em;
   font-weight: 700;
@@ -383,8 +395,10 @@
   cursor: pointer;
 }
 .ttd {
+  clear: both;
   margin-top: 1.4em;
   text-align: right;
+  overflow-wrap: anywhere;
   font-family: var(--font-hand, cursive);
   font-size: 1.35em;
   line-height: 1.15;
@@ -392,6 +406,7 @@
 }
 .ttd b {
   display: inline-block;
+  max-width: 100%;
   font-weight: 700;
   font-size: 1.45em;
   clip-path: inset(0 100% 0 0);

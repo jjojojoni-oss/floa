@@ -604,11 +604,15 @@ export function Finale({
           {data.title ? <h1 className={s.fTitle}>{data.title}</h1> : null}
           <div className={cx(s.letter, !done && s.reading)} onClick={() => !done && setShown((n) => Math.min(paras.length, n + 1))}>
             {flower ? (
-              <div className={s.deco} aria-hidden>
-                <Sprite name="daun-2" className={s.decoLeaf} />
-                <Sprite name="daun-4" className={s.decoLeaf2} />
-                <Sprite name={flower} className={s.decoFlower} />
-              </div>
+              <>
+                <div className={s.deco} aria-hidden>
+                  <Sprite name="daun-2" className={s.decoLeaf} />
+                  <Sprite name="daun-4" className={s.decoLeaf2} />
+                  <Sprite name={flower} className={s.decoFlower} />
+                </div>
+                {/* ruang yang mengikuti tepi bawah hiasan: sapaan & paragraf pertama mengalir di sekitarnya, tidak tertutup */}
+                <span className={s.decoSpace} aria-hidden />
+              </>
             ) : null}
             {data.to ? <div className={s.salam}>{k.to} {data.to},</div> : null}
             {paras.length ? (

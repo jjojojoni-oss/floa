@@ -177,7 +177,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const when = yesAt ?? new Date();
   const dateLabel = new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'long', year: 'numeric' }).format(when);
   const weekday = new Intl.DateTimeFormat(tag, { weekday: 'long' }).format(when);
-  const timeLabel = new Intl.DateTimeFormat(tag, { hour: '2-digit', minute: '2-digit' }).format(when);
+  const timeLabel = new Intl.DateTimeFormat(tag, { hour: 'numeric', minute: '2-digit' }).format(when);
   const pair = `${data.to || t.pairYou} & ${data.from || t.pairMe}`;
 
   const saveCard = async () => {
@@ -297,7 +297,13 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               <HeartIcon className={s.dayRuleHeart} />
             </div>
             <div className={cx(s.dayPair, pair.length > 24 && s.dayPairLong)}>{pair}</div>
-            <div className={s.dayAt}>{fmt(t.dayAt, { time: timeLabel })}</div>
+            <div className={s.dayAt}>
+              {t.dayAt.split('{time}')[0]}
+              <span className={s.nowrap}>
+                {timeLabel}
+                {t.dayAt.split('{time}')[1]}
+              </span>
+            </div>
             <div className={s.dayNote}>{t.dayNote}</div>
           </div>
         </div>
