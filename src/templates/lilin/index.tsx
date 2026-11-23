@@ -471,7 +471,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       <div className={s.foot}>
         {phase === 'intro' ? (
           <div className={s.blowBox}>
-            <div className={s.prompt}>{t.intro}</div>
+            <div className={cx(s.subNote, s.early)}>{t.intro}</div>
             <button type="button" className={cx(s.switch, flipped && s.switchOff)} onClick={lightsOff} aria-label={t.switchLabel}>
               <span className={s.rocker} />
             </button>
@@ -611,7 +611,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
         {phase === 'photo' ? (
           <div className={s.blowBox}>
-            <div className={s.prompt}>{t.photoSub}</div>
+            <div className={cx(s.subNote, s.early)}>{t.photoSub}</div>
             <button type="button" className={s.shutter} onClick={snap} aria-label={t.shutterLabel}>
               <span className={s.shutterDot} />
             </button>
