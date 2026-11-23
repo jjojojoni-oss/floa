@@ -657,7 +657,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               <Sprite name="lilin-kue" className={s.shotCake} />
               <span className={s.develop} />
             </span>
-            <figcaption className={s.snapCap}>{fmt(t.snapCap, { to })}</figcaption>
+            <figcaption className={cx(s.snapCap, fmt(t.snapCap, { to }).length > 18 && s.capLong)}>{fmt(t.snapCap, { to })}</figcaption>
           </figure>
         </>
       ) : null}
@@ -668,7 +668,6 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         </button>
       ) : null}
 
-      {phase === 'intro' && !flipped ? <Hint key="sw">{t.switchHint}</Hint> : null}
       {phase === 'light' && litCount === 0 ? <Hint key="lt">{t.hint}</Hint> : null}
       {phase === 'photo' ? <Hint key="ph">{t.photoHint}</Hint> : null}
       {phase === 'cut' ? <Hint>{t.cutHint}</Hint> : null}

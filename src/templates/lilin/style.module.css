@@ -932,18 +932,19 @@
   composes: paper from '../kit/kit.module.css';
   --paper: #f4ecdd;
   position: relative;
-  margin-top: 0.9em;
-  width: 3.7em;
-  height: 5.3em;
-  border-radius: 0.55em;
+  margin-top: 0.75em;
+  width: 3.3em;
+  height: 4.7em;
+  border-radius: 0.5em;
   cursor: pointer;
   outline: none;
   box-shadow:
     inset 0 0 0 0.08em rgba(120, 90, 60, 0.28),
     inset 0 -0.25em 0.4em -0.2em rgba(120, 90, 60, 0.3),
     0 0.4em 0.8em -0.2em rgba(60, 30, 20, 0.45);
-  animation: up 0.6s 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation: up 0.6s 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both, nudge 1.8s 1.4s ease-in-out infinite;
 }
+.switchOff { animation: none; }
 .switch::before,
 .switch::after {
   content: '';
@@ -963,9 +964,9 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 1.55em;
-  height: 2.7em;
-  margin: -1.35em 0 0 -0.775em;
+  width: 1.4em;
+  height: 2.4em;
+  margin: -1.2em 0 0 -0.7em;
   border-radius: 0.3em;
   background: linear-gradient(180deg, #fffdf7 0%, #f3eadb 48%, #d9cbb2 52%, #ece2d0 100%);
   box-shadow: inset 0 0 0 0.06em rgba(120, 90, 60, 0.3), 0 0.12em 0.2em rgba(60, 30, 20, 0.25);
@@ -1080,8 +1081,8 @@
   position: absolute;
   z-index: 30;
   left: 50%;
-  top: 27%;
-  width: 64%;
+  top: 24.5%;
+  width: 62%;
   margin: 0;
   padding: 3.4% 3.4% 0;
   background: #fffdf7;
@@ -1117,6 +1118,7 @@
   from { opacity: 1; }
   to { opacity: 0; }
 }
+.snapCap.capLong { font-size: 1.25em; }
 .snapCap {
   padding: 0.3em 0.4em 0.5em;
   color: #3d2440;
@@ -1177,7 +1179,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .flick, .spark, .blowBtn, .cta, .again, .halo, .naughty, .plate:not(:disabled), .shook, .balloon img, .shutterDot, .finder::after, .flash { animation: none; }
+  .flick, .spark, .blowBtn, .cta, .again, .halo, .naughty, .plate:not(:disabled), .shook, .balloon img, .shutterDot, .finder::after, .flash, .switch { animation: none; }
   .flash { opacity: 0; }
   .develop { animation-duration: 0.01s; animation-delay: 0s; }
   .lids::before, .lids::after { transition: none; }
