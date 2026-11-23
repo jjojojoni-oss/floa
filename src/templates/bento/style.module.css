@@ -683,6 +683,10 @@
   }
 }
 .cardEyebrow {
+  /* ruang untuk gambar lauk yang menempel di pojok kanan atas kartu */
+  padding: 0 3.4em;
+  text-wrap: balance;
+  line-height: 1.5;
   font-size: 0.68em;
   font-weight: 800;
   letter-spacing: 0.16em;

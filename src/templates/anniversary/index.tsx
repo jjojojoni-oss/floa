@@ -115,6 +115,10 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const [now, setNow] = useState(() => new Date());
   const drag = useRef<{ id: number; x0: number; y0: number; dy: number; el: HTMLElement } | null>(null);
   const moved = useRef(false);
+  /** sobekan terakhir dari keyboard: fokus dipindah ke lembar berikutnya supaya bisa lanjut tanpa Tab */
+  const viaKeys = useRef(false);
+  const blockRef = useRef<HTMLDivElement>(null);
+  const openRef = useRef<HTMLButtonElement>(null);
 
   const jags = useMemo(() => sheets.map((_, i) => jagged(i)), [sheets]);
 
@@ -203,10 +207,20 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       moved.current = false;
       return;
     }
+    viaKeys.current = e.detail === 0;
     if (canTear) tearOne(false);
   };
 
+  useEffect(() => {
+    if (!viaKeys.current) return;
+    blockRef.current?.querySelector<HTMLButtonElement>('button')?.focus({ preventScroll: true });
+  }, [idx]);
+
   // penghitung berdetak tiap detik setelah sampai di hari ini
+  useEffect(() => {
+    if (showCounter && viaKeys.current) openRef.current?.focus({ preventScroll: true });
+  }, [showCounter]);
+
   useEffect(() => {
     if (!showCounter || !counting) return;
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -318,7 +332,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         : sh.kind === 'cover' || sh.kind === 'end'
           ? t.coverBand
           : fmt(t.sheetDate, { date: fullFmt.format(sh.date) });
-    return i < last ? `${what}. ${t.tearLabel}` : what;
+    return i < last ? `${what}${/[.!?…]$/.test(what) ? '' : '.'} ${t.tearLabel}` : what;
   };
 
   // yang dirender: semua lembar yang sudah disobek + lembar teratas + satu di bawahnya
@@ -338,7 +352,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           <div className={s.ownerSince}>{start ? fmt(t.since, { date: fullFmt.format(start) }) : t.boardPlain}</div>
         </div>
 
-        <div className={s.block}>
+        <div className={s.block} ref={blockRef}>
           <span className={s.edge} style={{ '--left': Math.max(0.2, 1 - idx / Math.max(1, last)) } as CSSProperties} aria-hidden />
           {visible.map(({ sh, i }) => {
             const torn = i < idx;
@@ -412,7 +426,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               <div className={s.total}>{fmt(t.total, { n: num(el.totalSeconds) })}</div>
             </>
           ) : null}
-          <button type="button" className={s.open} onClick={openLetter}>
+          <button type="button" ref={openRef} className={s.open} onClick={openLetter}>
             {t.openLetter} <span aria-hidden>→</span>
           </button>
         </div>
