@@ -27,6 +27,8 @@ type Row = {
   created_at: string;
   paid_at: string | null;
   expires_at: string | null;
+  pass_hash: string | null;
+  pass_hint: string | null;
 };
 
 const toGift = (r: Row): Gift => ({
@@ -47,6 +49,8 @@ const toGift = (r: Row): Gift => ({
   createdAt: r.created_at,
   paidAt: r.paid_at,
   expiresAt: r.expires_at,
+  passHash: r.pass_hash ?? null,
+  passHint: r.pass_hint ?? null,
 });
 
 function toRow(g: Partial<Gift>): Partial<Row> {
@@ -68,6 +72,8 @@ function toRow(g: Partial<Gift>): Partial<Row> {
   if (g.createdAt !== undefined) r.created_at = g.createdAt;
   if (g.paidAt !== undefined) r.paid_at = g.paidAt;
   if (g.expiresAt !== undefined) r.expires_at = g.expiresAt;
+  if (g.passHash !== undefined) r.pass_hash = g.passHash;
+  if (g.passHint !== undefined) r.pass_hint = g.passHint;
   return r;
 }
 

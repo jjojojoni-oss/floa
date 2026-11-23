@@ -87,6 +87,11 @@ export function MyGifts() {
                   >
                     {pending ? t.myGifts.unpaid : t.myGifts.live}
                   </span>
+                  {g.locked ? (
+                    <span className="flex-none text-[12px]" title={t.lock.badge} aria-label={t.lock.badge}>
+                      🔒
+                    </span>
+                  ) : null}
                 </div>
                 <p className="truncate text-[13px] text-muted">
                   {meta?.name ?? g.template} · /{g.slug}

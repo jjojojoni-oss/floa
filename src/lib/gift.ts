@@ -1,5 +1,6 @@
 import type { Locale } from '@/i18n/config';
 import type { Currency, PlanId } from './site';
+import { cleanMusic } from './music';
 import type { GiftData, TemplateMeta } from '@/templates/types';
 
 export type GiftStatus = 'pending' | 'live';
@@ -29,9 +30,13 @@ export type Gift = {
   paidAt: string | null;
   /** null = tidak pernah kedaluwarsa */
   expiresAt: string | null;
+  /** hash kata sandi (lihat lib/lock); null = kado tidak dikunci */
+  passHash: string | null;
+  /** petunjuk kata sandi, terlihat oleh siapa pun yang membuka link */
+  passHint: string | null;
 };
 
-export const EMPTY_DATA: GiftData = { to: '', from: '', title: '', message: '', notes: [], photos: [] };
+export const EMPTY_DATA: GiftData = { to: '', from: '', title: '', message: '', notes: [], photos: [], music: null };
 
 /** Membuang karakter kontrol dan karakter tak terlihat yang bisa dipakai untuk mengelabui tampilan. */
 function stripInvisible(s: string) {
@@ -57,7 +62,7 @@ function stripInvisible(s: string) {
   return out;
 }
 
-function clean(v: unknown, max: number, multiline = false) {
+export function clean(v: unknown, max: number, multiline = false) {
   if (typeof v !== 'string') return '';
   let s = stripInvisible(v.split(String.fromCharCode(13, 10)).join(String.fromCharCode(10)));
   s = multiline ? s.replace(/\n{3,}/g, '\n\n') : s.replace(/\n+/g, ' ');
@@ -84,6 +89,7 @@ export function sanitizeData(meta: TemplateMeta, input: unknown, allowPhoto: (ur
       out[f.key] = clean(src[f.key], f.max, 'multiline' in f && !!f.multiline);
     }
   }
+  out.music = cleanMusic(src.music, (s, max) => clean(s, max));
   return out;
 }
 

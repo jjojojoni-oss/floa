@@ -26,7 +26,7 @@ export type PaymentOptions = { country: string | null; suggested: Market; option
 export function rememberOrder(
   o: OrderInfo,
   status: 'pending' | 'live',
-  extra: { template: string; to: string; from: string; createdAt?: string },
+  extra: { template: string; to: string; from: string; createdAt?: string; lockPassword?: string },
 ) {
   upsertMyGift({
     id: o.id,
@@ -39,6 +39,7 @@ export function rememberOrder(
     currency: o.currency,
     status,
     createdAt: extra.createdAt ?? new Date().toISOString(),
+    ...(extra.lockPassword ? { locked: true, lockPassword: extra.lockPassword } : {}),
     pay:
       status === 'pending'
         ? { provider: o.provider, test: o.test, kind: o.kind, qr: o.qr, payUrl: o.payUrl, url: o.url, expiresAt: o.expiresAt }
@@ -61,11 +62,14 @@ export function CheckoutSheet({
   data,
   sampleFields = [],
   resume,
+  lock = null,
   onClose,
   onPhotos,
 }: {
   meta: TemplateMeta;
   data: GiftData;
+  /** kunci kata sandi dari editor (null = tidak dikunci) */
+  lock?: { password: string; hint: string } | null;
   /** label kolom yang isinya masih contoh */
   sampleFields?: string[];
   resume?: MyGift;
@@ -87,7 +91,7 @@ export function CheckoutSheet({
   const [error, setError] = useState<string | null>(null);
   const currency = MARKET_CURRENCY[market];
   const price = planAmount(PLANS.find((p) => p.id === plan)!, currency);
-  const extra = { template: meta.id, to: data.to, from: data.from, createdAt: resume?.createdAt };
+  const extra = { template: meta.id, to: data.to, from: data.from, createdAt: resume?.createdAt, lockPassword: lock?.password.trim() || resume?.lockPassword };
 
   // kunci scroll halaman di belakang sheet
   useEffect(() => {
@@ -165,6 +169,7 @@ export function CheckoutSheet({
           plan,
           market,
           lang: locale,
+          lock,
           contact,
           replaces: order ? { id: order.id, key: order.editKey } : undefined,
         }),
@@ -260,7 +265,9 @@ export function CheckoutSheet({
               onLater={close}
             />
           ) : null}
-          {step === 'done' && order ? <DoneStep order={order} to={data.to} from={data.from} templateId={meta.id} /> : null}
+          {step === 'done' && order ? (
+            <DoneStep order={order} to={data.to} from={data.from} templateId={meta.id} locked={!!lock || !!resume?.locked} lockPassword={extra.lockPassword} />
+          ) : null}
         </div>
       </div>
     </div>
@@ -644,11 +651,15 @@ export function DoneStep({
   to,
   from,
   templateId,
+  locked = false,
+  lockPassword,
 }: {
   order: { id: string; slug: string; editKey?: string };
   to: string;
   from: string;
   templateId?: string;
+  locked?: boolean;
+  lockPassword?: string;
 }) {
   const t = useT();
   const [origin, setOrigin] = useState('https://floa.site');
@@ -699,6 +710,12 @@ export function DoneStep({
         <a href={`https://wa.me/?text=${encodeURIComponent(waText)}`} target="_blank" rel="noopener" className="btn btn-primary h-13 w-full py-4 text-[15px]">
           {t.checkout.sendWa}
         </a>
+        {locked ? (
+          <p className="flex items-start gap-2 rounded-2xl bg-butter/60 px-3.5 py-2.5 text-left text-[13px] font-semibold leading-snug">
+            <span aria-hidden>🔒</span>
+            <span>{lockPassword ? fmt(t.lock.reminder, { password: lockPassword }) : t.lock.reminderNoPass}</span>
+          </p>
+        ) : null}
         <QrPanel slug={order.slug} to={to} from={from} templateId={templateId} />
         <a href={`/${order.slug}`} target="_blank" rel="noopener" className="btn btn-ghost h-12 w-full text-[14px]">
           {t.checkout.viewGift}

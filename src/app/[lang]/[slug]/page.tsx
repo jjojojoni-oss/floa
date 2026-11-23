@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { cache } from 'react';
-import { GiftFrame } from '@/components/GiftFrame';
+import { GiftView } from '@/components/GiftView';
 import { Logo } from '@/components/Logo';
 import { I18nProvider } from '@/i18n/client';
 import { HTML_LANG, OG_LOCALE } from '@/i18n/config';
@@ -12,7 +12,6 @@ import { dictOf } from '@/i18n/server';
 import { isExpired } from '@/lib/gift';
 import { isGiftPath } from '@/lib/slug';
 import { getStore } from '@/lib/store';
-import { TemplatePlayer } from '@/templates/Player';
 import { getTemplate } from '@/templates/registry';
 
 // isi kado dibaca dari penyimpanan tiap kali dibuka, supaya perubahan langsung terlihat
@@ -66,13 +65,18 @@ export default async function GiftPage({ params }: Props) {
     );
   }
 
+  // kado terkunci: halaman ini hanya membawa nama & petunjuk; isinya diambil setelah kata sandinya benar
+  const locked = !!gift.passHash;
   // isi kado (tombol, sapaan, penutup) tampil dalam bahasa pengirimnya
   return (
     <I18nProvider locale={gift.lang} dict={dict}>
       <div lang={HTML_LANG[gift.lang]}>
-        <GiftFrame bg={meta.palette.bg}>
-          <TemplatePlayer id={meta.id} data={gift.data} mode="live" />
-        </GiftFrame>
+        <GiftView
+          slug={slug}
+          templateId={meta.id}
+          data={locked ? null : gift.data}
+          lock={locked ? { hint: gift.passHint, to: gift.data.to, from: gift.data.from } : null}
+        />
       </div>
     </I18nProvider>
   );

@@ -7,6 +7,7 @@ import { type Currency, type Market, anyPlan, getPlan, planAmount } from './site
 import { slugProblem } from './slug';
 import { getStore } from './store';
 import { DEFAULT_LOCALE, isLocale } from '@/i18n/config';
+import { lockFields, readLock } from './lock';
 import { getTemplate } from '@/templates/registry';
 
 export class OrderError extends Error {
@@ -64,6 +65,8 @@ export async function createOrder(input: {
   market: unknown;
   contact: unknown;
   lang: unknown;
+  /** kunci kata sandi opsional: { password, hint } */
+  lock?: unknown;
   /** asal situs tempat pembeli memesan, mis. https://floa.site */
   origin: string;
 }) {
@@ -112,6 +115,9 @@ export async function createOrder(input: {
     createdAt: new Date().toISOString(),
     paidAt: null,
     expiresAt: null,
+    passHash: null,
+    passHint: null,
+    ...lockFields(readLock(input.lock ?? null), { passHash: null }),
   };
 
   let ok = await store.insertGift(gift);

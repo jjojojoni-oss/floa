@@ -41,6 +41,7 @@ export async function POST(req: Request) {
       market: body.market,
       contact: body.contact,
       lang: body.lang,
+      lock: body.lock,
       origin: originOf(req),
     });
     return json({

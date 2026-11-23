@@ -1,5 +1,6 @@
 import { sanitizeData } from '@/lib/gift';
 import { fail, handle, json } from '@/lib/http';
+import { lockFields, readLock } from '@/lib/lock';
 import { keysMatch } from '@/lib/orders';
 import { allow, clientIp } from '@/lib/ratelimit';
 import { getStore } from '@/lib/store';
@@ -29,6 +30,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       status: gift.status,
       plan: gift.plan,
       expiresAt: gift.expiresAt,
+      // kata sandinya sendiri tidak pernah dikirim balik (hanya hash yang disimpan)
+      lock: gift.passHash ? { hint: gift.passHint ?? '' } : null,
     });
   } catch (e) {
     return handle(e);
@@ -39,7 +42,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const body = (await req.json().catch(() => null)) as { key?: unknown; data?: unknown } | null;
+    const body = (await req.json().catch(() => null)) as { key?: unknown; data?: unknown; lock?: unknown } | null;
     const key = typeof body?.key === 'string' ? body.key : '';
     const { gift, error } = await authorize(req, id, key);
     if (error) return error;
@@ -48,7 +51,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const store = getStore();
     const data = sanitizeData(meta, body?.data, (u) => store.ownsPhoto(u));
     if (!data.to) return fail('Nama penerima belum diisi.', 400, 'no_recipient');
-    await store.updateGift(gift.id, { data });
+    await store.updateGift(gift.id, { data, ...lockFields(readLock(body?.lock), gift) });
     return json({ ok: true, slug: gift.slug });
   } catch (e) {
     return handle(e);

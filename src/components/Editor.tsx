@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { EMPTY_DATA } from '@/lib/gift';
-import { type Draft, api, compressImage, loadDraft, saveDraft, uploadPhotos } from '@/lib/client';
+import { type Draft, api, compressImage, findMyGift, loadDraft, saveDraft, upsertMyGift, uploadPhotos } from '@/lib/client';
 import { fmt, useLocale, useT } from '@/i18n/client';
 import { errorText } from '@/lib/client';
 import { cheapestLabel } from '@/lib/site';
@@ -12,6 +12,7 @@ import { TemplatePlayer } from '@/templates/Player';
 import { getTemplate } from '@/templates/registry';
 import type { FieldSpec, GiftData, NotesField, PhotosField, TextField } from '@/templates/types';
 import { CheckoutSheet } from './CheckoutSheet';
+import { type LockState, LockField, MusicField, NO_LOCK } from './ExtrasFields';
 
 type EditCtx = { id: string; key: string; slug: string };
 
@@ -24,6 +25,7 @@ export function Editor({ templateId }: { templateId: string }) {
 
   const [data, setData] = useState<GiftData>(sample);
   const [touched, setTouched] = useState<string[]>([]);
+  const [lock, setLock] = useState<LockState>(NO_LOCK);
   const [ready, setReady] = useState(false);
   const [saved, setSaved] = useState(false);
   const [edit, setEdit] = useState<EditCtx | null>(null);
@@ -48,13 +50,14 @@ export function Editor({ templateId }: { templateId: string }) {
       const key = q.get('key');
       if (id && key) {
         try {
-          const g = await api<{ id: string; slug: string; template: string; data: GiftData }>(
+          const g = await api<{ id: string; slug: string; template: string; data: GiftData; lock: { hint: string } | null }>(
             `/api/gifts/${encodeURIComponent(id)}?key=${encodeURIComponent(key)}`,
           );
           if (!alive) return;
           if (g.template !== templateId) throw new Error('template mismatch');
           setData({ ...EMPTY_DATA, ...g.data });
           setTouched(meta.fields.map((f) => f.key));
+          setLock(g.lock ? { on: true, password: findMyGift(id)?.lockPassword ?? '', hint: g.lock.hint, existing: true } : NO_LOCK);
           setEdit({ id, key, slug: g.slug });
         } catch {
           if (alive) setLoadError(t.editor.cantOpen);
@@ -64,6 +67,7 @@ export function Editor({ templateId }: { templateId: string }) {
         if (alive && d) {
           setData({ ...EMPTY_DATA, ...d.data });
           setTouched(d.touched ?? []);
+          if (d.lock) setLock({ ...d.lock, existing: false });
         }
       }
       if (alive) setReady(true);
@@ -77,11 +81,11 @@ export function Editor({ templateId }: { templateId: string }) {
   useEffect(() => {
     if (!ready || edit) return;
     const t = setTimeout(async () => {
-      const draft: Draft = { v: 1, data, touched };
+      const draft: Draft = { v: 1, data, touched, lock: { on: lock.on, password: lock.password, hint: lock.hint } };
       setSaved(await saveDraft(templateId, draft));
     }, 500);
     return () => clearTimeout(t);
-  }, [data, touched, ready, edit, templateId]);
+  }, [data, touched, lock, ready, edit, templateId]);
 
   useEffect(() => {
     if (!toast) return;
@@ -117,7 +121,20 @@ export function Editor({ templateId }: { templateId: string }) {
         return false;
       }
     }
+    if (lock.on && !lock.password.trim() && !lock.existing) {
+      setFieldError({ key: 'lock', msg: t.lock.needPassword });
+      setPreview(false);
+      focusField('lock');
+      return false;
+    }
     return true;
+  };
+
+  /** kunci yang dikirim ke server: null = tanpa kunci; password kosong = pertahankan yang lama */
+  const lockPayload = lock.on ? { password: lock.password, hint: lock.hint } : null;
+  const setLockState = (l: LockState) => {
+    setLock(l);
+    if (fieldError?.key === 'lock') setFieldError(null);
   };
 
   const publish = () => {
@@ -130,7 +147,18 @@ export function Editor({ templateId }: { templateId: string }) {
       setSaving(t.editor.saving);
       const photos = await uploadPhotos(data.photos, (d, n) => setSaving(fmt(t.editor.uploading, { done: d, total: n })));
       setData((d) => ({ ...d, photos }));
-      await api(`/api/gifts/${edit.id}`, { method: 'PUT', body: JSON.stringify({ key: edit.key, data: { ...data, photos } }) });
+      await api(`/api/gifts/${edit.id}`, { method: 'PUT', body: JSON.stringify({ key: edit.key, data: { ...data, photos }, lock: lockPayload }) });
+      const mine = findMyGift(edit.id);
+      if (mine) {
+        upsertMyGift({
+          ...mine,
+          to: data.to,
+          from: data.from,
+          locked: lock.on,
+          lockPassword: lock.on ? lock.password.trim() || mine.lockPassword : undefined,
+        });
+      }
+      if (lock.on) setLock((l) => ({ ...l, existing: true }));
       setToast(t.editor.saved);
     } catch (e) {
       setToast(errorText(e, t) || t.editor.saveFailed);
@@ -193,6 +221,8 @@ export function Editor({ templateId }: { templateId: string }) {
                 onError={setToast}
               />
             ))}
+            <MusicField music={data.music} onChange={(m) => setData((d) => ({ ...d, music: m }))} />
+            <LockField lock={lock} onChange={setLockState} error={fieldError?.key === 'lock' ? fieldError.msg : null} />
           </div>
 
           <div className="mt-8 hidden gap-3 lg:flex">
@@ -264,6 +294,7 @@ export function Editor({ templateId }: { templateId: string }) {
         <CheckoutSheet
           meta={meta}
           data={data}
+          lock={lockPayload}
           sampleFields={meta.fields.filter((f) => f.key !== 'photos' && !touched.includes(f.key)).map((f) => f.label)}
           onClose={(finished) => {
             setCheckout(false);

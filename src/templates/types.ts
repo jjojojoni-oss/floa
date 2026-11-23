@@ -14,6 +14,19 @@ export type GiftData = {
   notes: string[];
   /** URL foto */
   photos: string[];
+  /** lagu latar dari Spotify (opsional, berlaku untuk semua template) */
+  music?: GiftMusic | null;
+};
+
+export type MusicKind = 'track' | 'album' | 'playlist' | 'episode';
+
+export type GiftMusic = {
+  provider: 'spotify';
+  type: MusicKind;
+  /** ID Spotify (22 karakter) */
+  id: string;
+  /** judul untuk ditampilkan di editor, kalau berhasil dibaca */
+  title?: string;
 };
 
 /**

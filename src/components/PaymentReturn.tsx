@@ -75,6 +75,8 @@ export function PaymentReturn() {
         to={mine?.to ?? ''}
         from={mine?.from ?? ''}
         templateId={mine?.template}
+        locked={!!mine?.locked}
+        lockPassword={mine?.lockPassword}
       />
     );
   }

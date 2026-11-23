@@ -7,7 +7,7 @@ import type { GiftData } from '@/templates/types';
 
 /* ───────── draf (IndexedDB, per template) ───────── */
 
-export type Draft = { v: 1; data: GiftData; touched: string[] };
+export type Draft = { v: 1; data: GiftData; touched: string[]; lock?: { on: boolean; password: string; hint: string } };
 
 const draftKey = (template: string) => `floa:draft:${template}`;
 
@@ -69,6 +69,9 @@ export type MyGift = {
   currency?: Currency;
   status: 'pending' | 'live';
   createdAt: string;
+  /** kata sandi kado (hanya disimpan di perangkat pembuatnya, supaya bisa dilihat lagi) */
+  lockPassword?: string;
+  locked?: boolean;
   /** hanya selama menunggu bayar, supaya bisa dilanjutkan */
   pay?: Pick<OrderInfo, 'provider' | 'test' | 'kind' | 'qr' | 'payUrl' | 'url' | 'expiresAt'>;
 };
