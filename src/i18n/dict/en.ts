@@ -156,7 +156,6 @@ export const en: Dict = {
     simulate: 'Simulate a successful payment',
     simulating: 'Processing…',
     simulateSent: 'Simulation sent, waiting for confirmation…',
-    payOnBorderpay: 'Pay on the BorderPay page',
     saveQr: 'Save QR to gallery',
     newQr: 'Create a new QR',
     change: 'Change link, plan or payment method',

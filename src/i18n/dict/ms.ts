@@ -156,7 +156,6 @@ export const ms: Dict = {
     simulate: 'Simulasikan pembayaran berjaya',
     simulating: 'Memproses…',
     simulateSent: 'Simulasi dihantar, menunggu pengesahan…',
-    payOnBorderpay: 'Bayar di halaman BorderPay',
     saveQr: 'Simpan QR ke galeri',
     newQr: 'Jana QR baharu',
     change: 'Tukar pautan, pakej atau cara bayaran',

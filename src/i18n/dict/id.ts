@@ -154,7 +154,6 @@ export const id = {
     simulate: 'Simulasikan pembayaran berhasil',
     simulating: 'Memproses…',
     simulateSent: 'Simulasi terkirim, menunggu konfirmasi…',
-    payOnBorderpay: 'Bayar di halaman BorderPay',
     saveQr: 'Simpan QR ke galeri',
     newQr: 'Buat QR baru',
     change: 'Ganti link, paket, atau cara bayar',

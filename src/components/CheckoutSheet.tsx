@@ -616,11 +616,6 @@ function PayStep({
             {simulating ? t.checkout.simulating : t.checkout.simulate}
           </button>
         ) : null}
-        {order.payUrl && !expired ? (
-          <a href={order.payUrl} className="btn btn-ghost h-12 w-full text-[14px]">
-            {t.checkout.payOnBorderpay}
-          </a>
-        ) : null}
         {img && !expired ? (
           <a href={img} download={`qris-floa-${order.slug}.png`} className="btn btn-ghost h-12 w-full text-[14px]">
             {t.checkout.saveQr}
