@@ -1,7 +1,7 @@
 'use client';
 
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { Confetti, Finale, Hint, HoldButton, Petals, Sprite, Stage, Typewriter, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
+import { Confetti, Finale, Hint, HoldButton, Petals, Sprite, Stage, TapCue, Typewriter, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
 import { TEXT } from './i18n';
@@ -81,6 +81,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const [burst, setBurst] = useState(0);
   const peak = useRef(0);
   const nextBtn = useRef<HTMLButtonElement>(null);
+  /** benda yang sekarang harus disentuh (untuk penunjuk TapCue) */
+  const cueEl = useRef<HTMLElement | null>(null);
   const later = useTimers();
 
   const open = (i: number) => order.indexOf(i) < step;
@@ -192,6 +194,34 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     return { x: h.x + h.d * 0.18, y: h.y - h.d * 0.28, away: false };
   })();
 
+  /** apa yang sekarang harus disentuh: satu saja pada satu waktu */
+  const cueOn: string | null = finale
+    ? null
+    : phase === 'tag'
+      ? ready ? (flipped ? 'tagGo' : 'tag') : null
+      : phase === 'bloom'
+        ? slip !== null
+          ? 'slip'
+          : card !== null
+            ? typed ? 'next' : null
+            : target !== null
+              ? `f${target}`
+              : null
+        : phase === 'shy'
+          ? card !== null
+            ? typed ? 'next' : null
+            : slip !== null
+              ? 'slip'
+              : step < n
+                ? 'shy'
+                : null
+          : phase === 'tie'
+            ? tied ? null : 'bow'
+            : phase === 'smell'
+              ? sniffed ? null : 'smell'
+              : 'open';
+  const cue = (key: string) => (cueOn === key ? (el: HTMLElement | null) => { cueEl.current = el; } : undefined);
+
   const k = card;
   const note = k !== null ? notes[k] : null;
   const head = k !== null ? heads[order[k]] : null;
@@ -250,6 +280,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                     '--hold': isShy ? hold : 0,
                   } as CSSProperties
                 }
+                ref={cue(`f${i}`) ?? (i === CENTER ? cue('shy') : undefined)}
                 onClick={() => tapFlower(i)}
                 disabled={isOpen || phase !== 'bloom' || card !== null || slip !== null}
                 tabIndex={i === target && phase === 'bloom' && card === null && slip === null ? 0 : -1}
@@ -276,7 +307,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
             <HoldButton
               ms={1700}
               className={s.holdZone}
-              style={{ left: `${(heads[CENTER].x / 600) * 100}%`, top: `${(heads[CENTER].y / 720) * 100}%`, width: `${(heads[CENTER].d / 600) * 62}%` } as CSSProperties}
+              style={{ left: `${(heads[CENTER].x / 600) * 100}%`, top: `${(heads[CENTER].y / 720) * 100}%`, width: `${(heads[CENTER].d / 600) * 92}%` } as CSSProperties}
               label={t.holdLabel}
               onProgress={onHoldProgress}
               onComplete={bloomShy}
@@ -285,6 +316,19 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
             </HoldButton>
           ) : null}
           <Sprite name="buket-depan" className={s.layer} />
+
+          {/* area sentuh kuncup giliran: di atas kertas pembungkus & kuncup lain yang bertumpuk,
+              jadi ketukan di kuncup yang bercahaya selalu kena (tampilan tidak berubah) */}
+          {phase === 'bloom' && card === null && slip === null && target !== null ? (
+            <button
+              type="button"
+              tabIndex={-1}
+              aria-hidden
+              className={s.budHit}
+              style={{ left: `${(heads[target].x / 600) * 100}%`, top: `${(heads[target].y / 720) * 100}%`, width: `${(heads[target].d / 600) * 100}%` } as CSSProperties}
+              onClick={() => tapFlower(target)}
+            />
+          ) : null}
 
           {/* gulungan kertas yang menyembul dari bunga yang baru mekar */}
           {slip !== null ? (
@@ -297,6 +341,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               aria-label={t.slipLabel}
               ref={(el) => {
                 if (el && mode !== 'preview') el.focus({ preventScroll: true });
+                if (cueOn === 'slip') cueEl.current = el;
               }}
             >
               <Sprite name={isLast(slip) ? 'buket-gulungan-emas' : 'buket-gulungan'} className={s.slipArt} />
@@ -305,7 +350,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
           {/* pita: menjuntai longgar sampai diikat */}
           {phase === 'tie' || phase === 'smell' || phase === 'card' ? (
-            <button type="button" className={cx(s.bowBtn, tied && s.tied)} onClick={tie} disabled={tied} aria-label={t.tieLabel}>
+            <button ref={cue('bow')} type="button" className={cx(s.bowBtn, tied && s.tied)} onClick={tie} disabled={tied} aria-label={t.tieLabel}>
               <Sprite name="pita" className={s.bow} />
             </button>
           ) : null}
@@ -332,7 +377,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       <div className={s.foot}>
         {phase === 'tag' ? (
           <div className={s.tagStage}>
-            <button type="button" className={cx(s.tagCard, flipped && s.flipped)} onClick={() => { if (!flipped) { setFlipped(true); sfx.crack(); haptic(10); } }} aria-label={t.tagFlip} disabled={flipped}>
+            <button ref={cue('tag')} type="button" className={cx(s.tagCard, flipped && s.flipped)} onClick={() => { if (!flipped) { setFlipped(true); sfx.crack(); haptic(10); } }} aria-label={t.tagFlip} disabled={flipped}>
               <span className={s.string} aria-hidden />
               <span className={s.tagFace}>
                 <Sprite name="buket-label" className={s.tagArt} />
@@ -347,7 +392,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               </span>
             </button>
             {flipped ? (
-              <button type="button" className={s.cta} onClick={() => { sfx.tap(); setPhase('bloom'); }}>
+              <button ref={cue('tagGo')} type="button" className={s.cta} onClick={() => { sfx.tap(); setPhase('bloom'); }}>
                 {t.tagGo}
               </button>
             ) : null}
@@ -360,13 +405,13 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                 <em>{t.smellAside}</em>
               </div>
             ) : (
-              <button type="button" className={s.ghost} onClick={sniff}>
+              <button ref={cue('smell')} type="button" className={s.ghost} onClick={sniff}>
                 {t.smell}
               </button>
             )}
           </div>
         ) : phase === 'card' ? (
-          <button type="button" className={s.cta} onClick={openCard}>
+          <button ref={cue('open')} type="button" className={s.cta} onClick={openCard}>
             {t.open}
           </button>
         ) : phase === 'bloom' || phase === 'shy' ? (
@@ -380,7 +425,15 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
       {/* kartu pesan per bunga */}
       {k !== null && note && head ? (
-        <div className={cx(s.noteCard, isLast(k) && s.special)} key={k} role="group" aria-live="polite">
+        <div
+          className={cx(s.noteCard, isLast(k) && s.special, typed && s.noteReady)}
+          key={k}
+          role="group"
+          aria-live="polite"
+          onClick={(e) => {
+            if (typed && e.target === e.currentTarget) nextCard();
+          }}
+        >
           {photo ? (
             <span className={s.snap}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -394,7 +447,15 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           <p className={cx(s.noteText, note.length > 60 && s.long)}>
             <Typewriter text={note} speed={30} onDone={() => setTyped(true)} />
           </p>
-          <button ref={nextBtn} type="button" className={cx(s.nextBtn, typed && s.shown)} onClick={nextCard}>
+          <button
+            ref={(el) => {
+              nextBtn.current = el;
+              if (cueOn === 'next') cueEl.current = el;
+            }}
+            type="button"
+            className={cx(s.nextBtn, typed && s.shown)}
+            onClick={nextCard}
+          >
             {isLast(k) ? t.tieGo : k + 1 === n - 1 ? t.nextLast : t.next}
           </button>
         </div>
@@ -406,6 +467,14 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       {phase === 'shy' && step < n && card === null && slip === null ? <Hint key={hint ?? 's'}>{hint ?? t.hold}</Hint> : null}
       {phase === 'tie' && !tied ? <Hint>{t.tieHint}</Hint> : null}
       {phase === 'card' ? <Hint>{t.cardHint}</Hint> : null}
+
+      <TapCue
+        target={cueEl}
+        show={cueOn !== null}
+        kind={cueOn === 'shy' ? 'hold' : 'tap'}
+        at={cueOn === 'shy' ? { x: 0.5, y: 0.38 } : undefined}
+        delay={cueOn?.startsWith('f') || cueOn === 'tag' ? 2200 : 2800}
+      />
 
       <Confetti burst={burst} colors={['#ee6a58', '#ffcb3d', '#ff9f1f', '#f47a8c', '#fffdf7', '#5a9f79']} origin={{ x: 0.5, y: 0.45 }} count={tied ? 110 : 60} />
 
