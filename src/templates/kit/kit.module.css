@@ -341,9 +341,9 @@
 .decoSpace {
   float: right;
   width: 7.6em;
-  height: 3.6em;
-  shape-outside: polygon(0.27em 0, 100% 0, 100% 100%, 6.76em 3.37em, 5.34em 2.9em, 3.46em 2.07em, 1.81em 1.37em, 0 0.59em);
-  shape-margin: 0.35em;
+  height: 3em;
+  shape-outside: polygon(0.9em 0, 100% 0, 100% 100%, 6.8em 2.9em, 4.9em 2.4em, 3.5em 1.8em, 0.9em 0.5em);
+  shape-margin: 0.3em;
 }
 @keyframes decoIn {
   from { opacity: 0; transform: scale(0.4) rotate(-50deg); }
