@@ -292,8 +292,7 @@ export const ms: Dict = {
     reminder: 'Hadiah ini dikunci. Kata laluannya: {password}. Jangan lupa beritahu penerimanya.',
     reminderNoPass: 'Hadiah ini dikunci dengan kata laluan. Jangan lupa beritahu penerimanya.',
     badge: 'Berkunci',
-    demoTag: 'Demo',
-    demoPass: 'kata laluannya',
+    demoPass: 'Kata laluannya',
     demoFill: 'Ketik untuk mengisi',
   },
   qr: {

@@ -163,7 +163,6 @@ export function LockScreen({
 
         {demo ? (
           <p className={s.demo}>
-            <span className={s.demoTag}>{t.lock.demoTag}</span>
             <span>{t.lock.demoPass}</span>
             <button
               type="button"
