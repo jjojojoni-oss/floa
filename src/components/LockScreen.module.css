@@ -299,37 +299,45 @@
   }
 }
 
-/* ───────── demo: kata sandinya diberi tahu ───────── */
+/* ───────── demo: kata sandinya diberi tahu, satu baris tenang ───────── */
 .demo {
-  margin-top: 1em;
-  display: inline-flex;
-  flex-direction: column;
+  margin-top: 1.1em;
+  display: flex;
   align-items: center;
-  gap: 0.15em;
-  padding: 0.55em 1.1em 0.6em;
-  border-radius: 1em;
-  font-size: 0.85em;
-  font-weight: 700;
-  color: #6a4a1c;
-  background: rgba(214, 178, 110, 0.22);
-  box-shadow: inset 0 0 0 0.08em rgba(184, 138, 60, 0.4);
+  justify-content: center;
+  gap: 0.5em;
+  font-size: 0.82em;
+  color: #8a6a5a;
+}
+.demoTag {
+  padding: 0.18em 0.5em 0.16em;
+  border-radius: 0.35em;
+  font-size: 0.72em;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #9a7434;
+  background: rgba(184, 138, 60, 0.14);
+}
+.demoKey {
+  padding: 0.28em 0.7em 0.3em;
+  border-radius: 0.5em;
+  font-family: var(--font-serif, Georgia, serif);
+  font-variation-settings: 'SOFT' 100;
+  font-size: 1.12em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: #3a231b;
+  background: rgba(255, 252, 246, 0.9);
+  box-shadow: inset 0 0 0 0.06em rgba(58, 35, 27, 0.1), 0 0.12em 0.3em -0.12em rgba(74, 36, 20, 0.3);
   cursor: pointer;
-  transition: transform 0.12s ease, background 0.15s ease;
+  transition: transform 0.1s ease;
   touch-action: manipulation;
 }
-.demo:active:not(:disabled) {
-  transform: scale(0.97);
-  background: rgba(214, 178, 110, 0.34);
+.demoKey:active:not(:disabled) {
+  transform: scale(0.95);
 }
-.demo:focus-visible {
+.demoKey:focus-visible {
   outline: 0.12em solid #3a231b;
   outline-offset: 0.15em;
-}
-.demoFill {
-  font-size: 0.82em;
-  font-weight: 600;
-  color: #8a6a3a;
-  text-decoration: underline;
-  text-decoration-style: dotted;
-  text-underline-offset: 0.2em;
 }

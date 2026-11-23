@@ -162,21 +162,25 @@ export function LockScreen({
         ) : null}
 
         {demo ? (
-          <button
-            type="button"
-            className={s.demo}
-            disabled={busy}
-            onClick={() => {
-              if (busy) return;
-              sfx.tap();
-              setError(null);
-              setValue(demo.password);
-              later(() => submit(demo.password), digits ? 320 : 220);
-            }}
-          >
-            <span>{fmt(t.lock.demoPass, { password: demo.password })}</span>
-            <span className={s.demoFill}>{t.lock.demoFill}</span>
-          </button>
+          <p className={s.demo}>
+            <span className={s.demoTag}>{t.lock.demoTag}</span>
+            <span>{t.lock.demoPass}</span>
+            <button
+              type="button"
+              className={s.demoKey}
+              disabled={busy}
+              aria-label={`${t.lock.demoFill}: ${demo.password}`}
+              onClick={() => {
+                if (busy) return;
+                sfx.tap();
+                setError(null);
+                setValue(demo.password);
+                later(() => submit(demo.password), digits ? 320 : 220);
+              }}
+            >
+              {demo.password}
+            </button>
+          </p>
         ) : null}
 
         {digits ? (
