@@ -69,6 +69,7 @@
 .head {
   position: relative;
   z-index: 6;
+  pointer-events: none;
   margin-top: 4.3em;
   min-height: 7.4em;
   padding: 0 2.6em;
@@ -157,6 +158,7 @@
   transform: translateY(5em) scale(0.82);
   transition: none;
 }
+.idle .lanScale,
 .ready2 .lanScale {
   opacity: 1;
   transform: none;
@@ -185,15 +187,16 @@
   50% { transform: translate(0.6em, -0.7em) rotate(3deg); }
 }
 .lanImg {
-  position: relative;
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  animation: lanIn 1s 0.15s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+  transition: opacity 1.4s ease;
 }
-@keyframes lanIn {
-  from { opacity: 0; transform: translateY(3em) scale(0.9); }
-  to { opacity: 1; transform: none; }
-}
+/* belum menyala: kertas pucat kena cahaya bulan; menyala: crossfade ke lampion berapi */
+.litImg { opacity: 0; }
+.isLit .litImg { opacity: 1; }
+.isLit .unlitImg { opacity: 0; }
 /* pendar api: hanya opacity + transform */
 .glow {
   position: absolute;
@@ -204,14 +207,112 @@
   margin: -9.5em 0 0 -9.5em;
   border-radius: 50%;
   background: radial-gradient(closest-side, rgba(255, 196, 110, 0.55), rgba(255, 150, 70, 0.17) 48%, transparent 72%);
+  opacity: 0;
+  pointer-events: none;
+}
+.isLit .glow {
+  animation: glowIn 1.4s ease-out both, flicker 2.3s 1.4s ease-in-out infinite;
+}
+.flown .glow {
   animation: flicker 2.3s ease-in-out infinite;
   animation-delay: calc(var(--i) * -0.5s);
-  pointer-events: none;
+}
+.special.isLit .glow {
+  background: radial-gradient(closest-side, rgba(255, 210, 130, 0.7), rgba(255, 160, 80, 0.24) 50%, transparent 74%);
+}
+@keyframes glowIn {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 0.8; transform: scale(1); }
 }
 @keyframes flicker {
   0%, 100% { opacity: 0.8; transform: scale(1); }
   40% { opacity: 1; transform: scale(1.06); }
   70% { opacity: 0.72; transform: scale(0.97); }
+}
+/* percikan korek yang lembap: menyala sebentar, lalu tinggal asap tipis */
+.spark {
+  position: absolute;
+  left: 50%;
+  top: 90%;
+  width: 1.6em;
+  height: 1.6em;
+  margin: -0.8em 0 0 -0.8em;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, #fff6cf, #ffb33d 45%, rgba(255, 140, 40, 0) 75%);
+  animation: spark 0.7s ease-out both;
+}
+.spark::after {
+  content: '';
+  position: absolute;
+  left: 30%;
+  top: -10%;
+  width: 0.9em;
+  height: 0.9em;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(220, 215, 235, 0.55), transparent);
+  animation: smoke 1.6s 0.35s ease-out both;
+}
+@keyframes spark {
+  0% { opacity: 0; transform: scale(0.2); }
+  25% { opacity: 1; transform: scale(1.3); }
+  100% { opacity: 0; transform: scale(0.4); }
+}
+@keyframes smoke {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+  30% { opacity: 0.8; }
+  100% { opacity: 0; transform: translate(0.6em, -3em) scale(2.2); }
+}
+/* api pertama menyambar */
+.flare {
+  position: absolute;
+  left: 50%;
+  top: 90%;
+  width: 5em;
+  height: 5em;
+  margin: -2.5em 0 0 -2.5em;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, #fffbe6, rgba(255, 200, 100, 0.6) 40%, transparent 72%);
+  animation: flare 1.1s ease-out both;
+  pointer-events: none;
+}
+@keyframes flare {
+  0% { opacity: 0; transform: scale(0.2); }
+  30% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.7); }
+}
+/* lampion yang malas: naik sedikit, ragu, lalu turun lagi */
+.stuck {
+  animation: lazy 2.3s cubic-bezier(0.3, 0.6, 0.4, 1) both;
+}
+@keyframes lazy {
+  0% { transform: translateY(0) rotate(0); }
+  28% { transform: translateY(-3.6em) rotate(-3deg); }
+  40% { transform: translateY(-3.2em) rotate(4deg); }
+  52% { transform: translateY(-3.5em) rotate(-2deg); }
+  78% { transform: translateY(0.3em) rotate(1deg); }
+  100% { transform: translateY(0) rotate(0); }
+}
+/* …lalu tiba-tiba melesat */
+.fly.zoom { transition: transform 1.3s cubic-bezier(0.55, 0, 0.35, 1); }
+.zoom .flyY { transition: transform 1.3s cubic-bezier(0.7, 0, 0.15, 1); }
+.zoom .lanScale { transition: transform 1.3s cubic-bezier(0.6, 0, 0.3, 1), opacity 0.6s ease; }
+/* lampion di langit bisa diketuk untuk membaca lagi */
+.flown .lanScale.tappable {
+  position: relative;
+  pointer-events: auto;
+  cursor: pointer;
+  outline: none;
+}
+/* lampion di langit kecil: perluas area ketuknya */
+.flown .lanScale.tappable::after {
+  content: '';
+  position: absolute;
+  inset: -35% -55%;
+}
+.flown .lanScale.tappable:focus-visible .lanBob {
+  outline: 0.35em dashed var(--accent);
+  outline-offset: 0.6em;
+  border-radius: 2em;
 }
 .lan:focus-visible {
   outline: 0.14em dashed var(--accent);
@@ -228,10 +329,15 @@
 }
 .crowd span {
   position: absolute;
-  bottom: 10em;
   aspect-ratio: 3 / 4;
+  translate: -50% -50%;
   opacity: 0;
-  animation: crowd 7s cubic-bezier(0.2, 0.6, 0.3, 1) both;
+  animation: crowd 4.6s cubic-bezier(0.2, 0.7, 0.25, 1) both;
+}
+.crowd span i {
+  position: absolute;
+  inset: 0;
+  animation: crowdBob 5.5s ease-in-out infinite;
 }
 .crowd span::before {
   content: '';
@@ -245,10 +351,173 @@
   width: 100%;
   height: 100%;
 }
+/* naik dari cakrawala, lalu menetap membentuk hati yang samar */
 @keyframes crowd {
-  0% { opacity: 0; transform: translate(0, 0) scale(0.4); }
-  14% { opacity: var(--o); }
-  100% { opacity: var(--o); transform: translate(var(--dx), var(--rise)) scale(1); }
+  0% { opacity: 0; transform: translateY(calc(var(--from) * 1cqh)) scale(0.35); }
+  18% { opacity: 0.8; }
+  100% { opacity: 0.82; transform: none; }
+}
+@keyframes crowdBob {
+  0%, 100% { transform: translate(-0.12em, 0.1em); }
+  50% { transform: translate(0.12em, -0.18em); }
+}
+
+/* ── kunang-kunang ── */
+.flies {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+.flies i,
+.flies b {
+  position: absolute;
+  width: 0.42em;
+  height: 0.42em;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, #fbffd6, #e4f27a 50%, rgba(220, 240, 120, 0) 100%);
+  box-shadow: 0 0 0.6em 0.2em rgba(226, 244, 140, 0.35);
+}
+.flies i {
+  animation: wander var(--d) ease-in-out var(--delay) infinite alternate, blink 2.6s ease-in-out var(--delay) infinite;
+}
+@keyframes wander {
+  from { transform: translate(0, 0); }
+  to { transform: translate(var(--dx), var(--dy)); }
+}
+@keyframes blink {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.95; }
+}
+/* tiap lampion terbang, beberapa kunang-kunang ikut mengantar */
+.flies b {
+  left: calc(50% + (var(--k) - 2) * 1.3em);
+  top: calc(100% - 14em);
+  opacity: 0;
+  animation: escort 3.2s cubic-bezier(0.3, 0.6, 0.3, 1) both;
+}
+@keyframes escort {
+  0% { opacity: 0; transform: translate(0, 0); }
+  15% { opacity: 1; }
+  60% { opacity: 0.9; transform: translate(calc((var(--k) - 2) * -0.6em), -16em); }
+  100% { opacity: 0; transform: translate(calc((var(--k) - 2) * 0.8em), -28em); }
+}
+
+/* ── lampion yang turun membawa surat ── */
+.letterLan {
+  position: absolute;
+  z-index: 9;
+  left: 50%;
+  top: calc(52% - 8.4em);
+  width: 8em;
+  height: 15em;
+  margin-left: -4em;
+  cursor: pointer;
+  animation: descend 4.2s cubic-bezier(0.2, 0.6, 0.25, 1) both;
+}
+@keyframes descend {
+  from { transform: translateY(-62cqh); }
+  to { transform: none; }
+}
+.letterBob {
+  position: absolute;
+  inset: 0;
+  display: block;
+  animation: bob 3.4s 4.2s ease-in-out infinite;
+}
+.letterGlow {
+  position: absolute;
+  left: 50%;
+  top: 4em;
+  width: 16em;
+  height: 16em;
+  margin: -8em 0 0 -8em;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 200, 120, 0.5), rgba(255, 150, 70, 0.15) 50%, transparent 72%);
+  animation: flicker 2.3s ease-in-out infinite;
+}
+.letterImg {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 5.4em;
+  height: 7.2em;
+  margin-left: -2.7em;
+}
+.letterString {
+  position: absolute;
+  left: 50%;
+  top: 6.9em;
+  width: 0.07em;
+  height: 1.4em;
+  background: rgba(253, 241, 216, 0.75);
+}
+.letter {
+  position: absolute;
+  left: 50%;
+  top: 8.2em;
+  width: 7.4em;
+  height: 4.6em;
+  margin-left: -3.7em;
+  display: grid;
+  place-items: center;
+  composes: paper from '../kit/kit.module.css';
+  --paper: #fff3dc;
+  border-radius: 0.2em;
+  transform: rotate(-4deg);
+  animation: letterSwing 3.2s 4.2s ease-in-out infinite;
+  transform-origin: 50% -1.3em;
+}
+.letter::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(156deg, transparent 49.4%, rgba(120, 80, 40, 0.18) 50%, transparent 50.8%), linear-gradient(24deg, transparent 49.4%, rgba(120, 80, 40, 0.18) 50%, transparent 50.8%);
+}
+@keyframes letterSwing {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(3deg); }
+}
+.letterFlower {
+  position: absolute;
+  right: -0.9em;
+  top: -0.9em;
+  width: 2.4em;
+  height: 2.4em;
+}
+.letterTo {
+  position: relative;
+  font-family: var(--font-hand, cursive);
+  font-weight: 700;
+  font-size: 1.15em;
+  line-height: 1;
+  color: #2b2440;
+  padding: 0 0.4em;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+/* ── baca lagi harapan di langit ── */
+.reread {
+  position: absolute;
+  z-index: 10;
+  width: max-content;
+  max-width: 12.5em;
+  translate: -50% 0;
+  padding: 0.38em 0.85em 0.5em;
+  composes: paper from '../kit/kit.module.css';
+  --paper: #fff3dc;
+  color: #2b2440;
+  border-radius: 0.25em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.22em;
+  font-weight: 600;
+  line-height: 1.12;
+  text-align: center;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  animation: cardIn 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  pointer-events: none;
 }
 
 /* ── kaki: kartu harapan di kertas, tulisan tangan ── */
@@ -257,7 +526,7 @@
   z-index: 8;
   margin-top: auto;
   width: 100%;
-  height: 11.2em;
+  height: 12.2em;
   flex: none;
   display: flex;
   flex-direction: column;
@@ -296,6 +565,87 @@
   width: 0.06em;
   height: 0.9em;
   background: rgba(253, 241, 216, 0.6);
+}
+.cardLong {
+  font-size: 1.36em;
+}
+/* kartu yang membawa foto: cukup lebar supaya foto tidak menutupi lampion */
+.cardPhoto {
+  min-width: min(100%, 11em);
+}
+.cardSpecial {
+  --paper: #fff7e6;
+  box-shadow:
+    0 0 0 0.06em rgba(255, 184, 92, 0.55),
+    0 0.05em 0 rgba(255, 255, 255, 0.7) inset,
+    0 1.3em 2.2em -1.3em rgba(255, 170, 70, 0.75);
+}
+.cardNoSpecial {
+  color: #b2392a;
+}
+.unlit {
+  display: block;
+  font-size: 0.72em;
+  opacity: 0.45;
+  letter-spacing: 0.02em;
+}
+/* foto kecil yang ikut diikat di benang lampion */
+.snap {
+  position: absolute;
+  left: -0.5em;
+  bottom: calc(100% - 0.6em);
+  font-size: 0.86em;
+  width: 5.6em;
+  padding: 0.32em 0.32em 1.1em;
+  background: #fffaf0;
+  border-radius: 0.12em;
+  transform: rotate(-7deg);
+  box-shadow: 0 0.6em 1.2em -0.5em rgba(8, 13, 43, 0.7);
+  animation: snapIn 0.8s 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+.cardLong .snap { font-size: 1.02em; }
+.snap img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+@keyframes snapIn {
+  from { opacity: 0; transform: translateY(1em) rotate(-14deg) scale(0.8); }
+  to { opacity: 1; transform: rotate(-7deg); }
+}
+/* narasi: kartu kertas yang bisa diketuk */
+.tell::before { display: none; }
+.tell {
+  display: block;
+  width: 100%;
+  max-width: 13.6em;
+  font-size: 1.42em;
+  line-height: 1.16;
+  cursor: pointer;
+}
+.tapNext {
+  display: block;
+  margin-top: 0.4em;
+  font-family: var(--font-ui, sans-serif);
+  font-size: 0.42em;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #c2601a;
+  opacity: 0.85;
+}
+/* celetukan kecil (korek lembap, lampion malas) */
+.quip {
+  margin-top: 0.7em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.32em;
+  font-weight: 600;
+  line-height: 1.1;
+  color: #ffe0a8;
+  text-align: center;
+  text-shadow: 0 0.06em 0.5em rgba(8, 13, 43, 0.85);
+  animation: up 0.5s ease both;
 }
 .cardNo {
   display: block;
@@ -357,5 +707,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .star, .moon, .lanBob, .glow, .reflectOn { animation: none; }
+  .star, .moon, .lanBob, .glow, .reflectOn, .flies i, .crowd span i, .letterBob, .letter { animation: none; }
+  .isLit .glow, .flown .glow { animation: none; opacity: 0.8; }
 }

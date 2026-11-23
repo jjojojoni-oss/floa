@@ -11,11 +11,13 @@
    * Lampion kertas menghadap atas, digambar di kotak 240×320.
    * Kertasnya dilukis dengan sapuan tegak mengikuti rusuk; makin dekat api makin terang.
    */
-  function lantern(g, R, { n = 150, detail = true } = {}) {
+  /** kertas lampion yang belum menyala, kena cahaya bulan: pucat, sejuk, tanpa api */
+  const DIM = [[0, '#efe2cc'], [0.35, '#d8c4b0'], [0.7, '#a7929a'], [1, '#6c5f7a']];
+  function lantern(g, R, { n = 150, detail = true, unlit = false } = {}) {
     const body = 'M30,98C30,38 76,12 120,12C164,12 210,38 210,98C210,166 184,230 168,268L72,268C56,230 30,166 30,98Z';
     const hw = (v) => (v < 0.34 ? 90 * Math.pow(Math.sin((v / 0.34) * Math.PI * 0.5), 0.6) : 90 - ((v - 0.34) / 0.66) * 42);
     const p = painted(g, body, {
-      base: F.radGrad(g, [[0, '#ffe9a0'], [0.45, '#ffb24f'], [1, '#d5611f']], 120, 250, 250), n, R, filter: 'impastoFine', cast: detail ? 'cast' : false,
+      base: unlit ? F.radGrad(g, [[0, '#e9d8c0'], [0.5, '#bba5a4'], [1, '#776a86']], 70, 40, 300) : F.radGrad(g, [[0, '#ffe9a0'], [0.45, '#ffb24f'], [1, '#d5611f']], 120, 250, 250), n, R, filter: 'impastoFine', cast: detail ? 'cast' : false,
       stroke: () => {
         const u = -1 + 2 * R(), v = R() * 0.9;
         const v2 = Math.min(1, v + 0.1 + R() * 0.22);
@@ -23,27 +25,34 @@
         const x1 = 120 + u * hw(v) * 0.96, x2 = 120 + u * hw(v2) * 0.96;
         const xm = 120 + u * hw((v + v2) / 2) * 1.02;
         const dist = Math.hypot(xm - 120, (y1 + y2) / 2 - 252) / 250;
-        let c = ramp(GLOW, dist + (R() - 0.5) * 0.12);
-        if (u > 0.25) c = mix(c, '#a83f1c', (u - 0.25) * 0.5); // sisi teduh
-        if (u < -0.3 && R() < 0.5) c = mix(c, '#fff3c4', 0.35); // sisi terang
+        let c;
+        if (unlit) {
+          // cahaya bulan dari kiri-atas: kiri pucat, kanan-bawah ungu teduh
+          c = ramp(DIM, Math.min(1, Math.max(0, (u + 1) * 0.38 + v * 0.36 + (R() - 0.5) * 0.12)));
+          if (u < -0.35 && R() < 0.45) c = mix(c, '#fbf3e2', 0.35);
+        } else {
+          c = ramp(GLOW, dist + (R() - 0.5) * 0.12);
+          if (u > 0.25) c = mix(c, '#a83f1c', (u - 0.25) * 0.5); // sisi teduh
+          if (u < -0.3 && R() < 0.5) c = mix(c, '#fff3c4', 0.35); // sisi terang
+        }
         return { d: `M${x1},${y1}Q${xm},${(y1 + y2) / 2} ${x2},${y2}`, color: jitter(c, 6, R), width: 7 + R() * 13, opacity: 0.4 + R() * 0.45 };
       },
     });
     // cahaya api yang menembus kertas
-    el('ellipse', { cx: 120, cy: 238, rx: 62, ry: 52, fill: '#fffbe0', opacity: 0.6, filter: 'url(#soft)' }, p.inner);
+    if (!unlit) el('ellipse', { cx: 120, cy: 238, rx: 62, ry: 52, fill: '#fffbe0', opacity: 0.6, filter: 'url(#soft)' }, p.inner);
     if (detail) {
       // rusuk bambu + lipatan kertas
       for (const u of [-0.72, -0.4, -0.08, 0.26, 0.58, 0.86]) {
         let d = '';
         for (let k = 0; k <= 10; k++) { const v = k / 10; d += `${k ? 'L' : 'M'}${120 + u * hw(v)},${12 + v * 256}`; }
-        el('path', { d, fill: 'none', stroke: '#9c3f16', 'stroke-width': 1.7, 'stroke-opacity': 0.42, 'stroke-linecap': 'round' }, p.inner);
+        el('path', { d, fill: 'none', stroke: unlit ? '#5c4e63' : '#9c3f16', 'stroke-width': 1.7, 'stroke-opacity': 0.42, 'stroke-linecap': 'round' }, p.inner);
         el('path', { d, fill: 'none', stroke: '#fff3c4', 'stroke-width': 1.1, 'stroke-opacity': 0.3, transform: 'translate(-2.2 0)' }, p.inner);
       }
       for (const [y, o] of [[92, 0.22], [156, 0.18], [214, 0.16]]) {
-        el('path', { d: `M24,${y}Q120,${y + 16} 216,${y}`, fill: 'none', stroke: '#8f3a14', 'stroke-width': 1.4, 'stroke-opacity': o }, p.inner);
+        el('path', { d: `M24,${y}Q120,${y + 16} 216,${y}`, fill: 'none', stroke: unlit ? '#4f4458' : '#8f3a14', 'stroke-width': 1.4, 'stroke-opacity': o }, p.inner);
       }
       // puncak yang lebih gelap dan kilap di bahu kiri
-      el('ellipse', { cx: 126, cy: 16, rx: 54, ry: 16, fill: '#8f3312', opacity: 0.4, filter: 'url(#blur2)' }, p.inner);
+      el('ellipse', { cx: 126, cy: 16, rx: 54, ry: 16, fill: unlit ? '#4a3f58' : '#8f3312', opacity: 0.4, filter: 'url(#blur2)' }, p.inner);
       el('path', { d: 'M46,92C52,58 76,36 104,29', fill: 'none', stroke: '#fff6d4', 'stroke-width': 14, 'stroke-linecap': 'round', 'stroke-opacity': 0.26, filter: 'url(#soft)' }, p.inner);
     }
     // gelang bambu di mulut lampion
@@ -51,7 +60,13 @@
       base: '#7a3d17', n: detail ? 16 : 6, R, filter: 'impastoFine', cast: detail ? 'cast' : false,
       stroke: () => { const x = 60 + R() * 110; return { d: `M${x},${264 + R() * 12}h${10 + R() * 26}`, color: R() < 0.45 ? '#c98342' : '#4f2409', width: 3 + R() * 4, opacity: 0.7 }; },
     });
-    if (detail) {
+    if (detail && unlit) {
+      // kawat penyangga + sumbu yang belum dinyalakan
+      el('path', { d: 'M78,280L112,300M162,280L128,300M112,300h16', fill: 'none', stroke: '#3a2a24', 'stroke-width': 2.2, 'stroke-linecap': 'round' }, g);
+      el('path', { d: 'M120,300v-10', stroke: '#2a1d18', 'stroke-width': 4, 'stroke-linecap': 'round' }, g);
+      el('circle', { cx: 120, cy: 289, r: 3.2, fill: '#1a120f' }, g);
+    }
+    if (detail && !unlit) {
       // kawat penyangga + sumbu yang menyala
       el('path', { d: 'M78,280L112,300M162,280L128,300M112,300h16', fill: 'none', stroke: '#4f2409', 'stroke-width': 2.2, 'stroke-linecap': 'round' }, g);
       el('circle', { cx: 120, cy: 290, r: 26, fill: '#ffd98a', opacity: 0.55, filter: 'url(#soft)' }, g);
@@ -161,6 +176,9 @@
   F.sprites['bg-lampion'] = { w: W, h: H, seed: 451, scale: 1, draw(svg, R) { night(svg, R); } };
 
   F.sprites['lampion'] = { w: 240, h: 320, seed: 452, draw(svg, R) { lantern(svg, R); } };
+
+  // lampion yang sama sebelum dinyalakan (seed sama → bentuk & sapuan cocok saat di-crossfade)
+  F.sprites['lampion-padam'] = { w: 240, h: 320, seed: 452, draw(svg, R) { lantern(svg, R, { unlit: true }); } };
 
   // lampion kecil untuk kerumunan di akhir: lebih sedikit sapuan, tanpa detail halus
   F.sprites['lampion-kecil'] = { w: 72, h: 96, seed: 453, draw(svg, R) { lantern(el('g', { transform: 'scale(0.3)' }, svg), R, { n: 40, detail: false }); } };

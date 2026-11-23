@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import { type ComponentType, useEffect, useState } from 'react';
 import { useT } from '@/i18n/client';
 import { Opening } from './kit/Opening';
+import { GiftWrap } from './kit/Wrap';
 import { getTemplate } from './registry';
 import type { GiftData, TemplateMode, TemplateProps } from './types';
 
@@ -50,23 +51,27 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
 
 /**
  * Memainkan satu template. Induknya harus `position: relative` dan punya ukuran.
- * Kalau pengirim menulis kalimat pembuka, kalimat itu tampil dulu sebelum templatenya dimulai.
+ * Urutannya: bingkisan yang dibuka (sampul bersama, untuk semua template) → kalimat pembuka dari
+ * pengirim (kalau ada) → templatenya.
  */
 export function TemplatePlayer({ id, data, mode }: { id: string; data: GiftData; mode: TemplateMode }) {
   const meta = getTemplate(id);
   const P = PLAYERS[id];
   const intro = (data.intro ?? '').trim();
-  const [opened, setOpened] = useState(!intro);
+  const [step, setStep] = useState<'wrap' | 'intro' | 'play'>('wrap');
 
+  // kode template dipanaskan selagi bingkisan & kalimat pembuka tampil
   useEffect(() => {
-    if (intro && !opened) void LOADERS[id]?.().catch(() => {});
-  }, [id, intro, opened]);
+    if (step !== 'play') void LOADERS[id]?.().catch(() => {});
+  }, [id, step]);
 
   if (!meta || !P) return null;
   return (
     <div style={{ position: 'absolute', inset: 0, background: meta.palette.bg, color: meta.palette.ink }}>
-      {!opened && intro ? (
-        <Opening text={intro} to={data.to} palette={meta.palette} onDone={() => setOpened(true)} />
+      {step === 'wrap' ? (
+        <GiftWrap data={data} palette={meta.palette} onDone={() => setStep(intro ? 'intro' : 'play')} />
+      ) : step === 'intro' && intro ? (
+        <Opening text={intro} to={data.to} palette={meta.palette} onDone={() => setStep('play')} />
       ) : (
         <P data={data} mode={mode} />
       )}

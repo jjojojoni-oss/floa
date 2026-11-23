@@ -6,6 +6,7 @@
 .wrap {
   --lit: 0;
   --dim: 0.56;
+  --w: 0;
   position: absolute;
   inset: 0;
   display: flex;
@@ -13,10 +14,18 @@
   align-items: center;
   color: #fff1dc;
   opacity: 0;
-  transition: opacity 0.5s ease;
+  transition: opacity 0.5s ease, color 0.8s ease;
 }
 .wrap.ready { opacity: 1; }
 .wrap.party { color: #4a2238; }
+.shook { animation: shook 0.42s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+@keyframes shook {
+  0%, 100% { translate: 0 0; }
+  20% { translate: -0.35em 0.15em; }
+  40% { translate: 0.3em -0.1em; }
+  60% { translate: -0.2em 0.05em; }
+  80% { translate: 0.1em 0; }
+}
 
 /* ── ruang terang: lukisan kedua yang muncul saat lampu menyala ── */
 .bright {
@@ -24,10 +33,53 @@
   inset: 0;
   background: url('/art/bg-lilin-terang.webp') center bottom / cover no-repeat;
   opacity: 0;
-  transition: opacity 1s ease;
+  transition: opacity 1.1s ease;
   pointer-events: none;
 }
 .party .bright { opacity: 1; }
+/* sudut ruangan yang tenggelam dalam gelap */
+.vig {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 75% at 50% 42%, transparent 40%, rgba(9, 3, 16, 0.62));
+  transition: opacity 1.1s ease;
+  pointer-events: none;
+}
+.party .vig { opacity: 0; }
+
+/* ── kelopak mata: layar ikut terpejam saat menahan tombol permohonan ── */
+.lids {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.lids::before,
+.lids::after {
+  content: '';
+  position: absolute;
+  left: -6%;
+  right: -6%;
+  transition: transform 0.18s linear;
+}
+.lids::before {
+  top: 0;
+  height: 37%;
+  transform-origin: 50% 0;
+  transform: scaleY(var(--w));
+  background: linear-gradient(#0b0412 70%, rgba(11, 4, 18, 0));
+  border-radius: 0 0 50% 50% / 0 0 22% 22%;
+}
+.lids::after {
+  bottom: 0;
+  height: 61%;
+  transform-origin: 50% 100%;
+  transform: scaleY(var(--w));
+  background: linear-gradient(to top, #0b0412 80%, rgba(11, 4, 18, 0));
+  border-radius: 50% 50% 0 0 / 14% 14% 0 0;
+}
+.opened .lids::before,
+.opened .lids::after { transition: transform 1.6s cubic-bezier(0.3, 0, 0.2, 1); }
 
 /* ── bendera pesta ── */
 .bunting {
@@ -57,8 +109,10 @@
 .head {
   position: relative;
   z-index: 3;
+  flex: none;
   margin-top: 5.4em;
-  min-height: 6.6em;
+  height: 6.6em;
+  width: 100%;
   padding: 0 1.4em;
   text-align: center;
 }
@@ -68,6 +122,7 @@
   letter-spacing: 0.2em;
   text-transform: uppercase;
   opacity: 0.66;
+  animation: up 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 .name {
   margin-top: 0.12em;
@@ -126,15 +181,22 @@
 }
 .bq {
   --p: 0;
+  --k: 0;
   position: relative;
   width: min(94cqw, calc(100cqh * 440 / 480));
   aspect-ratio: 440 / 480;
   flex: none;
+  transition: translate 0.9s cubic-bezier(0.3, 0.8, 0.2, 1), scale 0.9s cubic-bezier(0.3, 0.8, 0.2, 1), opacity 0.9s ease;
   animation: settle 1s cubic-bezier(0.2, 0.9, 0.2, 1) both;
 }
 @keyframes settle {
   from { opacity: 0; transform: translateY(1.8em) scale(0.95); }
   to { opacity: 1; transform: none; }
+}
+/* potongan pertama datang: kuenya mundur ke belakang */
+.bq.aside {
+  translate: 0 -12%;
+  scale: 0.78;
 }
 .layer {
   position: absolute;
@@ -185,13 +247,25 @@
   aspect-ratio: 44 / 150;
   cursor: pointer;
   outline: none;
+  transition: translate 0.7s cubic-bezier(0.5, 0, 0.6, 1), opacity 0.5s ease;
+  transition-delay: calc(var(--i) * 0.07s);
 }
 .candle::before {
   content: '';
   position: absolute;
-  inset: -16% -58% -4%;
+  inset: -16% -12% -4%;
 }
-.candle:disabled { cursor: default; }
+/* lilin yang sudah menyala tidak boleh menghalangi ketukan ke tetangganya */
+.candle:disabled {
+  cursor: default;
+  pointer-events: none;
+}
+/* lilinnya dicabut dulu sebelum kue dipotong */
+.pulled .candle {
+  translate: 0 -55%;
+  opacity: 0;
+  pointer-events: none;
+}
 .stick {
   position: absolute;
   inset: 0;
@@ -199,7 +273,6 @@
   height: 100%;
 }
 .isLit .stickShade { opacity: 0.05; }
-.out .stickShade { opacity: var(--dim); }
 
 .halo {
   position: absolute;
@@ -219,7 +292,6 @@
   animation: haloPulse 1.7s ease-in-out infinite alternate;
   animation-delay: calc(var(--i) * -0.4s);
 }
-.out .halo { opacity: 0; }
 @keyframes haloPulse {
   from { transform: scale(0.94); }
   to { transform: scale(1.06); }
@@ -234,7 +306,7 @@
   aspect-ratio: 70 / 110;
   transform-origin: 50% 94.5%;
   opacity: 0;
-  transform: scale(0);
+  transform: scale(0.05);
   transition: opacity 0.2s ease, transform 0.45s cubic-bezier(0.34, 1.8, 0.64, 1);
   pointer-events: none;
 }
@@ -242,9 +314,7 @@
   opacity: 1;
   transform: scale(1);
 }
-.out .fl {
-  opacity: 0;
-  transform: scale(0.1);
+.blown .fl {
   transition: opacity 0.18s ease, transform 0.2s ease-in;
 }
 .lean {
@@ -267,6 +337,21 @@
   100% { transform: scale(1.05, 0.94) rotate(3.5deg); }
 }
 
+/* si bandel: menyala lagi sambil bergoyang-goyang */
+.naughty {
+  transform-origin: 50% 100%;
+  animation: naughty 0.55s 0.15s ease-in-out 3;
+}
+.naughty .fl {
+  transition: opacity 0.15s ease, transform 0.6s cubic-bezier(0.3, 2.4, 0.5, 1);
+}
+.naughty .flick { animation-duration: 0.26s; }
+@keyframes naughty {
+  0%, 100% { rotate: 0deg; }
+  30% { rotate: -6deg; }
+  70% { rotate: 5deg; }
+}
+
 .smoke {
   position: absolute;
   left: 8%;
@@ -274,8 +359,9 @@
   width: 84%;
   opacity: 0;
   transform-origin: 50% 100%;
+  pointer-events: none;
 }
-.out .smoke {
+.blown .smoke {
   animation: smoke 1.7s ease-out both;
   animation-delay: calc(var(--i) * 0.07s);
 }
@@ -337,51 +423,267 @@
   50% { transform: translateY(-5%) rotate(2.5deg); }
 }
 
+/* ── pisau: ditarik turun membelah kue ── */
+.knifeZone {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  touch-action: none;
+  cursor: grab;
+  outline: none;
+  transition: opacity 0.5s 0.3s ease;
+}
+.knifeZone::before {
+  content: '';
+  position: absolute;
+  inset: -45% -8% -6%;
+}
+.knifeZone:active { cursor: grabbing; }
+.aside .knifeZone { opacity: 0; }
+.knife {
+  position: absolute;
+  left: 47%;
+  top: -10.5%;
+  width: 14%;
+  max-width: none;
+  /* ujung pisau dari y≈175 (di atas kue) sampai y≈400 pada kanvas 440×480 */
+  transform: translateY(calc(var(--k) * 100%));
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.3, 1);
+  filter: drop-shadow(0.3em 0.5em 0.4em rgba(60, 20, 30, 0.3));
+  animation: knifeIn 0.8s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  pointer-events: none;
+}
+.bq[data-drag] .knife { transition: none; }
+.knifeZone:focus-visible .knife { filter: drop-shadow(0 0 0.4em #fff) drop-shadow(0.3em 0.5em 0.4em rgba(60, 20, 30, 0.3)); }
+@keyframes knifeIn {
+  from { opacity: 0; translate: 0 -25%; }
+  to { opacity: 1; translate: 0 0; }
+}
+/* belahan tipis di badan kue, memanjang mengikuti ujung pisau */
+.cutLine {
+  position: absolute;
+  left: 53.5%;
+  top: 41%;
+  width: 0.9%;
+  height: 46%;
+  border-radius: 99em;
+  background: linear-gradient(90deg, rgba(90, 40, 50, 0.55), rgba(255, 250, 235, 0.9));
+  transform-origin: 50% 0;
+  transform: scaleY(clamp(0, calc(var(--k) * 1.02 - 0.1), 1));
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.3, 1);
+  pointer-events: none;
+}
+.bq[data-drag] .cutLine { transition: none; }
+
+/* ── potongan pertama di atas piring ── */
+.plateWrap {
+  position: absolute;
+  left: 50%;
+  bottom: 1%;
+  z-index: 4;
+  width: min(84cqw, calc(80cqh * 340 / 260));
+  aspect-ratio: 340 / 260;
+  translate: -50% 0;
+  animation: plateIn 0.95s 0.35s cubic-bezier(0.25, 1.2, 0.4, 1) both;
+}
+@keyframes plateIn {
+  from { opacity: 0; transform: translateY(45%) rotate(-7deg) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+.plate {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  cursor: pointer;
+  outline: none;
+  filter: drop-shadow(0 0.9em 0.8em rgba(70, 30, 40, 0.28));
+}
+.plate img {
+  width: 100%;
+  height: 100%;
+}
+.plate:not(:disabled) { animation: nudge 2.4s 1.6s ease-in-out infinite; }
+.plate:disabled { cursor: default; }
+.plate:focus-visible { filter: drop-shadow(0 0 0.35em #fff) drop-shadow(0 0.9em 0.8em rgba(70, 30, 40, 0.28)); }
+@keyframes nudge {
+  0%, 100% { scale: 1; }
+  50% { scale: 1.035; }
+}
+/* kartu yang terselip di bawah piring */
+.cardPeek {
+  composes: paper from '../kit/kit.module.css';
+  position: absolute;
+  right: 2%;
+  top: 22%;
+  width: 50%;
+  aspect-ratio: 5 / 3.4;
+  border-radius: 0.3em;
+  box-shadow: 0 0.4em 0.9em -0.3em rgba(70, 30, 40, 0.4), inset 0 0 0 0.1em rgba(200, 150, 120, 0.25);
+  animation: peek 0.9s cubic-bezier(0.3, 1.3, 0.5, 1) both;
+  display: flex;
+  align-items: flex-start;
+  padding: 0.5em 0.7em;
+}
+@keyframes peek {
+  from { transform: translate(-40%, 30%) rotate(-2deg); }
+  to { transform: translate(8%, -44%) rotate(9deg); }
+}
+.cardPeek .peekTo {
+  font-family: var(--font-hand, cursive);
+  font-size: 1.3em;
+  font-weight: 600;
+  line-height: 1;
+  color: #8a3b4e;
+  max-width: 70%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.cardFlower {
+  position: absolute;
+  right: -10%;
+  top: -22%;
+  width: 40%;
+  rotate: 18deg;
+}
+
+/* ── colekan krim yang menempel di "kaca" layar, sebagian keluar dari tepi ── */
+.cream {
+  position: absolute;
+  z-index: 40;
+  left: -10%;
+  top: 21%;
+  width: 92%;
+  aspect-ratio: 300 / 200;
+  cursor: pointer;
+  outline: none;
+  rotate: -6deg;
+  animation: splat 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+.cream img {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0.25em 0.4em rgba(60, 20, 30, 0.28));
+}
+@keyframes splat {
+  0% { opacity: 0; transform: scale(2.1); }
+  45% { opacity: 1; transform: scale(0.92, 1.06); }
+  100% { opacity: 1; transform: none; }
+}
+.cream.wiped { animation: wipe 0.55s ease-in both; }
+@keyframes wipe {
+  from { opacity: 1; transform: none; clip-path: inset(0 0 0 0); }
+  to { opacity: 0.2; transform: translateX(30%) skewX(-14deg); clip-path: inset(0 0 0 100%); }
+}
+
 /* ── bagian bawah ── */
 .foot {
   position: relative;
   z-index: 4;
   width: 100%;
-  height: 11em;
+  height: 12em;
   flex: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: 0.2em 1.5em 0;
+  padding: 0.3em 1.3em 0;
 }
-/* doa per lilin: secarik kertas bertulisan tangan */
-.wish {
+.darkLine {
+  margin-top: 0.4em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.55em;
+  font-weight: 600;
+  line-height: 1.1;
+  text-align: center;
+  text-wrap: balance;
+  text-shadow: 0 0.06em 0.5em rgba(20, 8, 30, 0.7);
+  animation: up 0.9s 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* doa per lilin: kartu kecil bertulisan tangan, kadang dengan foto */
+.card {
   composes: paper from '../kit/kit.module.css';
   position: relative;
-  max-width: 100%;
-  padding: 0.55em 1.1em 0.6em 2.3em;
-  border-radius: 0.3em;
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  width: 100%;
+  max-width: 21.5em;
+  padding: 0.6em 1em 0.7em 0.8em;
+  border-radius: 0.35em;
   color: #3d2440;
-  font-family: var(--font-hand, cursive);
-  font-size: 1.62em;
-  line-height: 1.12;
-  font-weight: 600;
   text-align: left;
+  box-shadow: 0 0.8em 1.6em -0.8em rgba(10, 4, 20, 0.7);
+  transform-origin: 1.4em 50%;
+  animation: cardIn 0.6s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: rotate(-5deg) translateY(1em) scale(0.92); }
+  to { opacity: 1; transform: rotate(-1deg); }
+}
+.cardIcon {
+  flex: none;
+  width: 1.1em;
+  rotate: -8deg;
+}
+.snap {
+  flex: none;
+  width: 6.4em;
+  margin: -2em 0 -0.7em -0.4em;
+  padding: 0.28em 0.28em 0.95em;
+  background: #fffdf7;
+  box-shadow: 0 0.35em 0.8em -0.2em rgba(40, 15, 30, 0.45);
+  rotate: -5deg;
+  animation: snapIn 0.7s 0.15s cubic-bezier(0.34, 1.5, 0.64, 1) both;
+}
+.snap img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  background: #e8dccb;
+}
+@keyframes snapIn {
+  from { opacity: 0; transform: translateY(0.8em) rotate(6deg) scale(0.85); }
+  to { opacity: 1; transform: none; }
+}
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+.cardLabel {
+  font-size: 0.62em;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #9a5a6a;
+}
+.cardText {
+  margin-top: 0.1em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.45em;
+  line-height: 1.1;
+  font-weight: 600;
   text-wrap: pretty;
   overflow-wrap: anywhere;
-  transform-origin: 1em 50%;
-  animation: wishIn 0.55s cubic-bezier(0.34, 1.5, 0.64, 1) both;
 }
-.wishIcon {
-  position: absolute;
-  left: 0.72em;
-  top: 50%;
-  width: 0.6em;
-  transform: translateY(-56%) rotate(-7deg);
+.cardLong { font-size: 1.24em; }
+.withPhoto .cardText { font-size: 1.32em; }
+.withPhoto .cardLong { font-size: 1.12em; }
+/* lilin terakhir: kertasnya sedikit lebih hangat */
+.lastCard {
+  --paper: #fff3d9;
+  box-shadow: 0 0.8em 1.6em -0.8em rgba(10, 4, 20, 0.7), 0 0 2.4em -0.6em rgba(255, 190, 100, 0.65);
 }
-@keyframes wishIn {
-  from { opacity: 0; transform: rotate(-6deg) translateY(0.9em) scale(0.9); }
-  to { opacity: 1; transform: rotate(-1.2deg); }
-}
+.lastCard .cardLabel { color: #c2622a; }
+
 .count {
-  margin-top: 1em;
+  margin-top: 0.9em;
   display: flex;
+  align-items: center;
   gap: 0.45em;
 }
 .count i {
@@ -397,20 +699,38 @@
   transform: scale(1.2);
   box-shadow: 0 0 0.7em #ffb347;
 }
+.nextHint {
+  margin-left: 0.5em;
+  font-size: 0.78em;
+  font-weight: 700;
+  opacity: 0.72;
+  animation: up 0.5s 1.4s ease both;
+}
 
 .blowBox {
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
   animation: up 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 .prompt {
   font-family: var(--font-hand, cursive);
-  font-size: 1.7em;
+  font-size: 1.75em;
   line-height: 1.1;
   font-weight: 600;
-  text-align: center;
+  text-wrap: balance;
   text-shadow: 0 0.06em 0.5em rgba(20, 8, 30, 0.7);
+}
+.promptSub {
+  margin-top: 0.3em;
+  max-width: 19em;
+  font-size: 0.86em;
+  font-weight: 600;
+  line-height: 1.35;
+  opacity: 0.8;
+  text-wrap: balance;
+  animation: up 0.6s 0.25s ease both;
 }
 .blowBtn {
   margin-top: 0.85em;
@@ -427,6 +747,15 @@
 .blowBtn:active {
   animation: none;
   scale: 0.96;
+}
+/* tombol permohonan: bulan kecil yang tenang, bukan api */
+.wishBtn {
+  background: radial-gradient(circle at 35% 28%, #fff6e2, #f3dcc0 58%, #d9b48e);
+  color: #3d2440;
+  box-shadow:
+    inset 0 0.1em 0 rgba(255, 255, 255, 0.6),
+    0 0.2em 0 #a9825e,
+    0 1em 1.9em -0.6em rgba(255, 226, 180, 0.7);
 }
 .blowLabel {
   display: block;
@@ -452,7 +781,7 @@
   50% { scale: 1.06; }
 }
 .alt {
-  margin-top: 0.9em;
+  margin-top: 0.7em;
   font-size: 0.78em;
   font-weight: 600;
   color: inherit;
@@ -462,25 +791,156 @@
   cursor: pointer;
   animation: up 0.5s ease both;
 }
-
-.sub {
-  composes: paper from '../kit/kit.module.css';
-  padding: 0.18em 0.8em 0.26em;
-  border-radius: 0.2em;
-  color: #3d2440;
-  font-family: var(--font-hand, cursive);
-  font-size: 1.5em;
-  font-weight: 600;
-  line-height: 1.1;
-  max-width: 100%;
-  overflow-wrap: anywhere;
-  text-align: center;
-  rotate: -1.5deg;
-  animation: up 0.6s 0.5s ease both;
+.mic {
+  margin-top: 0.75em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  font-size: 0.8em;
+  font-weight: 700;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.88;
+  animation: up 0.5s 0.6s ease both;
 }
+.mic::before {
+  content: '';
+  width: 0.55em;
+  height: 0.85em;
+  border-radius: 99em;
+  box-shadow: inset 0 0 0 0.14em currentColor;
+}
+.mic span { text-decoration: underline; text-underline-offset: 0.2em; }
+.micOn {
+  margin-top: 0.75em;
+  font-size: 0.8em;
+  font-weight: 700;
+  opacity: 0.9;
+  animation: up 0.4s ease both;
+}
+.micOn::before {
+  content: '';
+  display: inline-block;
+  width: 0.5em;
+  height: 0.5em;
+  margin-right: 0.45em;
+  border-radius: 50%;
+  background: #ff7a5c;
+  box-shadow: 0 0 0 0 rgba(255, 122, 92, 0.7);
+  animation: rec 1.3s ease-out infinite;
+}
+@keyframes rec {
+  to { box-shadow: 0 0 0 0.6em rgba(255, 122, 92, 0); }
+}
+.micNo {
+  margin-top: 0.75em;
+  max-width: 18em;
+  font-size: 0.78em;
+  font-weight: 600;
+  line-height: 1.35;
+  opacity: 0.82;
+  animation: up 0.4s ease both;
+}
+.again {
+  margin-top: 0.9em;
+  padding: 0.85em 1.5em;
+  border-radius: 99em;
+  background: radial-gradient(circle at 35% 20%, #ffe0a0, #ffb347 60%, #e88a22);
+  color: #4a2238;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow:
+    inset 0 0.08em 0 rgba(255, 255, 255, 0.5),
+    0 0.2em 0 #b96a14,
+    0 1em 1.6em -0.8em rgba(255, 179, 71, 0.95);
+  animation: ctaIn 0.5s 0.5s cubic-bezier(0.34, 1.5, 0.64, 1) both, ctaPulse 1.6s 1.2s ease-in-out infinite;
+}
+.again:active { transform: translateY(0.1em); }
+
+/* ── nyanyi bareng ── */
+.songBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+.songCard {
+  composes: paper from '../kit/kit.module.css';
+  width: 100%;
+  max-width: 19.5em;
+  padding: 0.55em 1.1em 0.65em;
+  border-radius: 0.35em;
+  color: #3d2440;
+  text-align: center;
+  rotate: -1deg;
+  box-shadow: 0 0.8em 1.6em -0.8em rgba(90, 40, 50, 0.45);
+  animation: cardIn 0.7s 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+.songEyebrow {
+  font-size: 0.62em;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #9a5a6a;
+}
+.lyric {
+  font-family: var(--font-hand, cursive);
+  font-size: 1.3em;
+  line-height: 1.16;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  opacity: 0.38;
+  transition: opacity 0.35s ease, color 0.35s ease, scale 0.35s ease;
+}
+.lyric.sung { opacity: 0.78; }
+.lyric.sing {
+  opacity: 1;
+  color: #d0473a;
+  scale: 1.06;
+}
+.songActions {
+  margin-top: 0.6em;
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  animation: up 0.6s 1.2s ease both;
+}
+.clapBtn {
+  composes: paper from '../kit/kit.module.css';
+  padding: 0.6em 1.15em;
+  border-radius: 99em;
+  color: #4a2238;
+  font-size: 0.9em;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 0.15em 0 rgba(120, 70, 60, 0.35), 0 0.7em 1.2em -0.6em rgba(90, 40, 50, 0.5);
+}
+.clapBtn:active { transform: translateY(0.12em) scale(0.97); }
+.skip {
+  font-size: 0.78em;
+  font-weight: 700;
+  color: inherit;
+  opacity: 0.7;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+.subNote {
+  max-width: 20em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.4em;
+  font-weight: 600;
+  line-height: 1.12;
+  text-align: center;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  animation: up 0.6s 0.7s ease both;
+}
+
 .cta {
   position: relative;
-  margin-top: 0.75em;
+  margin-top: 0.8em;
   padding: 0.95em 1.7em;
   border-radius: 99em;
   background: linear-gradient(180deg, #f7735d, #e0503c);
@@ -492,7 +952,7 @@
     inset 0 0.08em 0 rgba(255, 255, 255, 0.45),
     0 0.2em 0 #a83324,
     0 1.3em 1.8em -0.9em rgba(224, 80, 60, 0.95);
-  animation: ctaIn 0.6s 0.9s cubic-bezier(0.34, 1.5, 0.64, 1) both, ctaPulse 1.8s 1.8s ease-in-out infinite;
+  animation: ctaIn 0.6s 0.7s cubic-bezier(0.34, 1.5, 0.64, 1) both, ctaPulse 1.8s 1.6s ease-in-out infinite;
 }
 .cta:active { transform: translateY(0.1em); }
 @keyframes ctaIn {
@@ -505,5 +965,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .flick, .spark, .blowBtn, .cta, .halo { animation: none; }
+  .flick, .spark, .blowBtn, .cta, .again, .halo, .naughty, .plate:not(:disabled), .shook, .balloon img { animation: none; }
+  .lids::before, .lids::after { transition: none; }
 }

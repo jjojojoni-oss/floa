@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useT } from '@/i18n/client';
 import { ApiError, api } from '@/lib/client';
 import { parseSpotify } from '@/lib/music';
-import type { GiftMusic, MusicKind } from '@/templates/types';
+import type { GiftAsk, GiftMusic, MusicKind } from '@/templates/types';
 
 const inputCls =
   'w-full rounded-2xl bg-white px-4 py-3 text-[16px] leading-snug shadow-[inset_0_0_0_1.5px_var(--color-line)] outline-none transition-shadow placeholder:text-muted/60 focus:shadow-[inset_0_0_0_2px_var(--color-ink)]';
@@ -49,6 +49,77 @@ export function IntroField({ value, max, onChange }: { value: string; max: numbe
         <span className="pointer-events-none absolute bottom-2.5 right-3.5 text-[11px] font-bold tabular-nums text-muted/70">
           {value.length}/{max}
         </span>
+      </div>
+    </div>
+  );
+}
+
+/* ───────────────────────── pertanyaan penutup ───────────────────────── */
+
+export function AskField({
+  value,
+  maxQ,
+  maxA,
+  onChange,
+}: {
+  value: GiftAsk | null | undefined;
+  maxQ: number;
+  maxA: number;
+  onChange: (v: GiftAsk | null) => void;
+}) {
+  const t = useT();
+  const q = value?.q ?? '';
+  const a = value?.a ?? '';
+  const b = value?.b ?? '';
+  const on = q.trim().length > 0;
+  const setQ = (next: string) => {
+    if (!next.trim() && !a && !b) return onChange(null);
+    // begitu pertanyaan mulai ditulis, dua jawaban terisi bawaan (dalam bahasa pengirim), tetap bisa diganti
+    const fill = !q.trim() && !a && !b;
+    onChange({ q: next, a: fill ? t.ask.defaultA : a, b: fill ? t.ask.defaultB : b });
+  };
+  const answer = (key: 'a' | 'b', label: string, ph: string) => (
+    <label className="block min-w-0 flex-1">
+      <span className="sr-only">{label}</span>
+      <input
+        value={key === 'a' ? a : b}
+        maxLength={maxA}
+        placeholder={ph}
+        disabled={!on}
+        onChange={(e) => onChange({ q, a, b, [key]: e.target.value })}
+        className={inputCls + ' text-center font-hand !text-[20px] font-semibold disabled:opacity-50'}
+        autoComplete="off"
+        aria-label={label}
+      />
+    </label>
+  );
+  return (
+    <div data-field="ask">
+      <label htmlFor="f-ask" className="text-[15px] font-extrabold">
+        {t.ask.label} <span className="font-semibold text-muted">{t.music.optional}</span>
+      </label>
+      <p className="mt-0.5 text-[13px] leading-snug text-muted">{t.ask.hint}</p>
+      <div className="relative mt-2">
+        <input
+          id="f-ask"
+          value={q}
+          maxLength={maxQ}
+          placeholder={t.ask.questionPh}
+          onChange={(e) => setQ(e.target.value.replace(/\n/g, ' '))}
+          className={inputCls + ' pr-14'}
+          autoComplete="off"
+          aria-label={t.ask.question}
+        />
+        <span className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-[11px] font-bold tabular-nums text-muted/70">
+          {q.length}/{maxQ}
+        </span>
+      </div>
+      <div className={'mt-2 transition-opacity ' + (on ? 'opacity-100' : 'opacity-60')}>
+        <span className="block text-[12.5px] font-bold text-muted">{t.ask.answers}</span>
+        <div className="mt-1.5 flex gap-2">
+          {answer('a', t.ask.answerA, t.ask.defaultA)}
+          {answer('b', t.ask.answerB, t.ask.defaultB)}
+        </div>
       </div>
     </div>
   );

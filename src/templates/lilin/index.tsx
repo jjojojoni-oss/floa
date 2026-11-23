@@ -1,14 +1,24 @@
 'use client';
 
-import { type CSSProperties, useEffect, useRef, useState } from 'react';
+import { type CSSProperties, type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from 'react';
 import { Confetti, Finale, Hint, HoldButton, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
 import { TEXT } from './i18n';
 import { meta } from './meta';
+import { canUseMic, listenForBlow } from './mic';
+import { clap, playSong, songTiming } from './song';
 import s from './style.module.css';
 
-type Phase = 'light' | 'wish' | 'blown' | 'party';
+/**
+ * Alur: lampu sengaja dimatikan → nyalakan lilin satu per satu (tiap lilin membawa satu doa, kadang dengan foto)
+ * → pejamkan mata & bikin permohonan → tiup (ada satu lilin bandel) → lampu menyala, nyanyi bareng
+ * → potong kue → potongan pertama buat dia (plus colekan krim) → kartu di bawah piring.
+ */
+type Phase = 'light' | 'wish' | 'wished' | 'blow' | 'puffed' | 'stubborn' | 'dark' | 'party' | 'cut' | 'slice' | 'smeared' | 'card';
+
+const BRIGHT: Phase[] = ['party', 'cut', 'slice', 'smeared', 'card'];
+const FLAMES_ON: Phase[] = ['light', 'wish', 'wished', 'blow'];
 
 /** Dasar tiap lilin di kanvas kue 440×480 (sama dengan art/sprites/41-lilin.js). */
 function candleSpots(n: number) {
@@ -45,50 +55,95 @@ export default function Lilin(props: TemplateProps) {
 
 function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void }) {
   const notes = data.notes.map((n) => n.trim()).filter(Boolean).slice(0, 5);
+  const photos = data.photos.filter(Boolean);
   const n = Math.min(5, Math.max(3, notes.length));
   const cs = candleSpots(n);
+  const stub = Math.floor(n / 2); // si lilin bandel
   const ready = useArtReady(['bg-lilin', 'lilin-kue', 'lilin-meja', 'lilin-api', ...cs.map((c) => c.stick)]);
 
   const [lit, setLit] = useState<boolean[]>(() => Array(n).fill(false));
-  const [last, setLast] = useState<number | null>(null);
+  const [order, setOrder] = useState<number[]>([]);
   const [phase, setPhase] = useState<Phase>('light');
   const [alt, setAlt] = useState(false);
+  const [line, setLine] = useState(-1);
   const [finale, setFinale] = useState(false);
   const [burst, setBurst] = useState(0);
+  const [claps, setClaps] = useState(0);
+  const [wiping, setWiping] = useState(false);
+  const [mic, setMic] = useState<'off' | 'on' | 'no'>('off');
+  const stopMic = useRef<(() => void) | null>(null);
+  const micBlow = useRef<() => void>(() => {});
   const scene = useRef<HTMLDivElement>(null);
+  const wrap = useRef<HTMLDivElement>(null);
   const blowing = useRef(false);
+  const stopSong = useRef<() => void>(() => {});
+  const knife = useRef<{ id: number; y0: number; moved: boolean; h: number } | null>(null);
   const later = useTimers();
   const t = TEXT[useLocale()];
+  const to = data.to.trim() || t.you;
+  const from = data.from.trim();
 
-  const litCount = lit.filter(Boolean).length;
-  const party = phase === 'party';
-  const out = phase === 'blown' || party;
+  const litCount = order.length;
+  const allLit = litCount >= n;
+  const bright = BRIGHT.includes(phase);
+  const flamesOn = FLAMES_ON.includes(phase);
+  const reduce = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // kalau menahan tombol tidak memungkinkan, sediakan jalan pintas ketuk
+  // jalan pintas ketuk kalau menahan tombol tidak memungkinkan
   useEffect(() => {
-    if (phase !== 'wish') return;
-    const t = setTimeout(() => setAlt(true), 6000);
-    return () => clearTimeout(t);
+    if (phase !== 'wish' && phase !== 'blow') return;
+    setAlt(false);
+    const id = setTimeout(() => setAlt(true), 6000);
+    return () => clearTimeout(id);
   }, [phase]);
 
+  // lagu ulang tahun begitu lampu menyala
+  useEffect(() => {
+    if (phase !== 'party') return;
+    const { starts, total } = songTiming();
+    const lead = reduce ? 200 : 1300;
+    const ids = [
+      setTimeout(() => {
+        if (!data.music) stopSong.current = playSong();
+        setLine(0);
+      }, lead),
+      ...starts.slice(1).map((st, i) => setTimeout(() => setLine(i + 1), lead + st * 1000)),
+      setTimeout(() => setLine(4), lead + total * 1000 + 300),
+    ];
+    return () => ids.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
+  useEffect(() => () => stopSong.current(), []);
+
+  // mata dibuka pelan-pelan setelah permohonan
+  useEffect(() => {
+    if (phase === 'wished') wrap.current?.style.setProperty('--w', '0');
+  }, [phase]);
+
+  // lukisan untuk adegan potong kue disiapkan selagi bernyanyi
+  useEffect(() => {
+    if (phase !== 'party') return;
+    ['lilin-pisau', 'lilin-potong', 'lilin-colek', 'bunga-kamboja-pink'].forEach((name) => {
+      const img = new Image();
+      img.src = `/art/${name}.webp`;
+    });
+  }, [phase]);
+
+  /* ── 1. lilin ── */
   const light = (i: number) => {
     if (phase !== 'light' || lit[i]) return;
     const next = lit.slice();
     next[i] = true;
     setLit(next);
-    setLast(i);
+    setOrder((o) => [...o, i]);
     haptic(12);
     sfx.pop();
-    sfx.note(next.filter(Boolean).length - 1);
-    if (next.every(Boolean)) {
-      later(() => {
-        setPhase('wish');
-        sfx.chime();
-      }, notes[i] ? 2400 : 1100);
-    }
+    sfx.note(litCount);
+    if (litCount + 1 >= n) later(() => sfx.chime(), 500);
   };
 
-  const onProgress = (p: number) => {
+  /* ── 2. permohonan & tiup ── */
+  const onBlowProgress = (p: number) => {
     scene.current?.style.setProperty('--p', String(p));
     if (p > 0 && !blowing.current) {
       blowing.current = true;
@@ -96,10 +151,28 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     }
     if (p === 0) blowing.current = false;
   };
-
-  const blow = () => {
+  const wished = () => {
     if (phase !== 'wish') return;
-    setPhase('blown');
+    sfx.chime();
+    haptic(20);
+    setPhase('wished');
+  };
+  const blow = () => {
+    if (phase !== 'blow') return;
+    scene.current?.style.setProperty('--p', '0');
+    setPhase('puffed');
+    sfx.blow();
+    haptic(30);
+    // si bandel menyala lagi
+    later(() => {
+      setPhase('stubborn');
+      sfx.pop();
+      haptic(15);
+    }, reduce ? 500 : 1500);
+  };
+  const blowAgain = () => {
+    if (phase !== 'stubborn') return;
+    setPhase('dark');
     sfx.blow();
     haptic(30);
     later(() => {
@@ -107,37 +180,174 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       setBurst((b) => b + 1);
       sfx.success();
       haptic(40);
-    }, 1000);
+    }, reduce ? 300 : 1100);
   };
 
-  const note = last !== null ? notes[last] : null;
+  /* tiup beneran lewat mikrofon (opsional) */
+  useEffect(() => {
+    micBlow.current = () => {
+      if (phase === 'blow') blow();
+      else if (phase === 'stubborn') blowAgain();
+    };
+  });
+  const startMic = () => {
+    if (stopMic.current) return;
+    const m = listenForBlow({
+      level: (p) => scene.current?.style.setProperty('--p', String(p)),
+      blow: () => micBlow.current(),
+    });
+    stopMic.current = m.stop;
+    m.ready.then(
+      () => setMic('on'),
+      () => {
+        stopMic.current = null;
+        setMic('no');
+      },
+    );
+  };
+  useEffect(() => {
+    if (phase !== 'dark') return;
+    stopMic.current?.();
+    stopMic.current = null;
+    setMic('off');
+  }, [phase]);
+  useEffect(() => () => stopMic.current?.(), []);
+
+  /* ── 3. lagu ── */
+  const skipSong = () => {
+    stopSong.current();
+    stopSong.current = () => {};
+    setLine(4);
+  };
+  const onClap = () => {
+    clap();
+    haptic(10);
+    setClaps((c) => c + 1);
+  };
+
+  /* ── 4. potong kue ── */
+  const cut = () => {
+    if (phase !== 'cut') return;
+    stopSong.current();
+    scene.current?.style.setProperty('--k', '1');
+    sfx.crack();
+    haptic(25);
+    setPhase('slice');
+    later(() => sfx.pop(), 650);
+  };
+  const onKnifeDown = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    if (phase !== 'cut' || e.button > 0) return;
+    try {
+      e.currentTarget.setPointerCapture(e.pointerId);
+    } catch {
+      /* pointer sudah tidak aktif */
+    }
+    knife.current = { id: e.pointerId, y0: e.clientY, moved: false, h: e.currentTarget.offsetHeight || 300 };
+    scene.current?.setAttribute('data-drag', '');
+  };
+  const onKnifeMove = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    const k = knife.current;
+    if (!k || k.id !== e.pointerId) return;
+    const dy = e.clientY - k.y0;
+    if (Math.abs(dy) > 6) k.moved = true;
+    const p = Math.max(0, Math.min(1, dy / (k.h * 0.5)));
+    scene.current?.style.setProperty('--k', String(p));
+    if (p >= 0.92) {
+      knife.current = null;
+      scene.current?.removeAttribute('data-drag');
+      cut();
+    }
+  };
+  const onKnifeUp = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    const k = knife.current;
+    if (!k || k.id !== e.pointerId) return;
+    knife.current = null;
+    scene.current?.removeAttribute('data-drag');
+    if (!k.moved) return; // ketukan biasa ditangani onClick
+    scene.current?.style.setProperty('--k', '0');
+  };
+
+  /* ── 5. potongan pertama & colekan krim ── */
+  const smear = () => {
+    if (phase !== 'slice') return;
+    setPhase('smeared');
+    sfx.pop();
+    haptic(45);
+  };
+  const wipe = () => {
+    if (phase !== 'smeared' || wiping) return;
+    setWiping(true);
+    sfx.whoosh();
+    later(() => {
+      setPhase('card');
+      sfx.chime();
+    }, reduce ? 100 : 520);
+  };
+
+  /* ── tampilan ── */
+  const k = Math.min(litCount, n); // urutan lilin terakhir yang dinyalakan (1..n)
+  const note = k > 0 ? notes[k - 1] : null;
+  const photo = k > 0 ? photos[k - 1] : undefined;
+  const isLast = k === n;
   const title = data.title || `${t.happy}${data.to ? `, ${data.to}` : ''}!`;
-  const glow = out ? 0 : litCount / n;
-  // seberapa redup benda-benda: temaram saat belum ada api, makin terang tiap lilin, gelap sesaat setelah ditiup
-  const dim = party ? 0 : phase === 'blown' ? 0.66 : 0.56 - 0.44 * (litCount / n);
+
+  const pulled = phase === 'cut' || phase === 'slice' || phase === 'smeared' || phase === 'card';
+  const flameOn = (i: number) => (flamesOn ? lit[i] : phase === 'stubborn' && i === stub);
+  const puffing = (i: number) => (phase === 'puffed' && lit[i] && i !== stub) || (phase === 'puffed' && i === stub) || (phase === 'dark' && i === stub);
+  const glow = flamesOn ? litCount / n : phase === 'stubborn' ? 0.3 : 0;
+  const dim = bright ? 0 : flamesOn ? 0.56 - 0.44 * (litCount / n) : 0.68;
+
+  let head;
+  if (phase === 'slice' || phase === 'smeared' || phase === 'card') {
+    head = (
+      <div key="slice">
+        <div className={s.eyebrow}>{phase === 'smeared' ? ' ' : t.sliceEyebrow}</div>
+        <div className={s.title}>{phase === 'smeared' ? t.smearTitle : t.sliceTitle}</div>
+      </div>
+    );
+  } else if (phase === 'cut') {
+    head = (
+      <div key="cut">
+        <div className={s.eyebrow}>{t.cutEyebrow}</div>
+        <div className={s.title}>{t.cutTitle}</div>
+      </div>
+    );
+  } else if (phase === 'party') {
+    head = (
+      <div key="party">
+        <div className={s.eyebrow}>{t.party}</div>
+        <div className={cx(s.title, title.length > 24 && s.small)}>{title}</div>
+      </div>
+    );
+  } else {
+    head = (
+      <div key="name">
+        <div className={s.eyebrow}>{t.cakeFor}</div>
+        <div className={cx(s.name, to.length > 12 && s.small)}>{to}</div>
+        {from ? <div className={s.from}>{fmt(t.from, { from })}</div> : null}
+      </div>
+    );
+  }
 
   return (
-    <div className={cx(s.wrap, ready && s.ready, party && s.party)} style={{ '--lit': glow, '--dim': dim } as CSSProperties}>
+    <div
+      ref={wrap}
+      className={cx(s.wrap, ready && s.ready, bright && s.party, phase === 'wished' && s.opened, phase === 'smeared' && s.shook)}
+      style={{ '--lit': glow, '--dim': dim } as CSSProperties}
+    >
       <div className={s.bright} />
+      <div className={s.vig} />
       <Sprite name="lilin-bendera" className={s.bunting} />
 
-      <div className={s.head}>
-        {party ? (
-          <div key="t">
-            <div className={s.eyebrow}>{t.party}</div>
-            <div className={cx(s.title, title.length > 24 && s.small)}>{title}</div>
-          </div>
-        ) : (
-          <div key="n">
-            <div className={s.eyebrow}>{t.cakeFor}</div>
-            <div className={cx(s.name, data.to.length > 12 && s.small)}>{data.to || t.you}</div>
-            {data.from ? <div className={s.from}>{fmt(t.from, { from: data.from })}</div> : null}
-          </div>
-        )}
-      </div>
+      <div className={s.head}>{head}</div>
 
       <div className={s.art}>
-        <div ref={scene} className={cx(s.bq, out && s.out, phase !== 'light' && s.locked)} role="group" aria-label={t.cake}>
+        <div
+          ref={scene}
+          className={cx(s.bq, phase !== 'light' && s.locked, pulled && s.pulled, (phase === 'slice' || phase === 'smeared' || phase === 'card') && s.aside)}
+          role="group"
+          aria-label={t.cake}
+        >
           <Sprite name="lilin-meja" className={s.table} />
           <span className={cx(s.shade, s.table, s.tableShade)} style={mask('lilin-meja')} />
           <span className={s.glow} />
@@ -151,11 +361,12 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
           {cs.map((c, i) => {
             const canTap = phase === 'light' && !lit[i];
+            const on = flameOn(i);
             return (
               <button
                 key={i}
                 type="button"
-                className={cx(s.candle, lit[i] && s.isLit)}
+                className={cx(s.candle, on && s.isLit, puffing(i) && s.blown, phase === 'stubborn' && i === stub && s.naughty)}
                 style={{ left: `${(c.x - 22) / 4.4}%`, top: `${(c.y - 142) / 4.8}%`, '--i': i } as CSSProperties}
                 onClick={() => light(i)}
                 disabled={!canTap}
@@ -174,36 +385,128 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               </button>
             );
           })}
+
+          {phase === 'cut' || phase === 'slice' ? (
+            <button
+              type="button"
+              className={s.knifeZone}
+              onPointerDown={onKnifeDown}
+              onPointerMove={onKnifeMove}
+              onPointerUp={onKnifeUp}
+              onPointerCancel={onKnifeUp}
+              onClick={cut}
+              disabled={phase !== 'cut'}
+              aria-label={t.cutLabel}
+            >
+              <Sprite name="lilin-pisau" className={s.knife} />
+              <span className={s.cutLine} />
+            </button>
+          ) : null}
         </div>
+
+        {phase === 'slice' || phase === 'smeared' || phase === 'card' ? (
+          <div className={s.plateWrap}>
+            {phase === 'card' ? (
+              <span className={s.cardPeek} aria-hidden>
+                <span className={s.peekTo}>{to}</span>
+                <Sprite name="bunga-kamboja-pink" className={s.cardFlower} />
+              </span>
+            ) : null}
+            <button type="button" className={s.plate} onClick={smear} disabled={phase !== 'slice'} aria-label={t.sliceLabel}>
+              <Sprite name="lilin-potong" />
+            </button>
+          </div>
+        ) : null}
       </div>
 
       <div className={s.foot}>
         {phase === 'light' ? (
           <>
+            {litCount === 0 ? <div className={s.darkLine}>{t.dark}</div> : null}
             {note ? (
-              <div key={last} className={s.wish}>
-                <Sprite name={cs[last as number].stick} className={s.wishIcon} />
-                {note}
+              <div key={k} className={cx(s.card, photo && s.withPhoto, isLast && s.lastCard)}>
+                {photo ? (
+                  <span className={s.snap}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={photo} alt="" draggable={false} />
+                  </span>
+                ) : (
+                  <Sprite name={cs[order[k - 1]].stick} className={s.cardIcon} />
+                )}
+                <span className={s.cardBody}>
+                  <span className={s.cardLabel}>{isLast ? t.candleLast : fmt(t.candleOf, { k, n })}</span>
+                  <span className={cx(s.cardText, note.length > 64 && s.cardLong)}>{note}</span>
+                </span>
               </div>
             ) : null}
-            <div className={s.count} aria-label={fmt(t.count, { lit: litCount, n })}>
-              {lit.map((o, i) => (
-                <i key={i} className={o ? s.on : undefined} />
-              ))}
-            </div>
+            {allLit ? (
+              <button type="button" className={s.cta} onClick={() => setPhase('wish')}>
+                {t.toWish}
+              </button>
+            ) : (
+              <div className={s.count} aria-label={fmt(t.count, { lit: litCount, n })}>
+                {lit.map((o, i) => (
+                  <i key={i} className={o ? s.on : undefined} />
+                ))}
+                {litCount > 0 ? <span className={s.nextHint}>{t.next}</span> : null}
+              </div>
+            )}
           </>
         ) : null}
 
         {phase === 'wish' ? (
           <div className={s.blowBox}>
+            <div className={s.prompt}>{t.wishPrompt}</div>
+            <div className={s.promptSub}>{t.wishSub}</div>
+            <HoldButton
+              ms={2600}
+              onComplete={wished}
+              onProgress={(p) => wrap.current?.style.setProperty('--w', String(p))}
+              className={cx(s.blowBtn, s.wishBtn)}
+              label={t.wishLabel}
+            >
+              <span className={s.blowLabel}>
+                <b>{t.wishBtn}</b>
+                <small>{t.wishHold}</small>
+              </span>
+            </HoldButton>
+            {alt ? (
+              <button type="button" className={s.alt} onClick={wished}>
+                {t.wishAlt}
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+
+        {phase === 'wished' ? (
+          <div className={s.blowBox}>
+            <div className={s.prompt}>{t.wished}</div>
+            <div className={s.promptSub}>{t.wishedSub}</div>
+            <button type="button" className={s.cta} onClick={() => setPhase('blow')}>
+              {t.toBlow}
+            </button>
+          </div>
+        ) : null}
+
+        {phase === 'blow' ? (
+          <div className={s.blowBox}>
             <div className={s.prompt}>{t.prompt}</div>
-            <HoldButton ms={1500} onComplete={blow} onProgress={onProgress} className={s.blowBtn} label={t.holdLabel}>
+            <HoldButton ms={1500} onComplete={blow} onProgress={onBlowProgress} className={s.blowBtn} label={t.holdLabel}>
               <span className={s.blowLabel}>
                 <b>{t.blow}</b>
                 <small>{t.hold}</small>
               </span>
             </HoldButton>
-            {alt ? (
+            {mic === 'on' ? (
+              <div className={s.micOn}>{t.micOn}</div>
+            ) : mic === 'no' ? (
+              <div className={s.micNo}>{t.micNo}</div>
+            ) : canUseMic() ? (
+              <button type="button" className={s.mic} onClick={startMic}>
+                <span>{t.mic}</span>
+              </button>
+            ) : null}
+            {alt && mic !== 'on' ? (
               <button type="button" className={s.alt} onClick={blow}>
                 {t.alt}
               </button>
@@ -211,9 +514,48 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           </div>
         ) : null}
 
-        {party ? (
+        {phase === 'stubborn' ? (
+          <div className={s.blowBox}>
+            <div className={s.prompt}>{t.stubborn}</div>
+            <button type="button" className={s.again} onClick={blowAgain} aria-label={t.againLabel}>
+              {t.again}
+            </button>
+            {mic === 'on' ? <div className={s.micOn}>{t.micOn}</div> : null}
+          </div>
+        ) : null}
+
+        {phase === 'party' ? (
+          <div className={s.songBox}>
+            <div className={s.songCard} aria-live="polite">
+              <div className={s.songEyebrow}>{t.songEyebrow}</div>
+              {t.song.map((l, i) => (
+                <div key={i} className={cx(s.lyric, line === i && s.sing, line > i && s.sung)}>
+                  {fmt(l, { to })}
+                </div>
+              ))}
+            </div>
+            {line >= 4 ? (
+              <button type="button" className={s.cta} onClick={() => setPhase('cut')}>
+                {t.toCut}
+              </button>
+            ) : (
+              <div className={s.songActions}>
+                <button type="button" className={s.clapBtn} onClick={onClap}>
+                  {t.clap}
+                </button>
+                <button type="button" className={s.skip} onClick={skipSong}>
+                  {t.skipSong}
+                </button>
+              </div>
+            )}
+          </div>
+        ) : null}
+
+        {phase === 'slice' ? <div className={s.subNote}>{t.sliceSub}</div> : null}
+        {phase === 'smeared' ? <div className={s.subNote}>{t.smearSub}</div> : null}
+        {phase === 'card' ? (
           <>
-            {data.from ? <div className={s.sub}>{fmt(t.withLove, { from: data.from })}</div> : null}
+            <div className={s.subNote}>{t.cardPeek}</div>
             <button
               type="button"
               className={s.cta}
@@ -228,9 +570,21 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         ) : null}
       </div>
 
-      {phase === 'light' && litCount === 0 ? <Hint>{t.hint}</Hint> : null}
+      {phase === 'wish' || phase === 'wished' ? <div className={s.lids} aria-hidden /> : null}
 
-      <Confetti burst={burst} colors={['#ee6a58', '#ffb52e', '#3fa39a', '#8e72d0', '#f58ea6', '#fffaf0']} origin={{ x: 0.5, y: 0.5 }} count={130} />
+      {phase === 'smeared' ? (
+        <button type="button" className={cx(s.cream, wiping && s.wiped)} onClick={wipe} aria-label={t.wipeLabel}>
+          <Sprite name="lilin-colek" />
+        </button>
+      ) : null}
+
+      {phase === 'light' && litCount === 0 ? <Hint>{t.hint}</Hint> : null}
+      {phase === 'cut' ? <Hint>{t.cutHint}</Hint> : null}
+      {phase === 'slice' ? <Hint key="sl">{t.sliceHint}</Hint> : null}
+      {phase === 'smeared' && !wiping ? <Hint key="wp">{t.wipeHint}</Hint> : null}
+
+      <Confetti burst={burst} colors={['#ee6a58', '#ffb52e', '#3fa39a', '#8e72d0', '#f58ea6', '#fffaf0']} origin={{ x: 0.5, y: 0.5 }} count={120} />
+      <Confetti burst={claps} colors={['#ffb52e', '#f58ea6', '#fffaf0', '#3fa39a']} origin={{ x: 0.5, y: 0.72 }} count={18} />
 
       {finale ? (
         <Finale

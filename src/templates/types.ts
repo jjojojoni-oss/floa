@@ -14,12 +14,25 @@ export type GiftData = {
   notes: string[];
   /** URL foto */
   photos: string[];
+  /** cerita singkat per foto, sejajar dengan `photos` (opsional; tampil di bagian kenangan surat penutup) */
+  captions?: string[];
+  /** pertanyaan penutup di akhir surat + dua pilihan jawaban (opsional, semua template) */
+  ask?: GiftAsk | null;
   /** lagu latar dari Spotify (opsional, berlaku untuk semua template) */
   music?: GiftMusic | null;
   /** kalimat pembuka yang tampil pelan-pelan sebelum template dimulai (opsional, semua template) */
   intro?: string;
   /** tanggal penting, format YYYY-MM-DD (mis. tanggal jadian). Hanya untuk template yang punya kolom 'date'. */
   date?: string;
+};
+
+export type GiftAsk = {
+  /** pertanyaannya */
+  q: string;
+  /** pilihan jawaban pertama (yang "iya"); kosong = teks bawaan */
+  a: string;
+  /** pilihan jawaban kedua (yang "butuh waktu"); kosong = teks bawaan */
+  b: string;
 };
 
 export type MusicKind = 'track' | 'album' | 'playlist' | 'episode';
@@ -75,6 +88,11 @@ export type PhotosField = {
   label: string;
   hint?: string;
   count: number;
+  /**
+   * false = template ini sudah memasangkan tiap foto dengan catatannya sendiri (notes), jadi editor
+   * tidak menampilkan kolom "cerita di balik foto". Bawaan: ditampilkan.
+   */
+  captions?: boolean;
 };
 
 export type DateField = {

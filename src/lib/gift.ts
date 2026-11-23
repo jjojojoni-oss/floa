@@ -1,7 +1,7 @@
 import type { Locale } from '@/i18n/config';
 import type { Currency, PlanId } from './site';
 import { cleanMusic } from './music';
-import type { GiftData, TemplateMeta } from '@/templates/types';
+import type { GiftAsk, GiftData, TemplateMeta } from '@/templates/types';
 
 export type GiftStatus = 'pending' | 'live';
 
@@ -87,6 +87,33 @@ export function cleanDate(v: unknown): string | null {
   return m[0];
 }
 
+export const CAPTION_MAX = 80;
+export const ASK_Q_MAX = 80;
+export const ASK_A_MAX = 24;
+
+/**
+ * Template yang catatannya sendiri sudah dipakai sebagai tulisan di bawah tiap foto (notes = keterangan
+ * foto), sehingga kolom "cerita foto" terpisah akan dobel. Di template lain, cerita foto muncul dengan
+ * tulisan tangan di bawah polaroid di bagian Kenangan setelah surat. Template baru yang memakai catatan
+ * sebagai keterangan foto cukup memberi `captions: false` pada kolom fotonya.
+ */
+const PHOTOS_PAIRED_WITH_NOTES = new Set(['polaroid', 'scrapbook', 'memories']);
+
+export function photoCaptionsOn(meta: TemplateMeta) {
+  const spec = meta.fields.find((f) => f.key === 'photos');
+  if (!spec || spec.key !== 'photos') return false;
+  if (spec.captions === false) return false;
+  return !PHOTOS_PAIRED_WITH_NOTES.has(meta.id);
+}
+
+function cleanAsk(v: unknown): GiftAsk | null {
+  if (!v || typeof v !== 'object') return null;
+  const o = v as Record<string, unknown>;
+  const q = clean(o.q, ASK_Q_MAX);
+  if (!q) return null;
+  return { q, a: clean(o.a, ASK_A_MAX), b: clean(o.b, ASK_A_MAX) };
+}
+
 /**
  * Menyaring isi kado sesuai kolom milik templatenya. Apa pun yang tidak dikenal dibuang,
  * panjang dibatasi, dan foto hanya boleh dari penyimpanan kita sendiri.
@@ -101,8 +128,18 @@ export function sanitizeData(meta: TemplateMeta, input: unknown, allowPhoto: (ur
       // catatan boleh kosong di tengah (mis. caption foto), tapi buang ekor yang kosong
       while (out.notes.length && !out.notes[out.notes.length - 1]) out.notes.pop();
     } else if (f.key === 'photos') {
+      // foto & ceritanya disaring berpasangan supaya urutannya tetap sejajar
       const arr = Array.isArray(src.photos) ? src.photos : [];
-      out.photos = arr.filter((u): u is string => typeof u === 'string' && allowPhoto(u)).slice(0, f.count);
+      const caps = Array.isArray(src.captions) ? src.captions : [];
+      const photos: string[] = [];
+      const captions: string[] = [];
+      arr.forEach((u, i) => {
+        if (photos.length >= f.count || typeof u !== 'string' || !allowPhoto(u)) return;
+        photos.push(u);
+        captions.push(clean(caps[i], CAPTION_MAX));
+      });
+      out.photos = photos;
+      if (captions.some(Boolean)) out.captions = captions;
     } else if (f.key === 'date') {
       const d = cleanDate(src.date);
       if (d) out.date = d;
@@ -113,6 +150,8 @@ export function sanitizeData(meta: TemplateMeta, input: unknown, allowPhoto: (ur
   out.music = cleanMusic(src.music, (s, max) => clean(s, max));
   const intro = clean(src.intro, INTRO_MAX, true);
   if (intro) out.intro = intro;
+  const ask = cleanAsk(src.ask);
+  if (ask) out.ask = ask;
   return out;
 }
 
