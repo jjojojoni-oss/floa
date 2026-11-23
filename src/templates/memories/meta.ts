@@ -1,6 +1,6 @@
 import type { TemplateMeta } from '../types';
 
-const PHOTOS = ['/art/foto-kopi.webp', '/art/foto-kota.webp', '/art/foto-senja.webp', '/art/foto-taman.webp', '/art/foto-pantai.webp', '/art/foto-gunung.webp'];
+const PHOTOS = ['/contoh/dua-cangkir.webp', '/contoh/kota-tua.webp', '/contoh/senja-pantai.webp', '/contoh/piknik.webp', '/contoh/pantai-gili.webp', '/contoh/bintang-tenda.webp'];
 
 export const meta: TemplateMeta = {
   id: 'memories',

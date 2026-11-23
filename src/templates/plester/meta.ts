@@ -37,7 +37,8 @@ export const meta: TemplateMeta = {
     ],
     message:
       'Din, aku nulis ini pelan-pelan karena aku nggak mau salah lagi.\n\nMalam itu kamu nunggu dua jam di depan bioskop, dan yang kamu dapat cuma alasan dari aku. Kamu cuma butuh didengar, tapi aku malah sibuk membela diri. Aku ngerti kenapa kamu kecewa.\n\nAku nggak minta langsung dimaafin. Aku cuma mau kamu tahu aku serius, dan aku mau buktiin pelan-pelan, mulai dari hal-hal kecil yang selama ini aku anggap sepele.\n\nKalau kamu butuh waktu, aku tunggu.',
-    photos: ['/art/foto-taman.webp', '/art/foto-senja.webp'],
+    photos: ['/contoh/bioskop.webp', '/contoh/mawar.webp'],
+    captions: ['Kursi di sebelahmu yang kosong malam itu.', 'Bukan sogokan. Cuma mawar yang dulu kamu bilang paling cantik.'],
   },
   i18n: {
     ms: {
@@ -70,7 +71,8 @@ export const meta: TemplateMeta = {
         ],
         message:
           'Farah, aku tulis ni perlahan-lahan sebab aku tak nak silap lagi.\n\nMalam tu awak tunggu dua jam depan panggung wayang, dan yang awak dapat cuma alasan daripada aku. Awak cuma nak didengar, tapi aku sibuk bela diri. Aku faham kenapa awak kecewa.\n\nAku tak minta dimaafkan terus. Aku cuma nak awak tahu aku serius, dan aku nak buktikan perlahan-lahan, bermula dengan benda kecil yang selama ni aku pandang remeh.\n\nKalau awak perlukan masa, aku tunggu.',
-        photos: ['/art/foto-taman.webp', '/art/foto-senja.webp'],
+        photos: ['/contoh/bioskop.webp', '/contoh/mawar.webp'],
+        captions: ['Kerusi sebelah awak yang kosong malam tu.', 'Bukan rasuah. Cuma ros yang dulu awak kata paling cantik.'],
       },
     },
     en: {
@@ -103,7 +105,8 @@ export const meta: TemplateMeta = {
         ],
         message:
           'Chloe, I’m writing this slowly because I don’t want to get it wrong again.\n\nThat night you waited two hours outside the cinema, and all you got from me was excuses. You just needed to be heard, and I was too busy defending myself. I understand why you’re hurt.\n\nI’m not asking to be forgiven right away. I just want you to know I’m serious, and I want to prove it slowly, starting with the small things I used to brush off.\n\nIf you need time, I’ll wait.',
-        photos: ['/art/foto-taman.webp', '/art/foto-senja.webp'],
+        photos: ['/contoh/bioskop.webp', '/contoh/mawar.webp'],
+        captions: ['The empty seat next to you that night.', 'Not a bribe. Just the roses you once said were the prettiest.'],
       },
     },
   },

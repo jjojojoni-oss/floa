@@ -1,6 +1,6 @@
 import type { TemplateMeta } from '../types';
 
-const PHOTOS = ['/art/foto-kopi.webp', '/art/foto-taman.webp'];
+const PHOTOS = ['/contoh/masak-tungku.webp', '/contoh/nyalakan-lilin.webp'];
 
 export const meta: TemplateMeta = {
   id: 'amplop',
@@ -36,7 +36,7 @@ export const meta: TemplateMeta = {
     title: 'Yang belum sempat aku bilang',
     notes: [
       'Dapur kita jam lima pagi. Mama selalu bangun duluan, bahkan di hari libur.',
-      'Taman dekat rumah. Mama ngajarin aku naik sepeda, sambil pura-pura nggak takut.',
+      'Kue ulang tahunku yang ketujuh. Mama nyalain lilinnya, koreknya tiga kali gagal.',
       'Karcis kereta waktu aku pertama berangkat kuliah. Mama nunggu di peron sampai keretanya hilang.',
       'Nota bakso dekat stasiun. Mama bilang sudah kenyang, padahal uangnya cuma cukup satu porsi.',
       'Melati dari pagar depan. Aku petik waktu pamit, biar wangi rumah ikut ke kos.',
@@ -44,6 +44,7 @@ export const meta: TemplateMeta = {
     message:
       'Ma, aku jarang ngomong langsung, jadi aku tulis aja.\n\nMakasih buat bekal yang selalu ada padahal Mama juga buru-buru. Makasih sudah pura-pura nggak capek. Makasih buat doa yang aku tahu dikirim tiap malam, walau aku jarang nelpon.\n\nAku baik-baik di sini. Makan teratur (hampir). Nanti kalau pulang, aku yang masak. Mama duduk aja.',
     photos: PHOTOS,
+    captions: ['Wangi asap tungku, tanda Mama sudah bangun.', 'Ulang tahun ketujuh. Kuenya bikinan Mama sendiri.'],
   },
   i18n: {
     ms: {
@@ -71,7 +72,7 @@ export const meta: TemplateMeta = {
         title: 'Yang belum sempat Along cakap',
         notes: [
           'Dapur kita pukul lima pagi. Mak selalu bangun dulu, hari cuti pun sama.',
-          'Taman depan rumah. Mak ajar Along naik basikal, sambil buat-buat tak risau.',
+          'Kek hari jadi Along yang ketujuh. Mak nyalakan lilin, mancisnya tiga kali tak menyala.',
           'Tiket bas masa Along mula-mula pergi belajar. Mak tunggu sampai bas hilang dari pandangan.',
           'Resit mi sup dekat stesen. Mak kata dah kenyang, padahal duit cukup untuk semangkuk je.',
           'Melur dari pagar depan. Along petik masa nak pergi, supaya bau rumah ikut sekali.',
@@ -79,6 +80,7 @@ export const meta: TemplateMeta = {
         message:
           'Mak, Along jarang cakap depan-depan, jadi Along tulis je.\n\nTerima kasih untuk bekal yang sentiasa ada walaupun Mak pun kelam-kabut. Terima kasih sebab buat-buat tak penat. Terima kasih untuk doa yang Along tahu Mak kirim setiap malam, walaupun Along jarang telefon.\n\nAlong sihat kat sini. Makan ikut masa (hampir). Nanti bila balik, Along yang masak. Mak duduk je.',
         photos: PHOTOS,
+        captions: ['Bau asap dapur kayu, tanda Mak dah bangun.', 'Hari jadi ketujuh. Keknya Mak buat sendiri.'],
       },
     },
     en: {
@@ -106,7 +108,7 @@ export const meta: TemplateMeta = {
         title: 'What I never got around to saying',
         notes: [
           'Our kitchen at five in the morning. You were always up first, even on days off.',
-          "The park down the street. You taught me to ride a bike and pretended you weren't scared.",
+          'My seventh birthday cake. You lit the candles, and the lighter failed three times.',
           'My train ticket the day I left for college. You stayed on the platform until the train was gone.',
           'Receipt from the noodle stall by the station. You said you were full. We could only afford one bowl.',
           'Jasmine from our front fence. I picked it the day I left, so home would come with me.',
@@ -114,6 +116,7 @@ export const meta: TemplateMeta = {
         message:
           "Mom, I don't say this out loud much, so I'm writing it down.\n\nThank you for the packed lunches that were always there, even when you were rushing too. Thank you for pretending you weren't tired. Thank you for the prayers I know you send every night, even though I don't call enough.\n\nI'm doing fine here. Eating properly (mostly). Next time I'm home, I'm cooking. You just sit down.",
         photos: PHOTOS,
+        captions: ['The smell of woodsmoke meant you were up.', 'Seventh birthday. You baked the cake yourself.'],
       },
     },
   },

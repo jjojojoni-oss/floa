@@ -37,7 +37,8 @@ export const meta: TemplateMeta = {
     ],
     message:
       'AKHIRNYA.\n\nJujur aku sudah nyiapin mental buat dua jawaban, tapi cuma nyiapin rencana buat yang ini.\n\nSabtu ini aku jemput jam 4. Kita makan di tempat yang kamu bilang "kapan-kapan" itu. Kapan-kapannya sekarang.\n\nMakasih sudah bilang mau. Aku janji jalan pulangnya nggak akan pura-pura searah lagi.',
-    photos: ['/art/foto-kopi.webp', '/art/foto-kota.webp', '/art/foto-senja.webp'],
+    photos: ['/contoh/kopi-dan-kue.webp', '/contoh/jalan-hujan-malam.webp', '/contoh/balon.webp', '/contoh/hujan-jendela.webp'],
+    captions: ['Kopi pertama. Kuenya kamu yang habisin.', 'Jalan pulang yang katanya searah.', 'Balonnya kamu sendiri yang pilih warnanya.', 'Jam dua pagi, lagunya diputar lagi.'],
   },
   i18n: {
     ms: {
@@ -70,7 +71,8 @@ export const meta: TemplateMeta = {
         ],
         message:
           'AKHIRNYA.\n\nJujur, aku dah sedia mental untuk dua jawapan, tapi aku cuma buat rancangan untuk yang ini.\n\nSabtu ni aku ambil awak pukul 4. Kita makan kat tempat yang awak selalu cakap "nanti-nanti" tu. Nantinya sekarang.\n\nTerima kasih sebab kata nak. Aku janji lepas ni tak buat-buat sehala balik lagi.',
-        photos: ['/art/foto-kopi.webp', '/art/foto-kota.webp', '/art/foto-senja.webp'],
+        photos: ['/contoh/kopi-dan-kue.webp', '/contoh/jalan-hujan-malam.webp', '/contoh/balon.webp', '/contoh/hujan-jendela.webp'],
+        captions: ['Kopi pertama. Kuihnya awak yang habiskan.', 'Jalan balik yang kononnya sehala.', 'Belon tu, awak sendiri yang pilih warnanya.', 'Pukul dua pagi, lagu tu main lagi.'],
       },
     },
     en: {
@@ -103,7 +105,8 @@ export const meta: TemplateMeta = {
         ],
         message:
           'FINALLY.\n\nHonestly, I was ready for either answer, but I only made plans for this one.\n\nI’m picking you up Saturday at 4. We’re going to that place you keep saying we’ll try "someday". Someday is now.\n\nThank you for saying yes. From now on, I’ll walk you home without pretending it’s on my way.',
-        photos: ['/art/foto-kopi.webp', '/art/foto-kota.webp', '/art/foto-senja.webp'],
+        photos: ['/contoh/kopi-dan-kue.webp', '/contoh/jalan-hujan-malam.webp', '/contoh/balon.webp', '/contoh/hujan-jendela.webp'],
+        captions: ['First coffee. You finished the cake.', 'The road home I said was on my way.', 'You picked the balloon colour yourself.', '2 a.m., that song on repeat.'],
       },
     },
   },

@@ -44,6 +44,33 @@ const KIT_ID = {
   introFor: 'untuk {to}',
   introNext: 'ketuk untuk lanjut',
   introSkip: 'Lewati',
+  wrapFrom: '{from} nitip ini buat kamu.',
+  wrapAnon: 'Ada titipan buat kamu.',
+  wrapTag: 'untuk {to}',
+  wrapPull: 'Tarik pitanya',
+  wrapOrTap: 'atau ketuk',
+  wrapStubborn: 'Eh, simpulnya kencang. Sekali lagi.',
+  wrapLabel: 'Buka bingkisan untuk {to}',
+  cardEyebrow: 'sebuah kado untuk',
+  cardFrom: 'dari {from}',
+  cardInside: 'isinya',
+  cNotes: '{n} catatan kecil',
+  cNotes1: '1 catatan kecil',
+  cPhotos: '{n} foto',
+  cPhotos1: '1 foto',
+  cSong: '1 lagu',
+  cLetter: '1 surat',
+  cardSlow: 'bukanya pelan-pelan ya',
+  cardStart: 'ketuk untuk mulai',
+  askPs: 'P.S.',
+  askCircle: 'lingkari salah satu',
+  askYes: 'Iya',
+  askNo: 'Nanti dulu',
+  askReplyA: 'Dicatat, ya. {from} pasti senyum-senyum sendiri baca ini.',
+  askReplyAAnon: 'Dicatat, ya. Jawabanmu pasti bikin senyum.',
+  askReplyB: 'Nggak apa-apa. {from} nggak ke mana-mana, kok.',
+  askReplyBAnon: 'Nggak apa-apa. Pelan-pelan aja.',
+  askAnswer: 'Jawabanku: {a}',
 };
 type KitText = typeof KIT_ID;
 
@@ -74,6 +101,33 @@ const KIT: Record<Locale, KitText> = {
     introFor: 'untuk {to}',
     introNext: 'ketik untuk teruskan',
     introSkip: 'Langkau',
+    wrapFrom: '{from} kirim sesuatu untuk awak.',
+    wrapAnon: 'Ada kiriman untuk awak.',
+    wrapTag: 'untuk {to}',
+    wrapPull: 'Tarik reben ini',
+    wrapOrTap: 'atau ketik',
+    wrapStubborn: 'Eh, ikatannya ketat. Cuba sekali lagi.',
+    wrapLabel: 'Buka bungkusan untuk {to}',
+    cardEyebrow: 'sebuah hadiah untuk',
+    cardFrom: 'daripada {from}',
+    cardInside: 'isinya',
+    cNotes: '{n} catatan kecil',
+    cNotes1: '1 catatan kecil',
+    cPhotos: '{n} foto',
+    cPhotos1: '1 foto',
+    cSong: '1 lagu',
+    cLetter: '1 surat',
+    cardSlow: 'buka perlahan-lahan ya',
+    cardStart: 'ketik untuk mula',
+    askPs: 'P.S.',
+    askCircle: 'bulatkan satu',
+    askYes: 'Ya',
+    askNo: 'Nanti dulu',
+    askReplyA: 'Dah dicatat. Mesti {from} tersenyum sorang-sorang baca ni.',
+    askReplyAAnon: 'Dah dicatat. Jawapan awak mesti buat orang tersenyum.',
+    askReplyB: 'Tak apa. {from} tak ke mana-mana pun.',
+    askReplyBAnon: 'Tak apa. Perlahan-lahan saja.',
+    askAnswer: 'Jawapan aku: {a}',
   },
   en: {
     soundOn: 'Turn sound on',
@@ -100,6 +154,33 @@ const KIT: Record<Locale, KitText> = {
     introFor: 'for {to}',
     introNext: 'tap to continue',
     introSkip: 'Skip',
+    wrapFrom: '{from} left something for you.',
+    wrapAnon: 'Someone left something for you.',
+    wrapTag: 'for {to}',
+    wrapPull: 'Pull the ribbon',
+    wrapOrTap: 'or tap',
+    wrapStubborn: 'Oops, tight knot. Pull once more.',
+    wrapLabel: 'Open the parcel for {to}',
+    cardEyebrow: 'a little gift for',
+    cardFrom: 'from {from}',
+    cardInside: 'inside',
+    cNotes: '{n} little notes',
+    cNotes1: '1 little note',
+    cPhotos: '{n} photos',
+    cPhotos1: '1 photo',
+    cSong: '1 song',
+    cLetter: '1 letter',
+    cardSlow: 'open it slowly, okay?',
+    cardStart: 'tap to begin',
+    askPs: 'P.S.',
+    askCircle: 'circle one',
+    askYes: 'Yes',
+    askNo: 'Not yet',
+    askReplyA: 'Noted. {from} is definitely going to grin at this.',
+    askReplyAAnon: 'Noted. That answer will make someone smile.',
+    askReplyB: "That's okay. {from} isn't going anywhere.",
+    askReplyBAnon: "That's okay. Take your time.",
+    askAnswer: 'My answer: {a}',
   },
 };
 
@@ -542,10 +623,19 @@ export function Finale({
   /** tambahan opsional di antara surat dan foto (muncul setelah surat selesai dibaca) */
   children?: ReactNode;
 }) {
-  const [zoom, setZoom] = useState<string | null>(null);
+  const [zoom, setZoom] = useState<Pic | null>(null);
   const k = useKitText();
   eyebrow = eyebrow ?? k.letterFor;
-  const photos = data.photos.filter(Boolean);
+  // foto + cerita singkatnya (captions sejajar dengan photos; kado lama tidak punya captions)
+  const pics = useMemo<Pic[]>(
+    () => data.photos.map((src, i) => ({ src, cap: (data.captions?.[i] ?? '').trim() })).filter((p) => p.src),
+    [data.photos, data.captions],
+  );
+  const ask = useMemo(() => {
+    const q = data.ask?.q?.trim();
+    return q ? { q, a: data.ask?.a?.trim() || k.askYes, b: data.ask?.b?.trim() || k.askNo } : null;
+  }, [data.ask, k.askYes, k.askNo]);
+  const [answer, setAnswer] = useState<'a' | 'b' | null>(null);
   const paras = useMemo(() => paragraphs(data.message), [data.message]);
   const reduce = useReducedMotion();
   const [shown, setShown] = useState(0);
@@ -567,10 +657,15 @@ export function Finale({
   }, [shown]);
 
   const visible = done ? paras.length : shown;
-  const strip = photos.length > 1 ? photos.slice(0, -1) : [];
-  const special = photos.length ? photos[photos.length - 1] : null;
+  const strip = pics.length > 1 ? pics.slice(0, -1) : [];
+  const special = pics.length ? pics[pics.length - 1] : null;
   const from = data.from.trim();
-  const replyText = from ? fmt(k.replyText, { from }) : k.replyTextAnon;
+  const chosen = ask && answer ? ask[answer] : null;
+  const replyText =
+    (from ? fmt(k.replyText, { from }) : k.replyTextAnon) +
+    (ask && chosen ? `\n\n${k.askPs} ${ask.q}\n${fmt(k.askAnswer, { a: chosen })}` : '');
+  // bagian setelah surat menunggu pertanyaan penutup dijawab dulu (kalau ada)
+  const settled = done && (!ask || !!answer);
 
   const vars = {
     '--f-bg': theme?.bg,
@@ -580,19 +675,24 @@ export function Finale({
     ...(theme?.backdrop ? { backgroundImage: `url(${backdropUrl(theme.backdrop)})` } : null),
   } as CSSProperties;
 
-  const photoBtn = (src: string, i: number, className: string) => (
+  const photoBtn = (p: Pic, i: number, className: string) => (
     <button
       type="button"
-      key={src + i}
-      className={className}
+      key={p.src + i}
+      className={cx(className, p.cap && s.hasCap)}
       onClick={() => {
         sfx.tap();
-        setZoom(src);
+        setZoom(p);
       }}
-      aria-label={`${k.zoom} ${i + 1}`}
+      aria-label={p.cap ? `${k.zoom} ${i + 1}: ${p.cap}` : `${k.zoom} ${i + 1}`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt="" loading="lazy" draggable={false} />
+      <img src={p.src} alt="" loading="lazy" draggable={false} />
+      {p.cap ? (
+        <span className={s.cap} aria-hidden>
+          {p.cap}
+        </span>
+      ) : null}
     </button>
   );
 
@@ -643,12 +743,13 @@ export function Finale({
                 <b>{from}</b>
               </div>
             ) : null}
+            {ask && done ? <AskSlip ask={ask} from={from} late={!!from} answer={answer} onAnswer={setAnswer} /> : null}
           </div>
 
-          {done ? (
-            <div className={s.after}>
+          {settled ? (
+            <div className={cx(s.after, ask && s.afterAsk)}>
               {children}
-              {photos.length ? (
+              {pics.length ? (
                 <section className={s.memories}>
                   {strip.length ? (
                     <>
@@ -658,14 +759,14 @@ export function Finale({
                   ) : null}
                   {special ? (
                     <>
-                      <div className={s.memLabel}>{photos.length > 1 ? k.special : k.memories}</div>
-                      {photoBtn(special, photos.length - 1, s.special)}
+                      <div className={s.memLabel}>{pics.length > 1 ? k.special : k.memories}</div>
+                      {photoBtn(special, pics.length - 1, s.special)}
                     </>
                   ) : null}
                 </section>
               ) : null}
               <div className={s.fActions}>
-                <KeepsakeButton data={data} rootRef={rootRef} theme={theme} photo={special} />
+                <KeepsakeButton data={data} rootRef={rootRef} theme={theme} photo={special?.src ?? null} />
                 {mode === 'live' ? (
                   <a className={s.ghostBtn} href={`https://wa.me/?text=${encodeURIComponent(replyText)}`} target="_blank" rel="noopener">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -698,11 +799,94 @@ export function Finale({
       </div>
       {zoom ? (
         <div className={s.lightbox} onClick={() => setZoom(null)} role="dialog" aria-label={k.zoomed}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={zoom} alt="" />
+          <figure className={s.lbFig}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={zoom.src} alt="" />
+            {zoom.cap ? <figcaption className={s.lbCap}>{zoom.cap}</figcaption> : null}
+          </figure>
         </div>
       ) : null}
     </>
+  );
+}
+
+type Pic = { src: string; cap: string };
+
+/** lingkaran pensil yang sedikit kebablasan, seperti melingkari jawaban di kertas */
+const CIRCLE = 'M92 9C70 2 28 3 11 17C-3 30 12 49 52 52C92 55 121 42 114 23C109 9 84 3 58 6';
+const DOODLE = {
+  a: 'M12 20.5C5 15 1.6 10.6 4.2 6.4C6.4 2.9 10.6 3.6 12 7.4C13.4 3.6 17.6 2.9 19.8 6.4C22.4 10.6 19 15 12 20.5Z',
+  b: 'M6.5 9.2v.3M17.5 9.2v.3M5.5 14.5C8.5 18.5 15.5 18.5 18.5 14.5',
+};
+
+/**
+ * "P.S." di bawah tanda tangan: satu pertanyaan dari pengirim dengan dua jawaban. Penerima
+ * melingkari salah satunya (lingkaran pensil tergambar), lalu muncul balasan kecil yang hangat.
+ */
+function AskSlip({
+  ask,
+  from,
+  late,
+  answer,
+  onAnswer,
+}: {
+  ask: { q: string; a: string; b: string };
+  from: string;
+  /** muncul setelah tanda tangan selesai ditulis */
+  late: boolean;
+  answer: 'a' | 'b' | null;
+  onAnswer: (v: 'a' | 'b') => void;
+}) {
+  const k = useKitText();
+  const replyRef = useRef<HTMLParagraphElement>(null);
+  const reply = answer === 'a' ? (from ? fmt(k.askReplyA, { from }) : k.askReplyAAnon) : from ? fmt(k.askReplyB, { from }) : k.askReplyBAnon;
+
+  useEffect(() => {
+    if (!answer) return;
+    const t = setTimeout(() => replyRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 450);
+    return () => clearTimeout(t);
+  }, [answer]);
+
+  const pick = (v: 'a' | 'b') => {
+    if (answer) return;
+    sfx.pencil();
+    haptic(14);
+    onAnswer(v);
+    setTimeout(() => (v === 'a' ? sfx.chime() : sfx.note(2)), 420);
+  };
+
+  return (
+    <div className={cx(s.ask, late && s.askLate, answer && s.answered)} onClick={(e) => e.stopPropagation()}>
+      <p className={s.askQ}>
+        <span className={s.askPs}>{k.askPs}</span> {ask.q}
+      </p>
+      <div className={s.askOpts} role="group" aria-label={ask.q}>
+        {(['a', 'b'] as const).map((v) => (
+          <button
+            key={v}
+            type="button"
+            className={cx(s.askOpt, answer === v && s.picked, answer && answer !== v && s.unpicked)}
+            aria-pressed={answer === v}
+            disabled={!!answer && answer !== v}
+            onClick={() => pick(v)}
+          >
+            <span>{ask[v]}</span>
+            <svg className={s.circle} viewBox="0 0 124 58" preserveAspectRatio="none" aria-hidden>
+              <path d={CIRCLE} pathLength={1} />
+            </svg>
+          </button>
+        ))}
+      </div>
+      {!answer ? <p className={s.askHow}>{k.askCircle}</p> : null}
+      {answer ? (
+        <p ref={replyRef} className={s.askReply} role="status">
+          {reply}
+          <svg className={cx(s.doodle, answer === 'b' && s.doodleB)} viewBox="0 0 24 24" aria-hidden>
+            <path d={DOODLE[answer]} pathLength={1} />
+          </svg>
+        </p>
+      ) : null}
+    </div>
   );
 }
 

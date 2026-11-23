@@ -177,4 +177,27 @@
     F.flora.flowers.melati(el('g', { transform: 'translate(64 84) rotate(30)' }, fl), R, 0.36);
     loosePetals(svg, R, [[70, 520, 40, 0.34, 'kambojaPink'], [130, 566, -60, 0.28, 'kamboja']]);
   } };
+
+  /* ── karet gelang merah yang melilit tumpukan foto: dua utas di depan, ujungnya melengkung ke belakang kartu ── */
+  F.sprites['polaroid-karet'] = { w: 360, h: 72, seed: 447, draw(svg, R) {
+    // karet gelang dililit dua kali: dua utas melintang di atas foto, saling silang,
+    // ujungnya menekuk di tepi tumpukan (karetnya lanjut ke balik foto)
+    const RUB = { base: '#c63a2c', light: '#f08068', dark: '#7c1c14' };
+    const strands = [
+      'M12,31C92,23 246,27 348,41',
+      'M12,44C104,52 262,45 348,30',
+    ];
+    const g = el('g', { filter: 'url(#cast)' }, svg);
+    // bayangan karet di permukaan foto
+    strands.forEach((d) => el('path', { d, fill: 'none', stroke: WARM, 'stroke-width': 10, 'stroke-opacity': 0.24, 'stroke-linecap': 'round', transform: 'translate(2 4)', filter: 'url(#blur2)' }, svg));
+    const paint = el('g', { filter: 'url(#impastoFine)' }, g);
+    strands.forEach((d) => {
+      el('path', { d, fill: 'none', stroke: RUB.dark, 'stroke-width': 9.4, 'stroke-linecap': 'round' }, paint);
+      el('path', { d, fill: 'none', stroke: RUB.base, 'stroke-width': 6.8, 'stroke-linecap': 'round' }, paint);
+      // kilap karet: garis tipis terang, putus-putus seperti permukaan karet yang tak rata
+      el('path', { d, fill: 'none', stroke: RUB.light, 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-opacity': 0.8, 'stroke-dasharray': `${40 + R() * 30} ${10 + R() * 12} ${70 + R() * 40} 14`, transform: 'translate(0 -1.8)' }, paint);
+    });
+    // tekukan di tepi: karet berbelok ke balik tumpukan, sedikit lebih gelap
+    [[12, 31], [12, 44], [348, 41], [348, 30]].forEach(([x, y]) => el('circle', { cx: x, cy: y, r: 4.4, fill: RUB.dark, 'fill-opacity': 0.75 }, paint));
+  } };
 })();

@@ -2,7 +2,7 @@
 
 const RESERVED = new Set([
   'id', 'ms', 'en', 'my',
-  'api', 'buat', 'demo', 'dev', 'kado-saya', 'syarat', 'privasi', 'sample', 'admin', 'login', 'masuk', 'daftar',
+  'api', 'buat', 'demo', 'dev', 'kado-saya', 'syarat', 'privasi', 'kredit-foto', 'contoh', 'sample', 'admin', 'login', 'masuk', 'daftar',
   'floa', 'www', 'app', 'kado', 'bayar', 'checkout', 'harga', 'faq', 'tentang', 'bantuan', 'help', 'static',
   'assets', 'template', 'templates', 'edit', 'new', 'null', 'undefined', 'robots', 'sitemap', 'favicon', 'icon',
 ]);

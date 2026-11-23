@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { EMPTY_DATA, INTRO_MAX } from '@/lib/gift';
+import { ASK_A_MAX, ASK_Q_MAX, CAPTION_MAX, EMPTY_DATA, INTRO_MAX, photoCaptionsOn } from '@/lib/gift';
 import { type Draft, api, compressImage, findMyGift, loadDraft, saveDraft, upsertMyGift, uploadPhotos } from '@/lib/client';
 import { fmt, useLocale, useT } from '@/i18n/client';
 import { errorText } from '@/lib/client';
@@ -12,16 +12,20 @@ import { TemplatePlayer } from '@/templates/Player';
 import { getTemplate } from '@/templates/registry';
 import type { FieldSpec, GiftData, NotesField, PhotosField, TextField } from '@/templates/types';
 import { CheckoutSheet } from './CheckoutSheet';
-import { IntroField, type LockState, LockField, MusicField, NO_LOCK } from './ExtrasFields';
+import { AskField, IntroField, type LockState, LockField, MusicField, NO_LOCK } from './ExtrasFields';
 
 type EditCtx = { id: string; key: string; slug: string };
 
 export function Editor({ templateId }: { templateId: string }) {
   const locale = useLocale();
   const t = useT();
-  const meta = getTemplate(templateId, locale)!;
-  // isian awal = contoh, tapi tanpa foto contoh (supaya foto orang lain tidak ikut terbit)
-  const sample = useMemo<GiftData>(() => ({ ...meta.sample, notes: [...meta.sample.notes], photos: [] }), [meta]);
+  // satu objek per bahasa: getTemplate membuat objek baru di tiap panggilan untuk en/ms, dan efek
+  // pemuat draf di bawah bergantung padanya (tanpa useMemo draf dimuat ulang terus di setiap render)
+  const meta = useMemo(() => getTemplate(templateId, locale)!, [templateId, locale]);
+  // isian awal = contoh, tapi tanpa foto contoh (supaya foto orang lain tidak ikut terbit),
+  // tanpa cerita fotonya, dan tanpa pertanyaan penutup contoh (supaya tidak ikut terbit tanpa sengaja)
+  const sample = useMemo<GiftData>(() => ({ ...meta.sample, notes: [...meta.sample.notes], photos: [], captions: [], ask: null }), [meta]);
+  const captionsOn = photoCaptionsOn(meta);
 
   const [data, setData] = useState<GiftData>(sample);
   const [touched, setTouched] = useState<string[]>([]);
@@ -219,10 +223,12 @@ export function Editor({ templateId }: { templateId: string }) {
                 error={fieldError?.key === f.key ? fieldError.msg : null}
                 update={update}
                 onError={setToast}
+                captionsOn={captionsOn}
               />
             ))}
             <IntroField value={data.intro ?? ''} max={INTRO_MAX} onChange={(v) => setData((d) => ({ ...d, intro: v }))} />
             <MusicField music={data.music} onChange={(m) => setData((d) => ({ ...d, music: m }))} />
+            <AskField value={data.ask} maxQ={ASK_Q_MAX} maxA={ASK_A_MAX} onChange={(v) => setData((d) => ({ ...d, ask: v }))} />
             <LockField lock={lock} onChange={setLockState} error={fieldError?.key === 'lock' ? fieldError.msg : null} />
           </div>
 
@@ -326,6 +332,7 @@ function Field({
   error,
   update,
   onError,
+  captionsOn,
 }: {
   spec: FieldSpec;
   data: GiftData;
@@ -333,6 +340,8 @@ function Field({
   error: string | null;
   update: Update;
   onError: (msg: string) => void;
+  /** tiap foto diberi kolom cerita singkat (template yang tidak memasangkan foto dengan catatan) */
+  captionsOn: boolean;
 }) {
   const t = useT();
   return (
@@ -346,11 +355,22 @@ function Field({
         ) : null}
       </div>
       {spec.hint ? <p className="mt-0.5 text-[13px] leading-snug text-muted">{spec.hint}</p> : null}
+      {spec.key === 'photos' && captionsOn ? <p className="mt-0.5 text-[13px] leading-snug text-muted">{t.editor.captionsHint}</p> : null}
       <div className="mt-2">
         {spec.key === 'notes' ? (
           <Notes spec={spec} value={data.notes} onChange={(v) => update('notes', v)} />
         ) : spec.key === 'photos' ? (
-          <Photos spec={spec} value={data.photos} onChange={(v) => update('photos', v)} onError={onError} />
+          <Photos
+            spec={spec}
+            value={data.photos}
+            captions={data.captions}
+            captionsOn={captionsOn}
+            onChange={(v, caps) => {
+              update('photos', v);
+              update('captions', caps.some((x) => x.trim()) ? caps : []);
+            }}
+            onError={onError}
+          />
         ) : spec.key === 'date' ? (
           <input
             id="f-date"
@@ -426,6 +446,7 @@ function AutoGrow({
   placeholder,
   onChange,
   label,
+  className = inputCls,
 }: {
   id?: string;
   value: string;
@@ -433,6 +454,7 @@ function AutoGrow({
   placeholder?: string;
   onChange: (v: string) => void;
   label: string;
+  className?: string;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
@@ -453,7 +475,7 @@ function AutoGrow({
       onKeyDown={(e) => {
         if (e.key === 'Enter') e.preventDefault();
       }}
-      className={inputCls + ' resize-none'}
+      className={className + ' resize-none'}
       autoComplete="off"
       aria-label={label}
     />
@@ -506,17 +528,23 @@ function Notes({ spec, value, onChange }: { spec: NotesField; value: string[]; o
 function Photos({
   spec,
   value,
+  captions,
+  captionsOn,
   onChange,
   onError,
 }: {
   spec: PhotosField;
   value: string[];
-  onChange: (v: string[]) => void;
+  captions: string[] | undefined;
+  captionsOn: boolean;
+  /** foto dan cerita singkatnya selalu berpindah/terhapus bersama, supaya tetap sejajar */
+  onChange: (photos: string[], captions: string[]) => void;
   onError: (msg: string) => void;
 }) {
   const t = useT();
   const [busy, setBusy] = useState(false);
   const input = useRef<HTMLInputElement>(null);
+  const caps = value.map((_, i) => captions?.[i] ?? '');
 
   const add = async (files: FileList | null) => {
     if (!files?.length) return;
@@ -525,14 +553,16 @@ function Photos({
     if (files.length > room) onError(fmt(t.editor.maxPhotos, { n: spec.count }));
     setBusy(true);
     const next = value.slice();
+    const nextCaps = caps.slice();
     for (const f of picked) {
       try {
         next.push(await compressImage(f));
+        nextCaps.push('');
       } catch (e) {
         onError(t.editor.photoUnusable);
       }
     }
-    onChange(next);
+    onChange(next, nextCaps);
     setBusy(false);
     if (input.current) input.current.value = '';
   };
@@ -541,9 +571,80 @@ function Photos({
     const j = i + dir;
     if (j < 0 || j >= value.length) return;
     const next = value.slice();
+    const nextCaps = caps.slice();
     [next[i], next[j]] = [next[j], next[i]];
-    onChange(next);
+    [nextCaps[i], nextCaps[j]] = [nextCaps[j], nextCaps[i]];
+    onChange(next, nextCaps);
   };
+  const remove = (i: number) =>
+    onChange(
+      value.filter((_, k) => k !== i),
+      caps.filter((_, k) => k !== i),
+    );
+  const setCap = (i: number, v: string) => {
+    const nextCaps = caps.slice();
+    nextCaps[i] = v;
+    onChange(value, nextCaps);
+  };
+
+  const fileInput = (
+    <input ref={input} id={`f-${spec.key}`} type="file" accept="image/*" multiple className="sr-only" onChange={(e) => add(e.target.files)} />
+  );
+
+  if (captionsOn) {
+    const phs = t.editor.captionPhs;
+    return (
+      <div className="space-y-2.5">
+        {value.map((src, i) => (
+          <div key={src.slice(-32) + i} className="flex items-start gap-3 rounded-2xl bg-white p-2 pr-2.5 shadow-[inset_0_0_0_1.5px_var(--color-line)]">
+            <div className="relative h-[84px] w-[84px] flex-none overflow-hidden rounded-xl bg-paper-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={src} alt={fmt(t.editor.photoN, { n: i + 1 })} className="h-full w-full object-cover" />
+              <span className="absolute left-1.5 top-1.5 grid h-5 w-5 place-items-center rounded-full bg-black/60 text-[10px] font-extrabold text-white">{i + 1}</span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <AutoGrow
+                value={caps[i]}
+                maxLength={CAPTION_MAX}
+                placeholder={phs[i % phs.length]}
+                onChange={(v) => setCap(i, v)}
+                label={fmt(t.editor.captionLabel, { n: i + 1 })}
+                className="block w-full bg-transparent px-1 pt-1 font-hand text-[21px] font-semibold leading-[1.15] text-ink outline-none placeholder:font-semibold placeholder:text-muted/55"
+              />
+              <div className="mt-1 flex items-center gap-1 pl-1">
+                <span className="mr-auto text-[11px] font-bold tabular-nums text-muted/70">
+                  {caps[i].length}/{CAPTION_MAX}
+                </span>
+                {value.length > 1 ? (
+                  <>
+                    <button type="button" disabled={i === 0} onClick={() => move(i, -1)} className="grid h-8 w-8 place-items-center rounded-full text-[15px] text-ink-2 hover:bg-paper-2 disabled:opacity-25" aria-label={t.editor.moveUp}>
+                      ↑
+                    </button>
+                    <button type="button" disabled={i === value.length - 1} onClick={() => move(i, 1)} className="grid h-8 w-8 place-items-center rounded-full text-[15px] text-ink-2 hover:bg-paper-2 disabled:opacity-25" aria-label={t.editor.moveDown}>
+                      ↓
+                    </button>
+                  </>
+                ) : null}
+                <button type="button" onClick={() => remove(i)} className="grid h-8 w-8 place-items-center rounded-full text-lg leading-none text-muted hover:bg-paper-2 hover:text-ink" aria-label={fmt(t.editor.removePhoto, { n: i + 1 })}>
+                  ×
+                </button>
+              </div>
+            </div>
+          </div>
+        ))}
+        {value.length < spec.count ? (
+          <label className="flex h-14 cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-line bg-white text-[13.5px] font-bold text-ink-2 transition-colors hover:border-ink">
+            {fileInput}
+            <span className="text-xl leading-none">{busy ? '…' : '+'}</span>
+            {busy ? t.editor.processing : t.editor.addPhoto}
+            <span className="font-semibold text-muted">
+              {value.length}/{spec.count}
+            </span>
+          </label>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-3 gap-2.5 sm:grid-cols-4">
@@ -554,7 +655,7 @@ function Photos({
           <span className="absolute left-1.5 top-1.5 grid h-5 w-5 place-items-center rounded-full bg-black/60 text-[10px] font-extrabold text-white">{i + 1}</span>
           <button
             type="button"
-            onClick={() => onChange(value.filter((_, k) => k !== i))}
+            onClick={() => remove(i)}
             className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-black/60 text-base leading-none text-white"
             aria-label={fmt(t.editor.removePhoto, { n: i + 1 })}
           >
@@ -574,15 +675,7 @@ function Photos({
       ))}
       {value.length < spec.count ? (
         <label className="grid aspect-square cursor-pointer place-items-center rounded-2xl border-2 border-dashed border-line bg-white text-center text-[12.5px] font-bold text-ink-2 transition-colors hover:border-ink">
-          <input
-            ref={input}
-            id={`f-${spec.key}`}
-            type="file"
-            accept="image/*"
-            multiple
-            className="sr-only"
-            onChange={(e) => add(e.target.files)}
-          />
+          {fileInput}
           <span>
             <span className="block text-2xl leading-none">{busy ? '…' : '+'}</span>
             {busy ? t.editor.processing : t.editor.addPhoto}

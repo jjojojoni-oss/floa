@@ -112,6 +112,27 @@ export const sfx = {
   blow() {
     noise(0.6, { gain: 0.045, from: 900, to: 250 });
   },
+  /** tali goni yang ditarik tapi simpulnya masih bertahan: derit pendek */
+  tug() {
+    tone(118, 0.14, { type: 'sawtooth', gain: 0.022, to: 84 });
+    noise(0.07, { gain: 0.05, from: 900, to: 520 });
+  },
+  /** simpul tali lepas dan talinya meluncur */
+  untie() {
+    noise(0.38, { gain: 0.045, from: 1300, to: 3400 });
+    tone(330, 0.08, { type: 'triangle', gain: 0.035, at: 0.34, to: 520 });
+  },
+  /** kertas pembungkus yang dibuka: kresek-kresek kecil */
+  rustle() {
+    for (let i = 0; i < 7; i++) {
+      const f = 1400 + Math.random() * 3200;
+      noise(0.05 + Math.random() * 0.05, { gain: 0.035 + Math.random() * 0.03, from: f, to: f * 0.7, at: i * 0.06 + Math.random() * 0.03 });
+    }
+  },
+  /** pensil yang melingkari sesuatu di kertas */
+  pencil() {
+    for (let i = 0; i < 4; i++) noise(0.08, { gain: 0.03, from: 2600 + i * 300, to: 4200, at: i * 0.085 });
+  },
   /** nada tunggal bebas, mis. untuk tangga nada per langkah */
   note(step: number) {
     const scale = [523, 587, 659, 784, 880, 1047, 1175, 1319];

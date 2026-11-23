@@ -1,6 +1,6 @@
 import type { TemplateMeta } from '../types';
 
-const PHOTOS = ['/art/foto-taman.webp', '/art/foto-kopi.webp', '/art/foto-senja.webp', '/art/foto-kota.webp', '/art/foto-gunung.webp'];
+const PHOTOS = ['/contoh/peron-stasiun.webp', '/contoh/meja-belajar.webp', '/contoh/perpustakaan.webp', '/contoh/kopi-hitam.webp', '/contoh/topi-wisuda.webp'];
 
 export const meta: TemplateMeta = {
   id: 'toga',
@@ -39,6 +39,7 @@ export const meta: TemplateMeta = {
     message:
       'Nak, tadi kita jalan pelan-pelan dari hari pertamamu sampai hari ini. Dulu kemejamu kebesaran, sekarang toganya pas sekali.\n\nKami nggak selalu ada di setiap malam begadangmu, tapi kami tahu lampu kamarmu masih nyala. Doa kami juga.\n\nTerima kasih sudah bertahan, bahkan di hari-hari kamu ingin berhenti. Ke mana pun kamu melangkah setelah ini, pintu rumah selalu terbuka, dan kami akan selalu jadi orang pertama yang bangga.',
     photos: PHOTOS,
+    captions: ['Subuh di stasiun. Kemejanya masih kebesaran.', 'Meja yang lampunya jarang padam.', 'Perpustakaan, tempat kamu mulai lagi dari awal.', 'Kopi ketiga malam itu. Bab satu lagi.', 'Akhirnya, toganya pas.'],
   },
   i18n: {
     ms: {
@@ -71,6 +72,7 @@ export const meta: TemplateMeta = {
         message:
           'Along, tadi kita berjalan perlahan dari hari pertama Along sampai hari ini. Dulu kemeja Along kebesaran, sekarang jubah konvo itu muat sangat.\n\nKami tak selalu ada setiap malam Along berjaga, tapi kami tahu lampu bilik Along masih menyala. Doa kami pun begitu.\n\nTerima kasih sebab bertahan, walaupun pada hari-hari Along rasa nak berhenti. Ke mana pun Along melangkah lepas ni, pintu rumah sentiasa terbuka, dan kami akan sentiasa jadi orang pertama yang bangga.',
         photos: PHOTOS,
+        captions: ['Subuh di stesen. Kemejanya masih longgar.', 'Meja yang lampunya jarang padam.', 'Perpustakaan, tempat Along mula semula.', 'Kopi ketiga malam tu. Bab satu lagi.', 'Akhirnya, topi tu sampai juga.'],
       },
     },
     en: {
@@ -103,6 +105,7 @@ export const meta: TemplateMeta = {
         message:
           "Sweetheart, we just walked the whole road again, from your first day to this one. Back then your shirt was too big. Today the gown fits perfectly.\n\nWe weren't there for every late night, but we always knew your light was still on. So were our prayers.\n\nThank you for holding on, even on the days you wanted to stop. Wherever you go from here, the door at home is always open, and we'll always be the first ones to be proud of you.",
         photos: PHOTOS,
+        captions: ['Dawn at the station. The shirt still too big.', 'The desk whose lamp rarely went off.', 'The library, where you started over.', 'Third coffee that night. Chapter one, again.', 'Finally, the cap fits.'],
       },
     },
   },

@@ -52,8 +52,12 @@ export function SiteHeader() {
   );
 }
 
+/** Label tautan kredit foto (sengaja di sini, bukan di kamus). */
+const PHOTO_CREDITS: Record<string, string> = { id: 'Kredit foto', ms: 'Kredit foto', en: 'Photo credits' };
+
 export function SiteFooter() {
   const t = useT();
+  const locale = useLocale();
   return (
     <footer className="relative mt-20 pb-40 pt-8 text-sm text-ink-2 sm:pb-52">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -66,6 +70,7 @@ export function SiteFooter() {
           <Link href="/kado-saya">{t.nav.myGifts}</Link>
           <Link href="/syarat">{t.nav.terms}</Link>
           <Link href="/privasi">{t.nav.privacy}</Link>
+          <Link href="/kredit-foto">{PHOTO_CREDITS[locale] ?? PHOTO_CREDITS.en}</Link>
           <a href={`mailto:${SITE.contact.email}`}>{SITE.contact.email}</a>
           <LangSwitcher />
         </nav>
