@@ -1,16 +1,13 @@
-import Link from 'next/link';
 import { Catalog } from '@/components/Catalog';
 import { SiteFooter, SiteHeader } from '@/components/SiteChrome';
 import { fmt } from '@/i18n/fmt';
 import { dictOf } from '@/i18n/server';
-import { PLANS, cheapestLabel, displayCurrency, money, planAmount } from '@/lib/site';
+import { cheapestLabel } from '@/lib/site';
 
 const STEP_ART = ['kuncup-pink', 'bunga-kamboja', 'pita'];
 
 export default async function Home({ params }: { params: Promise<{ lang: string }> }) {
   const { locale, t } = await dictOf(params);
-  const cur = displayCurrency(locale);
-  const altCur = cur === 'IDR' ? 'USD' : 'IDR';
   return (
     <div className="relative overflow-x-clip">
       {/* lukisan pembuka: langit senja + rangkaian bunga tropis */}
@@ -81,51 +78,6 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
               </li>
             ))}
           </ol>
-        </section>
-
-        <section className="mt-20 sm:mt-28" aria-labelledby="harga">
-          <p className="font-hand text-2xl text-tomato-dark sm:text-center">{t.home.priceEyebrow}</p>
-          <h2 id="harga" className="font-display text-[2rem] font-semibold leading-tight sm:text-center sm:text-5xl">
-            {t.home.priceTitle}
-          </h2>
-          <p className="mt-2 text-[15px] text-ink-2 sm:text-center">
-            {t.home.priceSub}
-          </p>
-          <div className="mx-auto mt-7 grid max-w-4xl gap-4 sm:grid-cols-3 sm:gap-5">
-            {PLANS.map((p) =>
-              p.popular ? (
-                <div key={p.id} className="relative overflow-hidden rounded-[1.6rem] p-6 text-[#fff3dc] shadow-pop">
-                  <div className="absolute inset-0 bg-[url('/art/bg-malam.webp')] bg-cover bg-[center_18%]" aria-hidden />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#101736]/70 to-transparent" aria-hidden />
-                  <div className="relative">
-                    <span className="absolute right-0 top-0 rounded-full bg-butter px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-wider text-ink">
-                      {t.plans.recommended}
-                    </span>
-                    <div className="text-sm font-bold opacity-80">{t.plans[p.id].name}</div>
-                    <div className="font-display mt-1 text-[2.6rem] font-semibold leading-none">{money(planAmount(p, cur), cur)}</div>
-                    <div className="mt-2 text-[15px] opacity-90">{t.plans[p.id].note}</div>
-                    <div className="mt-3 text-[13px] font-semibold opacity-75">
-                      {fmt(cur === 'IDR' ? t.home.priceAlt : t.home.priceAltId, { price: money(planAmount(p, altCur), altCur) })}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div key={p.id} className="paper-card rounded-[1.6rem] p-6">
-                  <div className="text-sm font-bold text-ink-2">{t.plans[p.id].name}</div>
-                  <div className="font-display mt-1 text-[2.6rem] font-semibold leading-none">{money(planAmount(p, cur), cur)}</div>
-                  <div className="mt-2 text-[15px] text-ink-2">{t.plans[p.id].note}</div>
-                  <div className="mt-3 text-[13px] font-semibold text-muted">
-                    {fmt(cur === 'IDR' ? t.home.priceAlt : t.home.priceAltId, { price: money(planAmount(p, altCur), altCur) })}
-                  </div>
-                </div>
-              ),
-            )}
-          </div>
-          <div className="mt-7 sm:text-center">
-            <Link href="#template" className="btn btn-primary h-13 px-7 py-4 text-[15px]">
-              {t.home.pickTemplate}
-            </Link>
-          </div>
         </section>
 
         <section className="mx-auto mt-20 max-w-2xl sm:mt-28" aria-labelledby="faq">

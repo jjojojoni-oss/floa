@@ -45,12 +45,6 @@ export const en: Dict = {
       { t: 'Make it yours', d: 'Everything is pre-filled with an example. Just change the names, message and photos.' },
       { t: 'Pay, then send', d: 'Pay by credit or debit card (or QRIS from Indonesia). Your gift link and QR code are ready right away.' },
     ],
-    priceEyebrow: 'no subscription',
-    priceTitle: 'Pay once per gift.',
-    priceSub: 'Every template and feature is included. The only difference is how long the link stays live. Outside Indonesia you pay by card in US dollars.',
-    priceAlt: 'Outside Indonesia {price}',
-    priceAltId: 'From Indonesia {price}',
-    pickTemplate: 'Pick a template →',
     faqTitle: 'Questions people ask',
     faq: [
       {

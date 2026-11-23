@@ -45,12 +45,6 @@ export const ms: Dict = {
       { t: 'Tukar isinya', d: 'Semuanya sudah ada contoh. Cuma tukar nama, mesej dan foto.' },
       { t: 'Bayar, kemudian hantar', d: 'Bayar dengan kad kredit/debit (atau QRIS dari Indonesia). Pautan dan kod QR hadiahmu terus siap.' },
     ],
-    priceEyebrow: 'tanpa langganan',
-    priceTitle: 'Sekali bayar untuk satu hadiah.',
-    priceSub: 'Semua templat dan ciri sama. Bezanya cuma berapa lama pautan aktif. Dari Malaysia, bayaran dengan kad dalam dolar AS.',
-    priceAlt: 'Dari luar Indonesia {price}',
-    priceAltId: 'Dari Indonesia {price}',
-    pickTemplate: 'Pilih templat →',
     faqTitle: 'Soalan lazim',
     faq: [
       {

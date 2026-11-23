@@ -43,12 +43,6 @@ export const id = {
       { t: 'Ganti isinya', d: 'Semua sudah terisi contoh. Tinggal ganti nama, pesan, dan foto.' },
       { t: 'Bayar, lalu kirim', d: 'Scan QRIS dari e-wallet atau m-banking, atau pakai kartu dari luar negeri. Link dan QR kadomu langsung jadi.' },
     ],
-    priceEyebrow: 'tanpa langganan',
-    priceTitle: 'Sekali bayar per kado.',
-    priceSub: 'Semua template dan fitur sama. Bedanya cuma berapa lama link-nya aktif. Bayar QRIS dari Indonesia, atau kartu dari luar negeri.',
-    priceAlt: 'Dari luar negeri {price}',
-    priceAltId: 'Dari Indonesia {price}',
-    pickTemplate: 'Pilih template →',
     faqTitle: 'Yang sering ditanya',
     faq: [
       {
