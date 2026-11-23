@@ -1,7 +1,7 @@
 'use client';
 
 import { type CSSProperties, type KeyboardEvent, type PointerEvent, useMemo, useRef, useState } from 'react';
-import { Confetti, Finale, Hint, Sprite, Stage, Typewriter, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
+import { Confetti, Finale, Hint, Sprite, Stage, TapCue, Typewriter, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { useText } from './i18n';
 import { meta } from './meta';
@@ -107,6 +107,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const dragEnd = useRef(0);
   const busy = useRef(false);
   const rereadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  /** benda yang sekarang harus disentuh (untuk penunjuk TapCue) */
+  const cueEl = useRef<HTMLElement | null>(null);
 
   // kerlip bintang di atas lukisan (bintang lukisannya sendiri diam)
   const stars = useMemo(() => {
@@ -316,6 +318,19 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           ? t.beforeLast
           : null;
 
+  /** apa yang sekarang harus disentuh: satu saja pada satu waktu */
+  const cueOn: 'tell' | 'light' | 'release' | 'letter' | null =
+    finale || big !== null
+      ? null
+      : narration
+        ? 'tell'
+        : phase === 'wish' && !preLast && cur < n && lazy !== 'stuck'
+          ? lit ? (canGo ? 'release' : null) : 'light'
+          : phase === 'letter' && landed
+            ? 'letter'
+            : null;
+  const cue = (key: typeof cueOn) => (cueOn === key ? (el: HTMLElement | null) => { cueEl.current = el; } : undefined);
+
   let hint: string | null = null;
   if (phase === 'wish' && !preLast && cur < n && lazy !== 'stuck') hint = lit ? (canGo ? t.hintRelease : null) : t.hintLight;
   if (phase === 'letter') hint = landed ? t.letterHint : t.reread;
@@ -394,6 +409,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           >
             <div className={s.flyY} style={{ transform: flown ? `translateY(calc(${y - 100}% + 17.2em))` : undefined }}>
               <div
+                ref={isReady ? cue('light') ?? cue('release') : undefined}
                 className={cx(s.lan, isReady && dragging && s.dragging, isReady && lit && s.isLit, flown && s.isLit, i === lazyIdx && lazy === 'stuck' && s.stuck, special && s.special)}
                 style={{ transform: isReady && dy ? `translateY(${dy}px)` : undefined }}
                 role={isReady ? 'button' : undefined}
@@ -436,6 +452,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       {/* lampion yang turun membawa surat */}
       {phase === 'letter' ? (
         <button
+          ref={cue('letter')}
           type="button"
           className={s.letterLan}
           aria-label={t.letterAria}
@@ -461,6 +478,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       <div className={s.foot}>
         {narration ? (
           <button
+            ref={cue('tell')}
             type="button"
             key={`${phase}-${beat}-${preLast}`}
             className={cx(s.card, s.tell)}
@@ -513,6 +531,14 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       </div>
 
       {hint && big === null ? <Hint key={hint}>{hint}</Hint> : null}
+      <TapCue
+        target={cueEl}
+        show={cueOn !== null}
+        kind={cueOn === 'release' ? 'drag' : 'tap'}
+        dir={{ x: 0, y: -5 }}
+        at={cueOn === 'letter' ? { x: 0.5, y: 0.72 } : cueOn === 'light' || cueOn === 'release' ? { x: 0.5, y: 0.55 } : undefined}
+        delay={cueOn === 'tell' ? 3400 : 2600}
+      />
 
       {big !== null && photos[big] ? (
         <button type="button" className={s.bigWrap} aria-label={t.photoClose} onClick={() => setBig(null)}>

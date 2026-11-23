@@ -1,7 +1,7 @@
 'use client';
 
 import { type CSSProperties, type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from 'react';
-import { Confetti, Finale, Hint, HoldButton, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
+import { Confetti, Finale, Hint, HoldButton, Sprite, Stage, TapCue, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
 import { TEXT } from './i18n';
@@ -98,6 +98,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const stopSong = useRef<() => void>(() => {});
   const knife = useRef<{ id: number; y0: number; moved: boolean; h: number } | null>(null);
   const later = useTimers();
+  /** benda yang sekarang harus disentuh (untuk penunjuk TapCue) */
+  const cueEl = useRef<HTMLElement | null>(null);
   const t = TEXT[useLocale()];
   const to = data.to.trim() || t.you;
   const from = data.from.trim();
@@ -337,6 +339,47 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const glow = flamesOn ? litCount / n : phase === 'stubborn' ? 0.3 : 0;
   const dim = bright ? 0 : flamesOn ? 0.56 - 0.44 * (litCount / n) : 0.68;
 
+  /** apa yang sekarang harus disentuh: satu saja pada satu waktu */
+  // lilin belum menyala yang paling atas tumpukannya (lilin berdempetan; yang menyala tidak menangkap ketukan)
+  const nextCandle = lit.lastIndexOf(false);
+  const cueOn: string | null = finale
+    ? null
+    : phase === 'intro'
+      ? ready && !flipped ? 'switch' : null
+      : phase === 'light'
+        ? allLit ? 'toWish' : `c${nextCandle}`
+        : phase === 'wish'
+          ? 'wish'
+          : phase === 'wished'
+            ? 'toBlow'
+            : phase === 'blow'
+              ? mic === 'on' ? null : 'blow'
+              : phase === 'stubborn'
+                ? 'again'
+                : phase === 'party'
+                  ? line >= 4 ? 'toPhoto' : null
+                  : phase === 'photo'
+                    ? 'shutter'
+                    : phase === 'snap'
+                      ? 'toCut'
+                      : phase === 'cut'
+                        ? 'knife'
+                        : phase === 'slice'
+                          ? 'plate'
+                          : phase === 'smeared'
+                            ? wiping ? null : 'cream'
+                            : phase === 'card'
+                              ? 'open'
+                              : null;
+  const cue = (key: string) => (cueOn === key ? (el: HTMLElement | null) => { cueEl.current = el; } : undefined);
+  /** HoldButton tidak meneruskan ref: tunjuk tombol tahan di dalam kotaknya */
+  const cueHold = (key: string) =>
+    cueOn === key
+      ? (el: HTMLElement | null) => {
+          cueEl.current = (el?.querySelector(`.${s.blowBtn}`) as HTMLElement | null) ?? el;
+        }
+      : undefined;
+
   let head;
   if (phase === 'slice' || phase === 'smeared' || phase === 'card') {
     head = (
@@ -413,6 +456,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               <button
                 key={i}
                 type="button"
+                ref={cue(`c${i}`)}
                 className={cx(s.candle, on && s.isLit, puffing(i) && s.blown, phase === 'stubborn' && i === stub && s.naughty)}
                 style={{ left: `${(c.x - 22) / 4.4}%`, top: `${(c.y - 142) / 4.8}%`, '--i': i } as CSSProperties}
                 onClick={() => light(i)}
@@ -435,6 +479,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
           {phase === 'cut' || phase === 'slice' ? (
             <button
+              ref={cue('knife')}
               type="button"
               className={s.knifeZone}
               onPointerDown={onKnifeDown}
@@ -461,7 +506,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                 <Sprite name="bunga-kamboja-pink" className={s.cardFlower} />
               </span>
             ) : null}
-            <button type="button" className={s.plate} onClick={smear} disabled={phase !== 'slice'} aria-label={t.sliceLabel}>
+            <button ref={cue('plate')} type="button" className={s.plate} onClick={smear} disabled={phase !== 'slice'} aria-label={t.sliceLabel}>
               <Sprite name="lilin-potong" />
             </button>
           </div>
@@ -470,9 +515,14 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
       <div className={s.foot}>
         {phase === 'intro' ? (
-          <div className={s.blowBox}>
+          <div
+            className={cx(s.blowBox, s.introBox)}
+            onClick={(e) => {
+              if (!(e.target as HTMLElement).closest('button')) lightsOff();
+            }}
+          >
             <div className={cx(s.subNote, s.early)}>{t.intro}</div>
-            <button type="button" className={cx(s.switch, flipped && s.switchOff)} onClick={lightsOff} aria-label={t.switchLabel}>
+            <button ref={cue('switch')} type="button" className={cx(s.switch, flipped && s.switchOff)} onClick={lightsOff} aria-label={t.switchLabel}>
               <span className={s.rocker} />
             </button>
           </div>
@@ -498,7 +548,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               </div>
             ) : null}
             {allLit ? (
-              <button type="button" className={s.cta} onClick={() => setPhase('wish')}>
+              <button ref={cue('toWish')} type="button" className={s.cta} onClick={() => setPhase('wish')}>
                 {t.toWish}
               </button>
             ) : (
@@ -513,7 +563,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         ) : null}
 
         {phase === 'wish' ? (
-          <div className={s.blowBox}>
+          <div ref={cueHold('wish')} className={s.blowBox}>
             <div className={s.prompt}>{t.wishPrompt}</div>
             <div className={s.promptSub}>{t.wishSub}</div>
             <HoldButton
@@ -540,14 +590,14 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           <div className={s.blowBox}>
             <div className={s.prompt}>{t.wished}</div>
             <div className={s.promptSub}>{t.wishedSub}</div>
-            <button type="button" className={s.cta} onClick={() => setPhase('blow')}>
+            <button ref={cue('toBlow')} type="button" className={s.cta} onClick={() => setPhase('blow')}>
               {t.toBlow}
             </button>
           </div>
         ) : null}
 
         {phase === 'blow' ? (
-          <div className={s.blowBox}>
+          <div ref={cueHold('blow')} className={s.blowBox}>
             <div className={s.prompt}>{t.prompt}</div>
             <HoldButton ms={1500} onComplete={blow} onProgress={onBlowProgress} className={s.blowBtn} label={t.holdLabel}>
               <span className={s.blowLabel}>
@@ -575,7 +625,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         {phase === 'stubborn' ? (
           <div className={s.blowBox}>
             <div className={s.prompt}>{t.stubborn}</div>
-            <button type="button" className={s.again} onClick={blowAgain} aria-label={t.againLabel}>
+            <button ref={cue('again')} type="button" className={s.again} onClick={blowAgain} aria-label={t.againLabel}>
               {t.again}
             </button>
             {mic === 'on' ? <div className={s.micOn}>{t.micOn}</div> : null}
@@ -584,7 +634,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
         {phase === 'party' ? (
           <div className={s.songBox}>
-            <div className={cx(s.songCard, longSong && s.songLong)} aria-live="polite">
+            <div className={cx(s.songCard, longSong && s.songLong, line >= 4 && s.songDone)} aria-live="polite">
               <div className={s.songEyebrow}>{t.songEyebrow}</div>
               {t.song.map((l, i) => (
                 <div key={i} className={cx(s.lyric, line === i && s.sing, line > i && s.sung)}>
@@ -593,7 +643,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               ))}
             </div>
             {line >= 4 ? (
-              <button type="button" className={s.cta} onClick={() => setPhase('photo')}>
+              <button ref={cue('toPhoto')} type="button" className={s.cta} onClick={() => setPhase('photo')}>
                 {t.toPhoto}
               </button>
             ) : (
@@ -612,7 +662,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         {phase === 'photo' ? (
           <div className={s.blowBox}>
             <div className={cx(s.subNote, s.early)}>{t.photoSub}</div>
-            <button type="button" className={s.shutter} onClick={snap} aria-label={t.shutterLabel}>
+            <button ref={cue('shutter')} type="button" className={s.shutter} onClick={snap} aria-label={t.shutterLabel}>
               <span className={s.shutterDot} />
             </button>
             <div className={s.shutterLabel}>{t.shutter}</div>
@@ -620,7 +670,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         ) : null}
 
         {phase === 'snap' ? (
-          <button type="button" className={cx(s.cta, s.ctaLate)} onClick={() => setPhase('cut')}>
+          <button ref={cue('toCut')} type="button" className={cx(s.cta, s.ctaLate)} onClick={() => setPhase('cut')}>
             {t.toCut}
           </button>
         ) : null}
@@ -631,6 +681,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           <>
             <div className={s.subNote}>{t.cardPeek}</div>
             <button
+              ref={cue('open')}
               type="button"
               className={s.cta}
               onClick={() => {
@@ -663,12 +714,20 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       ) : null}
 
       {phase === 'smeared' ? (
-        <button type="button" className={cx(s.cream, wiping && s.wiped)} onClick={wipe} aria-label={t.wipeLabel}>
+        <button ref={cue('cream')} type="button" className={cx(s.cream, wiping && s.wiped)} onClick={wipe} aria-label={t.wipeLabel}>
           <Sprite name="lilin-colek" />
         </button>
       ) : null}
 
       {phase === 'light' && litCount === 0 ? <Hint key="lt">{t.hint}</Hint> : null}
+      <TapCue
+        target={cueEl}
+        show={cueOn !== null}
+        kind={cueOn === 'wish' || cueOn === 'blow' ? 'hold' : cueOn === 'knife' ? 'drag' : 'tap'}
+        dir={{ x: 0, y: 9 }}
+        at={cueOn?.startsWith('c') ? { x: 0.5, y: 0.35 } : cueOn === 'knife' ? { x: 0.5, y: 0.22 } : cueOn === 'wish' || cueOn === 'blow' ? { x: 0.5, y: 0.8 } : undefined}
+        delay={cueOn === 'switch' || cueOn?.startsWith('c') ? 2200 : 2800}
+      />
       {phase === 'photo' ? <Hint key="ph">{t.photoHint}</Hint> : null}
       {phase === 'cut' ? <Hint>{t.cutHint}</Hint> : null}
       {phase === 'slice' ? <Hint key="sl">{t.sliceHint}</Hint> : null}
