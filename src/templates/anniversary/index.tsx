@@ -1,7 +1,7 @@
 'use client';
 
 import { type CSSProperties, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { Confetti, Finale, Hint, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
+import { Confetti, Finale, Hint, Sprite, Stage, TapCue, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
 import { type Milestone, addDays, dayDiff, elapsed, milestoneOn, milestones, parseDate, startOfDay } from './date';
@@ -213,6 +213,15 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const viaKeys = useRef(false);
   const blockRef = useRef<HTMLDivElement>(null);
   const openRef = useRef<HTMLButtonElement>(null);
+  /** lembar teratas yang bisa disobek (tombolnya berganti tiap sobekan) */
+  const topCue = useMemo(
+    () => ({
+      get current() {
+        return blockRef.current?.querySelector<HTMLButtonElement>('button') ?? null;
+      },
+    }),
+    [],
+  );
 
   const jags = useMemo(() => sheets.map((_, i) => jagged(i)), [sheets]);
   const lastSheet = sheets[last];
@@ -630,7 +639,13 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       <Confetti burst={burst} shapes="hearts" count={80} origin={{ x: 0.5, y: 0.42 }} colors={['#c8372d', '#e8c268', '#fff3da', '#f29aa5', '#f2542d']} />
       <Confetti burst={burst} count={70} origin={{ x: 0.5, y: 0.5 }} colors={['#fbf5e6', '#f4ecd8', '#c8372d', '#e8c268']} />
 
-      {idx === 0 && canTear ? <Hint>{t.hintTear}</Hint> : null}
+      {idx === 0 && canTear ? <Hint key="t0">{t.hintTear}</Hint> : null}
+      {idx > 0 && canTear ? <Hint key="t1">{t.hintTearMore}</Hint> : null}
+      {finale ? null : canTear ? (
+        <TapCue key={`tear${idx}`} target={topCue} kind="drag" at={{ x: 0.5, y: 0.32 }} dir={{ x: 0, y: 3.2 }} />
+      ) : showCounter ? (
+        <TapCue key="open" target={openRef} delay={4500} />
+      ) : null}
 
       {finale ? (
         <Finale

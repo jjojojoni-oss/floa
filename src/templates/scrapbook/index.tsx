@@ -10,7 +10,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Finale, Hint, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
+import { Finale, Hint, Sprite, Stage, TapCue, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
 import { TEXT } from './i18n';
@@ -65,8 +65,6 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
   /** jumlah lembar yang sudah dibalik: 0 = sampul tertutup, `leaves` = halaman kantong */
   const [pos, setPos] = useState(0);
-  /** halaman terjauh yang pernah dibuka: petunjuk balik halaman hanya muncul sekali */
-  const [far, setFar] = useState(0);
   const [finale, setFinale] = useState(false);
   const posRef = useRef(0);
   const later = useTimers();
@@ -84,6 +82,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const start = useRef<{ id: number; x0: number; y0: number } | null>(null);
   const drag = useRef<{ leaf: number; w: number; lastX: number; lastT: number; v: number } | null>(null);
   const moved = useRef(false);
+  const pocketRef = useRef<HTMLButtonElement>(null);
 
   const to = data.to.trim() || t.you;
   const from = data.from.trim();
@@ -148,7 +147,6 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     const forward = next > posRef.current;
     posRef.current = next;
     setPos(next);
-    setFar((f) => Math.max(f, next));
     sfx.whoosh();
     haptic(10);
     later(() => sfx.tap(), 520);
@@ -246,7 +244,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     if (!book) return;
     const r = book.getBoundingClientRect();
     const x = (e.clientX - r.left) / (r.width || 1);
-    if (posRef.current === 0 || x >= 0.36) goNext();
+    if (posRef.current >= leaves && x >= 0.36) open();
+    else if (posRef.current === 0 || x >= 0.36) goNext();
     else goPrev();
   };
 
@@ -294,6 +293,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               <span className={s.pocketNote}>{t.pocketNote}</span>
               <ArrowDoodle className={s.pocketArrow} />
               <button
+                ref={pocketRef}
                 type="button"
                 className={cx(s.pocket, atPocket && s.pocketLive)}
                 tabIndex={atPocket ? 0 : -1}
@@ -402,8 +402,15 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       </div>
 
       {pos === 0 ? <Hint key="c">{t.hintCover}</Hint> : null}
-      {pos === 1 && far <= 1 && !atPocket ? <Hint key="t">{t.hintTurn}</Hint> : null}
+      {pos >= 1 && !atPocket ? <Hint key="t">{t.hintTurn}</Hint> : null}
       {atPocket && !finale ? <Hint key="l">{t.hintLetter}</Hint> : null}
+      {finale ? null : pos === 0 ? (
+        <TapCue key="cover" target={bookRef} at={{ x: 0.62, y: 0.5 }} />
+      ) : atPocket ? (
+        <TapCue key="pocket" target={pocketRef} />
+      ) : (
+        <TapCue key={`page${pos}`} target={bookRef} kind="drag" at={{ x: 0.82, y: 0.55 }} dir={{ x: -5, y: 0 }} />
+      )}
 
       {finale ? (
         <Finale
