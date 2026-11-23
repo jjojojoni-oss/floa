@@ -27,6 +27,8 @@ export type GiftMusic = {
   id: string;
   /** judul untuk ditampilkan di editor, kalau berhasil dibaca */
   title?: string;
+  /** true (bawaan) = mulai sendiri pada ketukan pertama penerima; false = penerima menekan tombol musik */
+  autoplay?: boolean;
 };
 
 /**

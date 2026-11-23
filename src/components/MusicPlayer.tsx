@@ -70,6 +70,8 @@ export function MusicPlayer({ music, start = 'tap' }: { music: GiftMusic; start?
   const [open, setOpen] = useState(false);
   const [needsTap, setNeedsTap] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [begun, setBegun] = useState(false);
+  const autoplay = music.autoplay !== false;
   const muted = useSyncExternalStore(subscribeMuted, isMuted, () => false);
   const mutedRef = useRef(muted);
   mutedRef.current = muted;
@@ -86,6 +88,7 @@ export function MusicPlayer({ music, start = 'tap' }: { music: GiftMusic; start?
     }
     if (mutedRef.current) return;
     started.current = true;
+    setBegun(true);
     c.play();
     // kalau setelah beberapa detik masih belum bunyi, minta penerima menekan ▶ di pemutarnya
     window.setTimeout(() => {
@@ -138,8 +141,9 @@ export function MusicPlayer({ music, start = 'tap' }: { music: GiftMusic; start?
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [music.type, music.id]);
 
-  // mulai: ketukan pertama di mana pun di kado, atau langsung
+  // mulai: ketukan pertama di mana pun di kado, atau langsung (hanya kalau pembuatnya memilih putar otomatis)
   useEffect(() => {
+    if (!autoplay) return;
     if (start === 'now') {
       tryPlay();
       return;
@@ -148,7 +152,7 @@ export function MusicPlayer({ music, start = 'tap' }: { music: GiftMusic; start?
     document.addEventListener('pointerdown', onFirst, { capture: true, once: true });
     return () => document.removeEventListener('pointerdown', onFirst, { capture: true });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [start]);
+  }, [start, autoplay]);
 
   // tombol suara di pojok kanan atas juga mengatur musiknya
   useEffect(() => {
@@ -170,11 +174,16 @@ export function MusicPlayer({ music, start = 'tap' }: { music: GiftMusic; start?
         type="button"
         onClick={(e) => {
           e.stopPropagation();
-          setOpen((v) => !v);
+          // tanpa putar otomatis: ketukan pertama di tombol ini yang memulai lagunya
+          if (!begun && !autoplay) tryPlay();
+          else setOpen((v) => !v);
         }}
-        aria-label={open ? t.music.hide : t.music.show}
+        aria-label={!begun && !autoplay ? t.music.playSong : open ? t.music.hide : t.music.show}
         aria-expanded={open}
-        className="pointer-events-auto grid h-10 w-10 place-items-center rounded-full bg-[#1e1b18]/45 text-white shadow-[0_6px_16px_-6px_rgba(0,0,0,0.5)] backdrop-blur-md transition-transform active:scale-95"
+        className={
+          'pointer-events-auto flex h-10 items-center justify-center gap-2 rounded-full bg-[#1e1b18]/45 text-white shadow-[0_6px_16px_-6px_rgba(0,0,0,0.5)] backdrop-blur-md transition-transform active:scale-95 ' +
+          (!begun && !autoplay ? 'pl-3 pr-4' : 'w-10')
+        }
       >
         {playing ? (
           <span className="flex h-4 items-end gap-[3px]" aria-hidden>
@@ -187,6 +196,7 @@ export function MusicPlayer({ music, start = 'tap' }: { music: GiftMusic; start?
             <path d="M19 3v12.2A3.5 3.5 0 1 1 17 12V7.3l-8 1.6v8.3A3.5 3.5 0 1 1 7 14V5.6z" />
           </svg>
         )}
+        {!begun && !autoplay ? <span className="text-[13px] font-extrabold">{t.music.playSong}</span> : null}
       </button>
 
       {/* pemutar tetap terpasang (supaya lagunya tidak berhenti), hanya disembunyikan saat dikecilkan */}

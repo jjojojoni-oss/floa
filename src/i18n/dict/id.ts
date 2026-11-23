@@ -226,7 +226,7 @@ export const id = {
   music: {
     label: 'Musik',
     optional: '(opsional)',
-    hint: 'Tempel link lagu dari Spotify. Musiknya mulai saat penerima mengetuk kadonya.',
+    hint: 'Tempel link lagu, album, atau playlist dari Spotify.',
     placeholder: 'Tempel link Spotify di sini',
     add: 'Pakai',
     reading: 'Membaca…',
@@ -238,6 +238,9 @@ export const id = {
     show: 'Tampilkan pemutar musik',
     hide: 'Kecilkan pemutar musik',
     tapToPlay: 'Ketuk ▶ untuk memutar lagunya',
+    autoplay: 'Putar otomatis',
+    autoplaySub: 'Lagu mulai sendiri saat penerima mengetuk kadonya. Kalau dimatikan, penerima menekan tombol musik sendiri.',
+    playSong: 'Putar lagu',
   },
   lock: {
     label: 'Kata sandi',

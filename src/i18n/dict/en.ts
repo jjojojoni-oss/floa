@@ -228,7 +228,7 @@ export const en: Dict = {
   music: {
     label: 'Music',
     optional: '(optional)',
-    hint: 'Paste a song link from Spotify. The music starts when your recipient taps the gift.',
+    hint: 'Paste a song, album or playlist link from Spotify.',
     placeholder: 'Paste a Spotify link here',
     add: 'Use',
     reading: 'Reading…',
@@ -240,6 +240,9 @@ export const en: Dict = {
     show: 'Show music player',
     hide: 'Minimize music player',
     tapToPlay: 'Tap ▶ to play the song',
+    autoplay: 'Autoplay',
+    autoplaySub: 'The song starts on its own when your recipient taps the gift. Turn it off to let them press the music button themselves.',
+    playSong: 'Play song',
   },
   lock: {
     label: 'Password',

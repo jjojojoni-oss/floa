@@ -9,6 +9,23 @@ import type { GiftMusic, MusicKind } from '@/templates/types';
 const inputCls =
   'w-full rounded-2xl bg-white px-4 py-3 text-[16px] leading-snug shadow-[inset_0_0_0_1.5px_var(--color-line)] outline-none transition-shadow placeholder:text-muted/60 focus:shadow-[inset_0_0_0_2px_var(--color-ink)]';
 
+/** Sakelar nyala/mati dengan judul dan keterangan. */
+function Switch({ title, sub, checked, onChange, className = '' }: { title: string; sub: string; checked: boolean; onChange: (on: boolean) => void; className?: string }) {
+  return (
+    <label className={'flex cursor-pointer items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-[inset_0_0_0_1.5px_var(--color-line)] ' + className}>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[15px] font-bold">{title}</span>
+        <span className="block text-[12.5px] leading-snug text-muted">{sub}</span>
+      </span>
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="peer sr-only" />
+      <span
+        aria-hidden
+        className="relative h-7 w-12 flex-none rounded-full bg-line transition-colors after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:bg-leaf peer-checked:after:translate-x-5 peer-focus-visible:ring-2 peer-focus-visible:ring-ink"
+      />
+    </label>
+  );
+}
+
 /* ───────────────────────── musik ───────────────────────── */
 
 export function MusicField({ music, onChange }: { music: GiftMusic | null | undefined; onChange: (m: GiftMusic | null) => void }) {
@@ -24,13 +41,13 @@ export function MusicField({ music, onChange }: { music: GiftMusic | null | unde
     setError(null);
     try {
       const r = await api<{ type: MusicKind; id: string; title?: string }>(`/api/music?url=${encodeURIComponent(v)}`);
-      onChange({ provider: 'spotify', type: r.type, id: r.id, ...(r.title ? { title: r.title } : {}) });
+      onChange({ provider: 'spotify', type: r.type, id: r.id, ...(r.title ? { title: r.title } : {}), autoplay: music?.autoplay ?? true });
       setLink('');
     } catch (e) {
       // server tak terjangkau tapi link-nya jelas: tetap dipakai (judulnya saja yang tidak ada)
       const local = parseSpotify(v);
       if (local && !(e instanceof ApiError && e.code === 'music_invalid')) {
-        onChange({ provider: 'spotify', ...local });
+        onChange({ provider: 'spotify', ...local, autoplay: true });
         setLink('');
       } else setError(t.music.invalid);
     } finally {
@@ -55,6 +72,13 @@ export function MusicField({ music, onChange }: { music: GiftMusic | null | unde
             loading="lazy"
             allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
             className="block rounded-[14px] border-0 bg-[#282828]"
+          />
+          <Switch
+            className="mt-2.5"
+            title={t.music.autoplay}
+            sub={t.music.autoplaySub}
+            checked={music.autoplay !== false}
+            onChange={(on) => onChange({ ...music, autoplay: on })}
           />
           <div className="mt-2 flex items-start justify-between gap-3">
             <p className="text-[12.5px] leading-snug text-muted">{t.music.previewNote}</p>
@@ -128,17 +152,7 @@ export function LockField({ lock, onChange, error }: { lock: LockState; onChange
       <p className="text-[15px] font-extrabold">
         {t.lock.label} <span className="font-semibold text-muted">{t.music.optional}</span>
       </p>
-      <label className="mt-2 flex cursor-pointer items-center gap-3 rounded-2xl bg-white px-4 py-3 shadow-[inset_0_0_0_1.5px_var(--color-line)]">
-        <span className="min-w-0 flex-1">
-          <span className="block text-[15px] font-bold">{t.lock.toggle}</span>
-          <span className="block text-[12.5px] leading-snug text-muted">{t.lock.toggleSub}</span>
-        </span>
-        <input type="checkbox" checked={lock.on} onChange={(e) => set({ on: e.target.checked })} className="peer sr-only" />
-        <span
-          aria-hidden
-          className="relative h-7 w-12 flex-none rounded-full bg-line transition-colors after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:bg-leaf peer-checked:after:translate-x-5 peer-focus-visible:ring-2 peer-focus-visible:ring-ink"
-        />
-      </label>
+      <Switch className="mt-2" title={t.lock.toggle} sub={t.lock.toggleSub} checked={lock.on} onChange={(on) => set({ on })} />
 
       {lock.on ? (
         <div className="mt-3 space-y-3 rounded-2xl bg-paper-2/60 p-3.5">

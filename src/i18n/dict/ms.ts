@@ -228,7 +228,7 @@ export const ms: Dict = {
   music: {
     label: 'Muzik',
     optional: '(pilihan)',
-    hint: 'Tampal pautan lagu dari Spotify. Muzik bermula apabila penerima mengetik hadiahnya.',
+    hint: 'Tampal pautan lagu, album atau senarai main dari Spotify.',
     placeholder: 'Tampal pautan Spotify di sini',
     add: 'Guna',
     reading: 'Membaca…',
@@ -240,6 +240,9 @@ export const ms: Dict = {
     show: 'Tunjukkan pemain muzik',
     hide: 'Kecilkan pemain muzik',
     tapToPlay: 'Ketik ▶ untuk memainkan lagu',
+    autoplay: 'Main secara automatik',
+    autoplaySub: 'Lagu bermula sendiri apabila penerima mengetik hadiahnya. Jika dimatikan, penerima menekan butang muzik sendiri.',
+    playSong: 'Main lagu',
   },
   lock: {
     label: 'Kata laluan',

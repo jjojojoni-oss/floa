@@ -39,7 +39,7 @@ export function cleanMusic(v: unknown, cleanText: (s: unknown, max: number) => s
   if (!MUSIC_KINDS.includes(m.type as MusicKind)) return null;
   if (typeof m.id !== 'string' || !SPOTIFY_ID.test(m.id)) return null;
   const title = cleanText(m.title, 120);
-  return { provider: 'spotify', type: m.type as MusicKind, id: m.id, ...(title ? { title } : {}) };
+  return { provider: 'spotify', type: m.type as MusicKind, id: m.id, ...(title ? { title } : {}), autoplay: m.autoplay !== false };
 }
 
 export const spotifyUri = (m: GiftMusic) => `spotify:${m.type}:${m.id}`;
