@@ -35,7 +35,7 @@ export const meta: TemplateMeta = {
     from: 'Rama',
     title: 'Selamat ulang tahun, Nad!',
     notes: [
-      'Semoga tahun ini kamu lebih sering ketawa, kayak sore itu di taman.',
+      'Semoga tahun ini kamu lebih sering ketawa, kayak malam itu kamu keselek kerupuk bakso.',
       'Semoga cutimu nambah, dan kerjaan nggak ikut kebawa ke pantai lagi.',
       'Semoga kopimu selalu hangat dan pagimu nggak buru-buru.',
       'Semoga tiap capekmu selalu ketemu tempat pulang.',
@@ -43,7 +43,7 @@ export const meta: TemplateMeta = {
     ],
     message:
       'Satu tahun lagi lewat, dan kamu masih orang yang sama: yang ketawanya paling kenceng, yang paling duluan nanya "udah makan belum?".\n\nSemoga tahun ini lebih ringan dari yang kemarin. Kalau ternyata berat, kabarin aku. Kita cari makan enak dulu, baru mikir.\n\nSelamat bertambah umur. Kuenya virtual, traktirannya beneran ya.',
-    photos: ['/art/foto-taman.webp', '/art/foto-pantai.webp', '/art/foto-kopi.webp', '/art/foto-senja.webp'],
+    photos: ['/contoh/bakso.webp', '/contoh/pantai-gili.webp', '/contoh/kopi-hitam.webp', '/contoh/peron-stasiun.webp', '/contoh/kue-lilin.webp'],
   },
   i18n: {
     ms: {
@@ -67,7 +67,7 @@ export const meta: TemplateMeta = {
         from: 'Amir',
         title: 'Selamat hari jadi, Farah!',
         notes: [
-          'Semoga tahun ni kau lebih banyak gelak, macam petang tu di taman.',
+          'Semoga tahun ni kau lebih banyak gelak, macam malam tu kau tersedak keropok bakso.',
           'Semoga cuti kau bertambah, dan kerja tak ikut sampai ke pantai lagi.',
           'Semoga kopi kau sentiasa panas dan pagi kau tak tergesa-gesa.',
           'Semoga setiap penat kau sentiasa jumpa tempat untuk pulang.',
@@ -75,7 +75,7 @@ export const meta: TemplateMeta = {
         ],
         message:
           'Setahun lagi dah berlalu, dan kau masih orang yang sama: yang gelaknya paling kuat, yang paling awal tanya "dah makan ke belum?".\n\nHarap tahun ni lebih ringan daripada tahun lepas. Kalau berat juga, bagitahu aku. Kita cari makan sedap dulu, baru fikir.\n\nSelamat bertambah umur. Keknya maya, tapi belanja makan tu betul-betul tau.',
-        photos: ['/art/foto-taman.webp', '/art/foto-pantai.webp', '/art/foto-kopi.webp', '/art/foto-senja.webp'],
+        photos: ['/contoh/bakso.webp', '/contoh/pantai-gili.webp', '/contoh/kopi-hitam.webp', '/contoh/peron-stasiun.webp', '/contoh/kue-lilin.webp'],
       },
     },
     en: {
@@ -99,7 +99,7 @@ export const meta: TemplateMeta = {
         from: 'Ryan',
         title: 'Happy birthday, Soph!',
         notes: [
-          'May you laugh more this year, like that afternoon in the park.',
+          'May you laugh more this year, like that night at the meatball stall.',
           'More days off, and may work finally stop following you to the beach.',
           'May your coffee stay warm and your mornings never feel rushed.',
           'May every tired day of yours always find its way home.',
@@ -107,7 +107,7 @@ export const meta: TemplateMeta = {
         ],
         message:
           'Another year gone, and you\'re still the same: the loudest laugh in the room, the first to ask "have you eaten yet?".\n\nI hope this year is lighter than the last. And if it gets heavy, call me. We\'ll grab good food first and figure it out after.\n\nHappy birthday. The cake is virtual, but dinner\'s on me. For real.',
-        photos: ['/art/foto-taman.webp', '/art/foto-pantai.webp', '/art/foto-kopi.webp', '/art/foto-senja.webp'],
+        photos: ['/contoh/bakso.webp', '/contoh/pantai-gili.webp', '/contoh/kopi-hitam.webp', '/contoh/peron-stasiun.webp', '/contoh/kue-lilin.webp'],
       },
     },
   },

@@ -1,6 +1,6 @@
 import type { TemplateMeta } from '../types';
 
-const PHOTOS = ['/art/foto-kopi.webp', '/art/foto-gunung.webp', '/art/foto-kota.webp', '/art/foto-taman.webp'];
+const PHOTOS = ['/contoh/kopi-dan-kue.webp', '/contoh/bromo-senja.webp', '/contoh/bakso-berdua.webp', '/contoh/piknik.webp'];
 
 export const meta: TemplateMeta = {
   id: 'anniversary',
@@ -40,6 +40,7 @@ export const meta: TemplateMeta = {
     message:
       'Aku masih ingat tanggal di lembar pertama tadi. Waktu itu aku cuma berani pesan kopi yang sama denganmu.\n\nSejak hari itu, kalenderku isinya kamu: hari-hari biasa, hari-hari capek, hari-hari yang ternyata paling aku ingat.\n\nTerima kasih sudah bertahan di semua lembarnya. Lembar besok, lusa, dan seterusnya, aku masih mau menyobeknya bareng kamu.',
     photos: PHOTOS,
+    captions: ['Kamu pesan, aku ikut pesan yang sama.', 'Matahari terbit pertama kita.', 'Dua mangkuk, satu baikan.', 'Tanpa tikar, tetap piknik.'],
   },
   i18n: {
     ms: {
@@ -66,13 +67,14 @@ export const meta: TemplateMeta = {
         title: 'Selamat ulang tahun kita, sayang.',
         notes: [
           'Kopi pertama. Awak lewat 40 minit, saya tetap tunggu.',
-          'Kinabalu pukul 4 pagi. Sejuk, tapi awak asyik ketawa.',
-          'Sesat di bandar orang. Berbaik semula sebab cendol.',
+          'Bromo pukul 4 pagi. Sejuk, tapi awak asyik ketawa.',
+          'Sesat di bandar orang. Berbaik semula sebab bakso.',
           'Berkelah mengejut. Tikar tertinggal, jadi juga.',
         ],
         message:
           'Saya masih ingat tarikh pada helaian pertama tadi. Masa tu saya cuma berani pesan kopi yang sama dengan awak.\n\nSejak hari itu, kalendar saya penuh dengan awak: hari biasa, hari penat, hari yang rupa-rupanya paling saya ingat.\n\nTerima kasih sebab bertahan pada setiap helaiannya. Helaian esok, lusa dan seterusnya, saya masih mahu koyakkannya bersama awak.',
         photos: PHOTOS,
+        captions: ['Awak order, saya ikut order yang sama.', 'Matahari terbit pertama kita.', 'Dua mangkuk, terus berbaik.', 'Tanpa tikar, tetap berkelah.'],
       },
     },
     en: {
@@ -106,6 +108,7 @@ export const meta: TemplateMeta = {
         message:
           "I still remember the date on that first page. Back then, all I had the nerve to do was order the same coffee as you.\n\nSince that day, my calendar has been full of you: the ordinary days, the tired days, the days that turned out to be the ones I remember most.\n\nThank you for staying through every page. Tomorrow's page, and all the ones after it, I still want to tear them off with you.",
         photos: PHOTOS,
+        captions: ['You ordered, I copied.', 'Our first sunrise together.', 'Two bowls, one making up.', 'No blanket, still a picnic.'],
       },
     },
   },

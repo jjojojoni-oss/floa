@@ -1,6 +1,6 @@
 import type { TemplateMeta } from '../types';
 
-const PHOTOS = ['/art/foto-senja.webp', '/art/foto-gunung.webp', '/art/foto-kota.webp', '/art/foto-taman.webp', '/art/foto-pantai.webp', '/art/foto-kopi.webp'];
+const PHOTOS = ['/contoh/senja-pantai.webp', '/contoh/bromo-senja.webp', '/contoh/kota-tua.webp', '/contoh/piknik.webp', '/contoh/pantai-pasir.webp', '/contoh/dua-cangkir.webp'];
 
 export const meta: TemplateMeta = {
   id: 'scrapbook',

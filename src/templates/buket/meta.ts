@@ -29,14 +29,15 @@ export const meta: TemplateMeta = {
     title: 'Selamat dua tahun, sayang.',
     notes: [
       'Senja pertama kita di pantai. Kamu lupa bawa jaket, tapi tetap nggak mau pulang sampai mataharinya habis.',
-      'Tiap pesan kopi, kamu selalu ingat punyaku: gula sedikit, es banyak. Aku sendiri sering lupa.',
+      'Tiap pesan kopi, kamu selalu ingat punyaku: gula sedikit, susunya banyak. Aku sendiri sering lupa.',
       'Waktu aku telat satu jam, kamu cuma bilang, "yang penting sampai." Aku masih malu sampai sekarang.',
       'Kamu selalu bisa bikin hari Senin terasa kayak hari Sabtu. Itu bakat, dan cuma kamu yang punya.',
       'Dari semua tempat yang pernah kita datangi, yang paling aku suka tetap sama: di sebelahmu.',
     ],
     message:
       'Aku nggak jago merangkai kata, apalagi merangkai bunga. Jadi aku titip semuanya di sini, satu cerita di tiap kelopaknya.\n\nMakasih sudah bertahan, sudah mau diajak makan di tempat yang itu-itu aja, dan sudah jadi orang pertama yang aku cari tiap ada kabar baik.\n\nSemoga buket ini nggak pernah layu. Sama kayak kita.',
-    photos: ['/art/foto-pantai.webp', '/art/foto-kopi.webp', '/art/foto-kota.webp', '/art/foto-taman.webp', '/art/foto-senja.webp'],
+    photos: ['/contoh/senja-pantai.webp', '/contoh/dua-cangkir.webp', '/contoh/jakarta-malam.webp', '/contoh/piknik.webp', '/contoh/gandengan.webp'],
+    captions: ['Sore pertama kita. Jaketku jadi punyamu.', 'Dua cangkir, kamu yang pesan dua-duanya.', 'Macet, hujan, dan aku telat sejam. Maaf, ya.', 'Piknik dadakan, padahal besoknya Senin.', 'Tempat favoritku.'],
   },
   i18n: {
     ms: {
@@ -61,14 +62,15 @@ export const meta: TemplateMeta = {
         title: 'Dah dua tahun kita, sayang.',
         notes: [
           'Senja pertama kita kat Port Dickson. Awak lupa bawa jaket, tapi tetap tak nak balik selagi matahari belum hilang.',
-          'Setiap kali order teh tarik, awak selalu ingat saya punya: kurang manis, ais lebih. Saya sendiri pun selalu lupa.',
+          'Setiap kali order kopi, awak selalu ingat saya punya: kurang manis, susu lebih. Saya sendiri pun selalu lupa.',
           'Masa saya lambat sejam, awak cuma cakap, "yang penting sampai." Sampai sekarang saya masih malu.',
           'Awak selalu boleh buat hari Isnin rasa macam hari Sabtu. Itu bakat, dan hanya awak yang ada.',
           'Daripada semua tempat yang pernah kita pergi, yang paling saya suka tetap sama: di sebelah awak.',
         ],
         message:
           'Saya tak pandai menyusun kata, apatah lagi menggubah bunga. Jadi saya titipkan semuanya di sini, satu cerita dalam setiap kelopak.\n\nTerima kasih sebab sudi bertahan, sudi diajak makan kat kedai yang sama setiap kali, dan jadi orang pertama yang saya cari setiap kali ada berita gembira.\n\nHarap jambangan ni tak pernah layu. Macam kita.',
-        photos: ['/art/foto-pantai.webp', '/art/foto-kopi.webp', '/art/foto-kota.webp', '/art/foto-taman.webp', '/art/foto-senja.webp'],
+        photos: ['/contoh/senja-pantai.webp', '/contoh/dua-cangkir.webp', '/contoh/jakarta-malam.webp', '/contoh/piknik.webp', '/contoh/gandengan.webp'],
+        captions: ['Senja pertama kita. Jaket saya jadi awak punya.', 'Dua cawan, awak yang order dua-dua.', 'Jalan sesak, dan saya lambat sejam. Maaf, ya.', 'Berkelah mengejut, padahal esoknya Isnin.', 'Tempat kegemaran saya.'],
       },
     },
     en: {
@@ -93,14 +95,15 @@ export const meta: TemplateMeta = {
         title: 'Happy two years, love.',
         notes: [
           'Our first sunset at the beach. You forgot your jacket but refused to leave until the sun was completely gone.',
-          'Every coffee run, you remember mine: less sugar, extra ice. I forget it myself half the time.',
+          'Every coffee run, you remember mine: less sugar, extra milk. I forget it myself half the time.',
           'When I showed up an hour late, you just said, "you made it, that’s what counts." I’m still embarrassed.',
           'You can make a Monday feel like a Saturday. That’s a talent, and only you have it.',
           'Of all the places we’ve been, my favorite is still the same one: right next to you.',
         ],
         message:
           "I'm not great with words, and even worse with flowers. So I'm leaving it all here, one story in every petal.\n\nThank you for sticking around, for never minding when we end up at the same old place, and for being the first person I look for whenever there's good news.\n\nI hope this bouquet never wilts. Just like us.",
-        photos: ['/art/foto-pantai.webp', '/art/foto-kopi.webp', '/art/foto-kota.webp', '/art/foto-taman.webp', '/art/foto-senja.webp'],
+        photos: ['/contoh/senja-pantai.webp', '/contoh/dua-cangkir.webp', '/contoh/jakarta-malam.webp', '/contoh/piknik.webp', '/contoh/gandengan.webp'],
+        captions: ['Our first sunset. My jacket became yours.', 'Two cups. You ordered both.', 'Traffic, rain, and me an hour late. Sorry.', 'A last-minute picnic. Monday could wait.', 'My favorite place.'],
       },
     },
   },

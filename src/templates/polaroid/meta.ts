@@ -1,7 +1,7 @@
 import type { TemplateMeta } from '../types';
 
 /** Urutan foto contoh mengikuti ceritanya; foto terakhir jadi "yang paling spesial". */
-const PHOTOS = ['/art/foto-taman.webp', '/art/foto-kopi.webp', '/art/foto-kota.webp', '/art/foto-pantai.webp', '/art/foto-senja.webp', '/art/foto-gunung.webp'];
+const PHOTOS = ['/contoh/sate-pinggir-jalan.webp', '/contoh/kopi-dan-kue.webp', '/contoh/kota-tua.webp', '/contoh/pantai-pasir.webp', '/contoh/senja-pantai.webp', '/contoh/bromo-senja.webp'];
 
 export const meta: TemplateMeta = {
   id: 'polaroid',
@@ -31,12 +31,12 @@ export const meta: TemplateMeta = {
     from: 'Tari',
     title: 'Makasih buat semuanya.',
     notes: [
-      'Halaman kos, Agustus 2019 – Hari pertama pindahan. Semua masih jaim, belum ada yang berani pinjam sandal.',
+      'Sate depan kos, Agustus 2019 – Malam pertama pindahan. Semua masih jaim, belum ada yang berani nambah.',
       'Warung kopi depan kampus – Kopi ketiga minggu itu. Tugasnya belum dimulai, ceritanya sudah ke mana-mana.',
-      'Malioboro, Desember 2020 – Katanya cuma lihat-lihat. Pulangnya bawa tiga kantong belanja.',
+      'Titik Nol, Desember 2020 – Katanya cuma lihat-lihat ke Malioboro. Pulangnya bawa tiga kantong belanja.',
       'Pantai Indrayanti, 2021 – Payung kita terbang, kita yang lari ngejar. Fotonya blur semua, tapi aku suka.',
       'Parangtritis, 2022 – Nyasar dua jam, tapi dapat sunset. Kalian bilang itu memang rencananya.',
-      'Dieng, Juni 2023 – Liburan yang direncanain dua tahun. Dingin banget, tapi nggak ada yang mau tidur duluan.',
+      'Bromo, Juni 2023 – Liburan yang direncanain dua tahun. Dingin banget, tapi nggak ada yang mau tidur duluan.',
     ],
     message:
       'Empat tahun, satu dapur, dan rice cooker yang sampai sekarang nggak jelas punya siapa.\n\nFoto-foto ini sengaja aku cetak, soalnya di galeri HP semuanya ketimbun tangkapan layar tugas. Ternyata kalau dipegang begini, rasanya beda.\n\nAku nggak tahu nanti kita bakal kerja di kota mana. Yang aku tahu, grup ini jangan sampai sepi.\n\nMakasih sudah jadi keluarga yang aku pilih sendiri.',
@@ -64,12 +64,12 @@ export const meta: TemplateMeta = {
         from: 'Syaza',
         title: 'Terima kasih untuk semuanya.',
         notes: [
-          'Rumah sewa Seksyen 7, Ogos 2019 – Hari pertama pindah. Semua masih malu-malu, tak ada yang berani pinjam selipar.',
-          'Kedai mamak depan kampus – Teh tarik ketiga minggu tu. Assignment belum mula, cerita dah sampai ke mana-mana.',
+          'Gerai sate depan rumah sewa, Ogos 2019 – Malam pertama pindah. Semua masih malu-malu, tak ada yang berani tambah.',
+          'Kedai kopi depan kampus – Kopi O ketiga minggu tu. Assignment belum mula, cerita dah sampai ke mana-mana.',
           'Jalan TAR, Disember 2020 – Katanya nak tengok-tengok je. Balik bawa tiga beg plastik.',
           'Pantai Cenang, 2021 – Payung kita terbang, kita yang lari kejar. Gambar semua kabur, tapi aku suka.',
           'Port Dickson, 2022 – Sesat dua jam, tapi dapat tengok matahari terbenam. Korang kata memang plan.',
-          'Cameron Highlands, Jun 2023 – Percutian yang dirancang dua tahun. Sejuk gila, tapi tak ada yang nak tidur dulu.',
+          'Bromo, Jun 2023 – Percutian yang dirancang dua tahun. Sejuk gila, tapi tak ada yang nak tidur dulu.',
         ],
         message:
           'Empat tahun, satu dapur, dan rice cooker yang sampai sekarang tak tahu siapa punya.\n\nGambar-gambar ni sengaja aku cetak, sebab dalam galeri telefon semuanya tenggelam bawah screenshot assignment. Rupanya bila dipegang macam ni, rasanya lain.\n\nAku tak tahu nanti kita kerja kat bandar mana. Yang aku tahu, group ni jangan sampai senyap.\n\nTerima kasih sebab jadi keluarga yang aku pilih sendiri.',
@@ -97,12 +97,12 @@ export const meta: TemplateMeta = {
         from: 'Chloe',
         title: 'Thank you for everything.',
         notes: [
-          'Our first flat, August 2019 – Moving-in day. Everyone on their best behaviour, nobody dared borrow slippers yet.',
+          'Satay outside our first flat, August 2019 – Moving-in night. Best behaviour all round, nobody dared order seconds.',
           'The café by campus – Third coffee that week. The essay hadn’t started, the gossip had.',
-          'Camden Market, December 2020 – “Just looking,” you said. We came home with three bags.',
-          'Brighton, summer 2021 – Our umbrella flew off and we all chased it. Every photo is blurry. I love them.',
+          'The old town, December 2020 – “Just looking,” you said. We came home with three bags.',
+          'The beach, summer 2021 – Our umbrella flew off and we all chased it. Every photo is blurry. I love them.',
           'The coast road, 2022 – Two hours lost, one perfect sunset. You all swore it was the plan.',
-          'The Highlands, June 2023 – The trip we planned for two years. Freezing, and still nobody wanted to sleep first.',
+          'Bromo, June 2023 – The trip we planned for two years. Freezing, and still nobody wanted to sleep first.',
         ],
         message:
           "Four years, one kitchen, and a rice cooker nobody remembers buying.\n\nI printed these on purpose, because on my phone they're buried under screenshots of assignments. Holding them like this feels different.\n\nI don't know which cities we'll end up working in. All I know is this group chat can never go quiet.\n\nThank you for being the family I got to choose.",

@@ -29,15 +29,15 @@ export const meta: TemplateMeta = {
     from: 'Sasa',
     title: 'Sampai ketemu, ya.',
     notes: [
+      'Semoga pesawatmu nanti nggak delay, dan kamu dapat kursi dekat jendela.',
       'Semoga kos barumu nggak bocor lagi kalau hujan, dan ibu kosnya tetap baik.',
       'Semoga kerjaanmu di sana lancar, dan bosmu berhenti telepon jam sepuluh malam.',
-      'Semoga sinyalnya bagus tiap video call, biar mukamu nggak beku pas lagi ketawa.',
-      'Semoga kamu nggak lupa makan. Mie instan nggak dihitung.',
+      'Semoga kamu nggak lupa makan. Nasi kotak rapat boleh, mie instan nggak dihitung.',
       'Semoga pulangmu nanti lebih lama dari dua hari, dan kita sempat ke pantai lagi.',
     ],
     message:
       'Di sini sudah malam, di sana baru sore. Lucu ya, kita lihat langit yang sama tapi jamnya beda.\n\nAku nggak minta kamu cepat pulang. Aku cuma mau kamu tahu: tiap kamu capek, ada yang nungguin kabarmu di sini.\n\nLampion-lampion tadi sudah terbang semua. Harapan yang paling besar aku simpan, biar aku bilang langsung pas kita ketemu.',
-    photos: ['/art/foto-kota.webp', '/art/foto-kopi.webp', '/art/foto-senja.webp', '/art/foto-taman.webp', '/art/foto-pantai.webp'],
+    photos: ['/contoh/jendela-pesawat.webp', '/contoh/hujan-jendela.webp', '/contoh/jakarta-malam.webp', '/contoh/nasi-kotak.webp', '/contoh/pantai-pasir.webp'],
   },
   i18n: {
     ms: {
@@ -57,15 +57,15 @@ export const meta: TemplateMeta = {
         from: 'Nurul',
         title: 'Jumpa lagi, ya.',
         notes: [
+          'Semoga flight awak nanti tak delay, dan awak dapat tempat duduk tepi tingkap.',
           'Semoga bilik sewa baru awak tak bocor lagi bila hujan, dan tuan rumahnya kekal baik.',
           'Semoga kerja awak kat sana lancar, dan bos awak berhenti telefon pukul sepuluh malam.',
-          'Semoga line elok setiap kali video call, supaya muka awak tak beku masa tengah gelak.',
-          'Semoga awak tak lupa makan. Maggi tak dikira.',
+          'Semoga awak tak lupa makan. Nasi kotak mesyuarat pun boleh, Maggi tak dikira.',
           'Semoga nanti awak balik lebih lama dari dua hari, dan kita sempat ke pantai lagi.',
         ],
         message:
           'Kat sini dah malam, kat sana baru petang. Kelakar kan, kita tengok langit yang sama tapi jamnya lain.\n\nAku tak minta awak cepat balik. Aku cuma nak awak tahu: setiap kali awak penat, ada orang yang tunggu khabar awak kat sini.\n\nTanglung-tanglung tadi dah terbang semua. Harapan yang paling besar aku simpan, biar aku cakap sendiri bila kita jumpa.',
-        photos: ['/art/foto-kota.webp', '/art/foto-kopi.webp', '/art/foto-senja.webp', '/art/foto-taman.webp', '/art/foto-pantai.webp'],
+        photos: ['/contoh/jendela-pesawat.webp', '/contoh/hujan-jendela.webp', '/contoh/jakarta-malam.webp', '/contoh/nasi-kotak.webp', '/contoh/pantai-pasir.webp'],
       },
     },
     en: {
@@ -85,15 +85,15 @@ export const meta: TemplateMeta = {
         from: 'Sophie',
         title: 'See you soon, okay?',
         notes: [
+          'I hope your flight leaves on time, and you get the window seat.',
           'I hope your new place stops leaking when it rains, and your landlord stays kind.',
           'I hope work goes well over there, and your boss stops calling at ten at night.',
-          'I hope the signal holds on every video call, so your face doesn’t freeze mid-laugh.',
-          'I hope you remember to eat. Instant noodles don’t count.',
+          'I hope you remember to eat. Office lunch boxes count, instant noodles don’t.',
           'I hope your next visit lasts longer than two days, and we make it to the beach again.',
         ],
         message:
           'It’s already night here, and still afternoon where you are. Funny, isn’t it? Same sky, different clocks.\n\nI’m not asking you to hurry home. I just want you to know: whenever you’re tired, someone here is waiting to hear from you.\n\nThe lanterns are all up there now. I kept the biggest wish to myself, so I can tell you in person when we meet.',
-        photos: ['/art/foto-kota.webp', '/art/foto-kopi.webp', '/art/foto-senja.webp', '/art/foto-taman.webp', '/art/foto-pantai.webp'],
+        photos: ['/contoh/jendela-pesawat.webp', '/contoh/hujan-jendela.webp', '/contoh/jakarta-malam.webp', '/contoh/nasi-kotak.webp', '/contoh/pantai-pasir.webp'],
       },
     },
   },
