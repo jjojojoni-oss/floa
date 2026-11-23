@@ -6,10 +6,11 @@ import {
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
-import { Finale, Hint, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
+import { Finale, Hint, Sprite, Stage, TapCue, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
 import { TEXT } from './i18n';
@@ -130,6 +131,9 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const kbd = useRef(false);
   const noteRef = useRef<HTMLButtonElement>(null);
   const cardRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const bandRef = useRef<HTMLButtonElement>(null);
+  /** foto teratas saat ini, untuk penunjuk sentuh */
+  const topRef = useMemo(() => ({ get current() { return cardRefs.current[idx] ?? null; } }), [idx]);
   const later = useTimers();
   const ready = useArtReady(ART);
 
@@ -441,6 +445,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               {total > 1 ? <span className={s.slipPs}>{t.slipPs}</span> : null}
             </span>
             <button
+              ref={bandRef}
               type="button"
               className={cx(s.band, !tied && s.bandGone)}
               onClick={(e) => {
@@ -468,6 +473,11 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       </div>
 
       {hint ? <Hint key={hintKey}>{hint}</Hint> : null}
+
+      {/* penunjuk sentuh kalau penerima diam: karet → foto teratas → surat */}
+      <TapCue target={bandRef} show={tied} />
+      <TapCue target={topRef} show={!tied && !atLetter && !tugging} delay={3600} at={{ x: 0.5, y: 0.45 }} />
+      <TapCue target={noteRef} show={atLetter && !finale && total > 0} />
 
       {finale ? (
         <Finale

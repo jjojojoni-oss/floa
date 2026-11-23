@@ -429,6 +429,7 @@
 }
 
 .cta {
+  min-height: max(3.3em, 46px);
   position: relative;
   margin-top: 1em;
   padding: 0.95em 1.7em;
@@ -722,7 +723,8 @@
 }
 .ghost {
   margin-top: 0.7em;
-  padding: 0.75em 1.4em;
+  min-height: max(3.25em, 46px);
+  padding: 0.85em 1.5em;
   border-radius: 99em;
   background: rgba(255, 250, 246, 0.85);
   color: var(--ink);
