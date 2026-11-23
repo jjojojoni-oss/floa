@@ -224,11 +224,12 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     later(() => (moved.current = false), 80);
     const a = angles.current[d.leaf] ?? 0;
     const wasTurned = d.leaf < posRef.current;
-    let target = a > 90 ? 180 : 0;
+    // cukup seperempat jalan (40°) untuk membalik: geseran pelan dan pendek pun tetap jadi
+    let target = wasTurned ? (a < 140 ? 0 : 180) : a > 40 ? 180 : 0;
     // kibasan hanya dihitung kalau jari masih bergerak saat dilepas
     const v = performance.now() - d.lastT > 90 ? 0 : d.v;
-    if (v < -0.45) target = 180;
-    if (v > 0.45) target = 0;
+    if (v < -0.2) target = 180;
+    if (v > 0.2) target = 0;
     if (cancelled) target = wasTurned ? 180 : 0;
     animate(d.leaf, target);
     commit(target === 180 ? d.leaf + 1 : d.leaf);
