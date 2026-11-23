@@ -1,7 +1,7 @@
 'use client';
 
 import { type CSSProperties, type PointerEvent, useEffect, useRef, useState } from 'react';
-import { Confetti, Finale, Hint, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
+import { Confetti, Finale, Hint, Sprite, Stage, TapCue, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { useText } from './i18n';
 import { meta } from './meta';
@@ -63,6 +63,9 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const [burst, setBurst] = useState(0);
   const cap = useRef<HTMLButtonElement>(null);
   const card = useRef<HTMLButtonElement>(null);
+  const nextBtn = useRef<HTMLButtonElement>(null);
+  const rolled = useRef<HTMLButtonElement>(null);
+  const readBtn = useRef<HTMLButtonElement>(null);
   const drag = useRef<{ y: number; dy: number } | null>(null);
   const thrown = useRef(false);
   const skipClick = useRef(false);
@@ -293,6 +296,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
         {phase === 'scroll' || phase === 'open' ? (
           <button
+            ref={rolled}
             type="button"
             className={cx(s.rolled, phase === 'open' && s.gone)}
             onClick={openScroll}
@@ -380,7 +384,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
             <button type="button" className={cx(s.round, step === 0 && s.hidden)} onClick={() => go(-1)} aria-label={t.prev} tabIndex={step === 0 ? -1 : 0}>
               <span aria-hidden>←</span>
             </button>
-            <button type="button" className={s.cta} onClick={() => go(1)}>
+            <button ref={nextBtn} type="button" className={s.cta} onClick={() => go(1)}>
               {step === n - 1 ? t.arrive : t.next} <span aria-hidden>→</span>
             </button>
           </div>
@@ -388,6 +392,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
         {phase === 'open' ? (
           <button
+            ref={readBtn}
             type="button"
             className={cx(s.cta, s.ctaRead)}
             onClick={() => {
@@ -402,6 +407,13 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
       {phase === 'ready' && !leaving ? <Hint>{t.hintSwipe}</Hint> : null}
       {phase === 'scroll' ? <Hint>{t.hintTap}</Hint> : null}
+
+      {/* penunjuk sentuh kalau penerima diam, satu per tahap */}
+      <TapCue target={intro} show={phase === 'intro'} delay={4000} />
+      <TapCue target={nextBtn} show={phase === 'journey' && !leaving} delay={4200} />
+      <TapCue target={cap} show={phase === 'ready' && !leaving} kind="drag" dir={{ x: 0, y: -5 }} at={{ x: 0.5, y: 0.6 }} />
+      <TapCue target={rolled} show={phase === 'scroll'} />
+      <TapCue target={readBtn} show={phase === 'open' && !finale} delay={3800} />
 
       <Confetti burst={burst} colors={GOLD} origin={{ x: 0.5, y: 0.7 }} count={110} />
 

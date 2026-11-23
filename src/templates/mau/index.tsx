@@ -1,7 +1,7 @@
 'use client';
 
 import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Confetti, Finale, Hint, Petals, Sprite, Stage, Typewriter, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
+import { Confetti, Finale, Hint, Petals, Sprite, Stage, TapCue, Typewriter, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { HeartIcon, Pulse } from './art';
 import { drawDayCard } from './card';
@@ -53,6 +53,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const noRef = useRef<HTMLButtonElement>(null);
   const slotRef = useRef<HTMLSpanElement>(null);
   const askRef = useRef<HTMLDivElement>(null);
+  const ctaRef = useRef<HTMLButtonElement>(null);
   const triesRef = useRef(0);
   const lastTry = useRef(0);
   const later = useTimers();
@@ -357,6 +358,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         ) : day ? (
           <div className={s.dayActions}>
             <button
+              ref={ctaRef}
               type="button"
               className={s.cta}
               onClick={() => {
@@ -372,6 +374,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           </div>
         ) : yes ? (
           <button
+            ref={ctaRef}
             type="button"
             className={s.cta}
             onClick={() => {
@@ -417,6 +420,11 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
       {story && !breathing ? <Hint key={`hint${step}`}>{t.tapNext}</Hint> : null}
       {breathing && typed ? <Hint key="ready">{t.ready}</Hint> : null}
+
+      {/* penunjuk sentuh kalau penerima diam: layar mana saja (cerita) → tombol Mau → tombol berikutnya */}
+      <TapCue target={wrap} show={story && (typed || skip)} delay={3400} at={{ x: 0.5, y: 0.78 }} />
+      <TapCue target={mauRef} show={asking} delay={3200} />
+      <TapCue target={ctaRef} show={(yes && !finale) || (day && !finale)} delay={3400} />
 
       <Confetti
         burst={burst}
