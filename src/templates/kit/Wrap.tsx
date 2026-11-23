@@ -4,6 +4,7 @@ import { type CSSProperties, type PointerEvent as ReactPointerEvent, useEffect, 
 import { fmt } from '@/i18n/fmt';
 import type { GiftData } from '../types';
 import { Hint, Stage, cx, haptic, sfx, useArtReady, useKitText, useTimers } from './index';
+import { TapCue } from './TapCue';
 import s from './kit.module.css';
 
 type Phase = 'tied' | 'untie' | 'open' | 'card' | 'leave';
@@ -248,6 +249,9 @@ export function GiftWrap({
           {k.introSkip}
         </button>
       </div>
+      {/* penerima diam? tunjukkan: tarik pitanya ke bawah, lalu ketuk kartunya */}
+      <TapCue target={parcelRef} show={phase === 'tied'} kind="drag" dir={{ x: 0, y: 3.2 }} at={{ x: 0.5, y: 0.42 }} delay={2400} />
+      <TapCue target={cardRef} show={phase === 'card'} at={{ x: 0.84, y: 0.93 }} delay={2600} />
       {hint ? (
         <Hint key={hint}>
           {hint}

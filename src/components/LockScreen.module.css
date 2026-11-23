@@ -310,7 +310,8 @@
   color: #8a6a5a;
 }
 .demoKey {
-  padding: 0.28em 0.7em 0.3em;
+  position: relative;
+  padding: 0.42em 0.85em 0.44em;
   border-radius: 0.5em;
   font-family: var(--font-serif, Georgia, serif);
   font-variation-settings: 'SOFT' 100;
@@ -323,6 +324,11 @@
   cursor: pointer;
   transition: transform 0.1s ease;
   touch-action: manipulation;
+}
+.demoKey::before {
+  content: '';
+  position: absolute;
+  inset: -0.6em -0.5em;
 }
 .demoKey:active:not(:disabled) {
   transform: scale(0.95);

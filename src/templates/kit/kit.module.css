@@ -382,14 +382,17 @@
   }
 }
 .showAll {
+  position: relative;
   display: block;
   clear: both;
-  margin: 1.1em 0 0 auto;
-  font-size: 0.76em;
+  margin: 0.8em -0.6em 0 auto;
+  min-height: 3.4em;
+  padding: 0.9em 1.1em;
+  font-size: 0.8em;
   font-weight: 700;
   letter-spacing: 0.02em;
   color: inherit;
-  opacity: 0.5;
+  opacity: 0.62;
   text-decoration: underline;
   text-underline-offset: 0.2em;
   cursor: pointer;
@@ -558,7 +561,8 @@
   position: relative;
   min-width: 4.2em;
   max-width: 100%;
-  padding: 0.34em 0.85em 0.4em;
+  min-height: 2.05em;
+  padding: 0.4em 0.95em 0.46em;
   border-radius: 99em;
   font-family: var(--font-hand, cursive);
   font-size: 1.42em;
@@ -725,8 +729,9 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5em;
-  margin-top: 0.4em;
-  padding: 0.5em 1em;
+  margin-top: 0.3em;
+  min-height: 3.2em;
+  padding: 0.85em 1.3em;
   border-radius: 99em;
   font-size: 0.86em;
   font-weight: 700;
@@ -738,6 +743,8 @@
   display: inline-flex;
   align-items: center;
   gap: 0.45em;
+  min-height: 3.4em;
+  padding: 0.6em 1em;
   font-size: 0.8em;
   font-weight: 600;
   opacity: 0.7;
@@ -875,9 +882,10 @@
 }
 .openSkip {
   position: absolute;
-  right: 1.2em;
-  bottom: 2.4em;
-  padding: 0.4em 0.7em;
+  right: 0.8em;
+  bottom: 1.9em;
+  min-height: 3.6em;
+  padding: 0.9em 1.1em;
   font-size: 0.78em;
   font-weight: 700;
   color: color-mix(in srgb, var(--ink) 50%, transparent);
@@ -1466,10 +1474,11 @@
 }
 .wrapSkip {
   position: absolute;
-  right: 1.1em;
-  bottom: 1.2em;
+  right: 0.7em;
+  bottom: 0.9em;
   z-index: 31;
-  padding: 0.5em 0.8em;
+  min-height: 3.6em;
+  padding: 0.9em 1.1em;
   font-size: 0.78em;
   font-weight: 700;
   color: inherit;
