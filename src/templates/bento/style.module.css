@@ -744,7 +744,8 @@
 }
 .cardBtn {
   margin-top: 1em;
-  padding: 0.72em 1.5em;
+  min-height: max(3.3em, 46px);
+  padding: 0.72em 1.6em;
   border-radius: 99em;
   background: var(--accent);
   color: #fffaf2;

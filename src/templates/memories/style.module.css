@@ -403,6 +403,7 @@
   width: 3em;
   height: 4.19em;
   cursor: pointer;
+  composes: hit from '../kit/kit.module.css';
   outline-offset: 0.3em;
   transition: transform 0.15s ease;
 }
@@ -565,6 +566,7 @@
   color: #fff3dc;
   box-shadow: inset 0 0 0 1px rgba(255, 243, 220, 0.25), 0 0.3em 0.8em rgba(0, 0, 0, 0.4);
   cursor: pointer;
+  composes: hit from '../kit/kit.module.css';
   opacity: 0;
   transition: opacity 0.2s ease;
 }
@@ -591,8 +593,9 @@
   transition: opacity 0.35s ease 0.25s;
 }
 .nav {
-  width: 3em;
-  height: 3em;
+  position: relative;
+  width: 3.4em;
+  height: 3.4em;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -600,6 +603,7 @@
   box-shadow: inset 0 0 0 1px rgba(255, 243, 220, 0.32);
   color: inherit;
   cursor: pointer;
+  composes: hit from '../kit/kit.module.css';
 }
 .nav svg {
   width: 1.25em;
@@ -622,7 +626,7 @@
   font-weight: 800;
 }
 .toLetter {
-  height: 3.45em;
+  height: 3.8em;
   padding: 0 1.15em;
   border-radius: 99em;
   background: var(--accent);
