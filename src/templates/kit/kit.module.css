@@ -1524,3 +1524,14 @@
   inset: -1.6em;
   border-radius: inherit;
 }
+.wrapSkip::before,
+.openSkip::before,
+.showAll::before,
+.replay::before {
+  content: '';
+  position: absolute;
+  inset: -0.45em;
+}
+.replay {
+  position: relative;
+}
