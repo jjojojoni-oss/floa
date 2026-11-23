@@ -451,7 +451,7 @@ function PageFront({ page, n, from, t }: { page: Page; n: number; from: string; 
   ) : (
     <span className={cx(s.quote, page.cap.length > 30 && s.quoteLong)}>{page.cap}</span>
   );
-  const caption = blank ? (from ? `— ${from}` : '') : page.cap;
+  const caption = blank ? (from ? `—\u00a0${from}` : '') : page.cap;
 
   return (
     <div className={cx(s.pageBase, s.page, s[`v${v}`], alt && s.alt, blank && s.blankPage)} style={vars}>

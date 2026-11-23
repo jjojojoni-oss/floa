@@ -496,7 +496,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
             <Sprite name="bento-selotip" className={s.cardTape} />
             <Sprite name={ARR[actFood].mid[0][0]} className={s.cardFood} />
             <div className={s.cardEyebrow}>
-              {t.foods[actFood]} · {fmt(t.cardStep, { n: (active ?? 0) + 1, total: n })}
+              {t.foods[actFood]}
+              <span className={s.cardStep}>{fmt(t.cardStep, { n: (active ?? 0) + 1, total: n })}</span>
             </div>
             {act.photo ? (
               <span className={s.cardPhoto}>
