@@ -110,7 +110,7 @@ export function BouquetCard({
       </button>
 
       {phase === 'closed' ? <p className={s.hint}>{t.cardOpenHint}</p> : null}
-      <TapCue target={coverRef} show={phase === 'closed'} delay={2200} at={{ x: 0.5, y: 0.6 }} />
+      <TapCue target={coverRef} show={phase === 'closed'} delay={2200} at={{ x: 0.82, y: 0.3 }} />
       <TapCue target={readRef} show={phase === 'written'} delay={3500} />
     </div>
   );
