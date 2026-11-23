@@ -290,6 +290,8 @@ export const id = {
     reminder: 'Kado ini dikunci. Kata sandinya: {password}. Jangan lupa kasih tahu penerimanya.',
     reminderNoPass: 'Kado ini dikunci kata sandi. Jangan lupa kasih tahu penerimanya.',
     badge: 'Terkunci',
+    demoPass: 'Ini demo · kata sandinya {password}',
+    demoFill: 'Ketuk untuk mengisi',
   },
   qr: {
     title: 'QR kado',

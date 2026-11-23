@@ -292,6 +292,8 @@ export const en: Dict = {
     reminder: 'This gift is locked. The password is {password}. Don’t forget to tell your recipient.',
     reminderNoPass: 'This gift is password-locked. Don’t forget to tell your recipient.',
     badge: 'Locked',
+    demoPass: 'This is a demo · the password is {password}',
+    demoFill: 'Tap to fill it in',
   },
   qr: {
     title: 'Gift QR code',

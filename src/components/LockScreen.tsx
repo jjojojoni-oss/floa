@@ -19,7 +19,18 @@ const ART = ['kunci-gembok', 'kunci-sengkang'];
  * Kata sandi angka (mis. tanggal) diketik di papan angka; selain itu di kolom teks.
  * Isi kado baru diambil dari server setelah kata sandinya cocok.
  */
-export function LockScreen({ slug, lock, onOpen }: { slug: string; lock: Lock; onOpen: (d: GiftData) => void }) {
+export function LockScreen({
+  slug,
+  lock,
+  onOpen,
+  demo,
+}: {
+  slug: string;
+  lock: Lock;
+  onOpen: (d: GiftData) => void;
+  /** halaman demo: kata sandinya ditampilkan dan dicek di perangkat, tanpa server */
+  demo?: { password: string; data: GiftData };
+}) {
   const t = useT();
   const digits = lock.shape && /^d[3-8]$/.test(lock.shape) ? Number(lock.shape.slice(1)) : 0;
   const [value, setValue] = useState('');
@@ -56,7 +67,14 @@ export function LockScreen({ slug, lock, onOpen }: { slug: string; lock: Lock; o
       setPhase('checking');
       setError(null);
       try {
-        const r = await api<{ data: GiftData }>('/api/unlock', { method: 'POST', body: JSON.stringify({ slug, password }) });
+        const r = demo
+          ? await new Promise<{ data: GiftData }>((ok, no) =>
+              setTimeout(() => {
+                if (password.trim().toLowerCase() === demo.password.toLowerCase()) ok({ data: demo.data });
+                else no(new ApiError('wrong_password', '', 401));
+              }, 250),
+            )
+          : await api<{ data: GiftData }>('/api/unlock', { method: 'POST', body: JSON.stringify({ slug, password }) });
         // terbuka: sengkang terangkat, lalu layar memudar ke kadonya
         setPhase('opening');
         sfx.chime();
@@ -76,7 +94,7 @@ export function LockScreen({ slug, lock, onOpen }: { slug: string; lock: Lock; o
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [busy, slug, digits, onOpen, t],
+    [busy, slug, digits, onOpen, t, demo],
   );
 
   const press = useCallback(
@@ -141,6 +159,24 @@ export function LockScreen({ slug, lock, onOpen }: { slug: string; lock: Lock; o
           <p className={s.hint}>
             <span className={s.hintLabel}>{t.lock.hintLabel}:</span> {lock.hint}
           </p>
+        ) : null}
+
+        {demo ? (
+          <button
+            type="button"
+            className={s.demo}
+            disabled={busy}
+            onClick={() => {
+              if (busy) return;
+              sfx.tap();
+              setError(null);
+              setValue(demo.password);
+              later(() => submit(demo.password), digits ? 320 : 220);
+            }}
+          >
+            <span>{fmt(t.lock.demoPass, { password: demo.password })}</span>
+            <span className={s.demoFill}>{t.lock.demoFill}</span>
+          </button>
         ) : null}
 
         {digits ? (

@@ -805,3 +805,9 @@
     animation-iteration-count: 1;
   }
 }
+
+/* sisi segel menunggu di balik sisi alamat sampai amplop dibalik */
+.hidden {
+  visibility: hidden;
+  pointer-events: none;
+}

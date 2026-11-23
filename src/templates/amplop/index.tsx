@@ -267,9 +267,14 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                     <span className={cx(s.addrName, to.length > 11 && s.small)}>{to}</span>
                   </span>
                 </button>
-              ) : (
-                <div className={cx(s.back, opened && phase !== 'broken' && s.open, phase === 'out' && s.out)}>
-                  <Sprite name="amplop-belakang" className={cx(s.layer, s.inside)} />
+              ) : null}
+              {/* sisi segel sudah terpasang (tersembunyi) sejak awal, supaya lukisannya sudah siap
+                  saat amplop dibalik dan tidak muncul lapis demi lapis */}
+              <div
+                className={cx(s.back, showFront && s.hidden, opened && phase !== 'broken' && s.open, phase === 'out' && s.out)}
+                aria-hidden={showFront || undefined}
+              >
+                  <Sprite decoding="sync" name="amplop-belakang" className={cx(s.layer, s.inside)} />
                   {peekPhotos.map((src, i) => (
                     <span key={src + i} className={cx(s.peek, i === 0 ? s.peek1 : s.peek2)}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -303,10 +308,10 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                       <span className={s.stickTop} />
                     </button>
                   ) : null}
-                  <Sprite name="amplop-kantong" className={cx(s.layer, s.pocket)} />
+                  <Sprite decoding="sync" name="amplop-kantong" className={cx(s.layer, s.pocket)} />
                   <div className={s.flap}>
-                    <Sprite name="amplop-tutup" className={cx(s.layer, s.flapOut)} />
-                    <Sprite name="amplop-tutup-dalam" className={cx(s.layer, s.flapIn)} />
+                    <Sprite decoding="sync" name="amplop-tutup" className={cx(s.layer, s.flapOut)} />
+                    <Sprite decoding="sync" name="amplop-tutup-dalam" className={cx(s.layer, s.flapIn)} />
                   </div>
 
                   <div className={s.sealWrap} onClick={tapSeal}>
@@ -319,7 +324,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                         className={s.sealBtn}
                       >
                         <span className={cx(s.sealIn, hold > 0 && s.shaking)}>
-                          <Sprite name="amplop-segel" className={s.sealImg} />
+                          <Sprite decoding="sync" name="amplop-segel" className={s.sealImg} />
                           <span className={s.mono}>{mono}</span>
                           <Sprite
                             name="amplop-retak"
@@ -341,8 +346,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                       </>
                     ) : null}
                   </div>
-                </div>
-              )}
+              </div>
             </div>
           </div>
         </div>

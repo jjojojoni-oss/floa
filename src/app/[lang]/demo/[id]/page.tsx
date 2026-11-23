@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { DemoView } from '@/components/DemoView';
 import { GiftFrame } from '@/components/GiftFrame';
 import { LOCALES } from '@/i18n/config';
 import { dictOf } from '@/i18n/server';
-import { TemplatePlayer } from '@/templates/Player';
+import { demoExtras } from '@/lib/demo';
 import { TEMPLATES, getTemplate } from '@/templates/registry';
 
 export function generateStaticParams() {
@@ -25,6 +26,7 @@ export default async function DemoPage({ params }: P) {
   const { locale, t: d } = await dictOf(params);
   const t = getTemplate(id, locale);
   if (!t) notFound();
+  const extra = demoExtras(t.id, locale);
 
   return (
     <GiftFrame
@@ -44,7 +46,7 @@ export default async function DemoPage({ params }: P) {
         </div>
       }
     >
-      <TemplatePlayer id={t.id} data={t.sample} mode="demo" />
+      <DemoView id={t.id} data={t.sample} lock={extra?.lock ?? null} music={extra?.music ?? null} />
     </GiftFrame>
   );
 }

@@ -250,9 +250,9 @@ export function backdropUrl(name: string) {
 }
 
 /** Satu potong lukisan dari public/art (bunga, daun, benda). Ukuran & posisi lewat className/style. */
-export function Sprite({ name, className, style }: { name: string; className?: string; style?: CSSProperties }) {
+export function Sprite({ name, className, style, decoding = 'async' }: { name: string; className?: string; style?: CSSProperties; decoding?: 'sync' | 'async' }) {
   // eslint-disable-next-line @next/next/no-img-element
-  return <img src={`/art/${name}.webp`} alt="" draggable={false} decoding="async" className={cx(s.sprite, className)} style={style} />;
+  return <img src={`/art/${name}.webp`} alt="" draggable={false} decoding={decoding} className={cx(s.sprite, className)} style={style} />;
 }
 
 /**
@@ -270,21 +270,19 @@ export function useArtReady(names: string[], timeoutMs = 2500) {
       if (left <= 0 && alive) setReady(true);
     };
     if (!left) setReady(true);
+    // decode(), bukan sekadar onload: lukisan sudah siap digambar, jadi lapisan yang baru dipasang
+    // (mis. sisi amplop yang dibalik) tidak berkedip kosong sesaat
     const imgs = names.map((n) => {
       const im = new Image();
-      im.onload = done;
-      im.onerror = done;
       im.src = n.startsWith('/') ? n : `/art/${n}.webp`;
+      im.decode().then(done, done);
       return im;
     });
     const t = setTimeout(() => alive && setReady(true), timeoutMs);
     return () => {
       alive = false;
       clearTimeout(t);
-      imgs.forEach((im) => {
-        im.onload = null;
-        im.onerror = null;
-      });
+      imgs.length = 0;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, timeoutMs]);
