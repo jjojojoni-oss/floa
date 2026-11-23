@@ -1,9 +1,9 @@
 'use client';
 
-import { type CSSProperties, type FormEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { type FormEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { fmt, useT } from '@/i18n/client';
 import { ApiError, api, errorText } from '@/lib/client';
-import { Confetti, haptic, sfx } from '@/templates/kit';
+import { haptic, sfx } from '@/templates/kit';
 import type { GiftData } from '@/templates/types';
 import s from './LockScreen.module.css';
 
@@ -12,10 +12,10 @@ export type Lock = { hint: string | null; to: string; from: string; shape?: stri
 type Phase = 'idle' | 'checking' | 'wrong' | 'opening';
 
 const art = (name: string) => `/art/${name}.webp`;
-const ART = ['bg-kunci', 'kunci-pita', 'kunci-gembok', 'kunci-sengkang', 'kunci-anak', 'bunga-melati'];
+const ART = ['kunci-gembok', 'kunci-sengkang'];
 
 /**
- * Layar kunci kado: gembok kuningan berukir kawung yang tergantung di pita beludru, di atas kain sutra.
+ * Layar kunci kado: kertas krem yang tenang dengan satu gembok kuningan kecil berukir kawung.
  * Kata sandi angka (mis. tanggal) diketik di papan angka; selain itu di kolom teks.
  * Isi kado baru diambil dari server setelah kata sandinya cocok.
  */
@@ -25,8 +25,6 @@ export function LockScreen({ slug, lock, onOpen }: { slug: string; lock: Lock; o
   const [value, setValue] = useState('');
   const [phase, setPhase] = useState<Phase>('idle');
   const [error, setError] = useState<string | null>(null);
-  const [misses, setMisses] = useState(0);
-  const [burst, setBurst] = useState(0);
   const [ready, setReady] = useState(false);
   const textRef = useRef<HTMLInputElement>(null);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -42,7 +40,7 @@ export function LockScreen({ slug, lock, onOpen }: { slug: string; lock: Lock; o
       im.src = art(n);
       return im;
     });
-    const fallback = setTimeout(() => setReady(true), 2500);
+    const fallback = setTimeout(() => setReady(true), 2000);
     return () => {
       clearTimeout(fallback);
       imgs.forEach((im) => (im.onload = im.onerror = null));
@@ -50,63 +48,58 @@ export function LockScreen({ slug, lock, onOpen }: { slug: string; lock: Lock; o
     };
   }, []);
 
+  const busy = phase === 'checking' || phase === 'opening';
+
   const submit = useCallback(
     async (password: string) => {
-      if (!password.trim() || phase === 'checking' || phase === 'opening') return;
+      if (!password.trim() || busy) return;
       setPhase('checking');
       setError(null);
       try {
         const r = await api<{ data: GiftData }>('/api/unlock', { method: 'POST', body: JSON.stringify({ slug, password }) });
-        // terbuka: anak kunci masuk & berputar, sengkang terangkat, lalu kadonya muncul
+        // terbuka: sengkang terangkat, lalu layar memudar ke kadonya
         setPhase('opening');
         sfx.chime();
         haptic(20);
         const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        later(() => {
-          sfx.success();
-          setBurst((b) => b + 1);
-        }, reduce ? 100 : 900);
-        later(() => onOpen(r.data), reduce ? 400 : 1900);
+        later(() => onOpen(r.data), reduce ? 200 : 1100);
       } catch (e) {
         const wrong = e instanceof ApiError && e.code === 'wrong_password';
         setError(wrong ? t.lock.wrong : errorText(e, t));
-        setMisses((m) => m + 1);
         setPhase('wrong');
-        sfx.crack();
-        haptic(60);
+        haptic(50);
         later(() => {
           setPhase('idle');
           if (digits) setValue('');
           textRef.current?.focus();
-        }, 650);
+        }, 500);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [phase, slug, digits, onOpen, t],
+    [busy, slug, digits, onOpen, t],
   );
 
   const press = useCallback(
     (d: string) => {
-      if (phase === 'checking' || phase === 'opening') return;
+      if (busy) return;
       sfx.tap();
-      haptic(8);
+      haptic(6);
       setError(null);
       setValue((v) => {
         if (v.length >= digits) return v;
         const next = v + d;
-        if (next.length === digits) later(() => submit(next), 160);
+        if (next.length === digits) later(() => submit(next), 140);
         return next;
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [phase, digits, submit],
+    [busy, digits, submit],
   );
 
   const erase = useCallback(() => {
-    if (phase === 'checking' || phase === 'opening') return;
-    sfx.tap();
+    if (busy) return;
     setValue((v) => v.slice(0, -1));
-  }, [phase]);
+  }, [busy]);
 
   // papan ketik fisik juga bisa dipakai di mode angka
   useEffect(() => {
@@ -127,70 +120,55 @@ export function LockScreen({ slug, lock, onOpen }: { slug: string; lock: Lock; o
     void submit(value);
   };
 
-  const busy = phase === 'checking';
   const name = lock.to || t.lock.you;
+  const cls = (...c: Array<string | false | null | undefined>) => c.filter(Boolean).join(' ');
 
   return (
-    <div className={[s.root, ready && s.ready, phase === 'opening' && s.opening].filter(Boolean).join(' ')}>
-      <div className={s.bg} style={{ backgroundImage: `url(${art('bg-kunci')})` }} aria-hidden />
-      <div className={s.grain} aria-hidden />
-
+    <div className={cls(s.root, ready && s.ready, phase === 'opening' && s.opening)}>
       <div className={s.inner}>
-        {/* gembok tergantung di pita */}
-        <div className={s.hang} aria-hidden>
-          <div className={[s.swing, phase === 'wrong' && s.rattle].filter(Boolean).join(' ')}>
-            {/* eslint-disable @next/next/no-img-element */}
-            <img src={art('kunci-sengkang')} alt="" className={s.shackle} draggable={false} />
-            <img src={art('kunci-pita')} alt="" className={s.ribbon} draggable={false} />
-            <img src={art('kunci-gembok')} alt="" className={s.body} draggable={false} />
-          </div>
-          <img src={art('kunci-anak')} alt="" className={s.key} draggable={false} />
+        <div className={cls(s.lock, phase === 'wrong' && s.rattle)} aria-hidden>
+          {/* eslint-disable @next/next/no-img-element */}
+          <img src={art('kunci-sengkang')} alt="" className={s.shackle} draggable={false} />
+          <img src={art('kunci-gembok')} alt="" className={s.body} draggable={false} />
           {/* eslint-enable @next/next/no-img-element */}
         </div>
 
-        <div className={s.copy}>
-          <p className={s.eyebrow}>{t.lock.eyebrow}</p>
-          <h1 className={[s.name, name.length > 12 && s.long].filter(Boolean).join(' ')}>{name}</h1>
-          <p className={s.tease}>{lock.from ? fmt(t.lock.tease, { from: lock.from }) : t.lock.teaseAnon}</p>
-        </div>
+        <p className={s.eyebrow}>{t.lock.eyebrow}</p>
+        <h1 className={cls(s.name, name.length > 12 && s.long)}>{name}</h1>
+        <p className={s.tease}>{lock.from ? fmt(t.lock.tease, { from: lock.from }) : t.lock.teaseAnon}</p>
 
         {lock.hint ? (
-          <p className={[s.hint, misses >= 2 && s.nudge].filter(Boolean).join(' ')}>
-            <span className={s.hintLabel}>{t.lock.hintLabel}</span>
-            <span className={s.hintText}>{lock.hint}</span>
+          <p className={s.hint}>
+            <span className={s.hintLabel}>{t.lock.hintLabel}:</span> {lock.hint}
           </p>
         ) : null}
-
-        <p className={[s.ask, error && s.err].filter(Boolean).join(' ')} role={error ? 'alert' : undefined}>
-          {error ?? (digits ? fmt(t.lock.askDigits, { n: digits }) : t.lock.askText)}
-        </p>
 
         {digits ? (
           <>
             <div
-              className={[s.slots, phase === 'wrong' && s.shake, busy && s.pulse].filter(Boolean).join(' ')}
+              className={cls(s.slots, phase === 'wrong' && s.shake)}
               role="status"
               aria-label={fmt(t.lock.progress, { k: value.length, n: digits })}
             >
               {Array.from({ length: digits }, (_, i) => (
-                <span key={i} className={[s.slot, i < value.length && s.filled].filter(Boolean).join(' ')}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  {i < value.length ? <img src={art('bunga-melati')} alt="" draggable={false} style={{ '--r': `${(i * 47) % 60 - 30}deg` } as CSSProperties} /> : null}
-                </span>
+                <span key={i} className={cls(s.slot, i < value.length && s.filled)} />
               ))}
             </div>
+            <p className={cls(s.msg, error && s.err)} role={error ? 'alert' : undefined}>
+              {error ?? fmt(t.lock.askDigits, { n: digits })}
+            </p>
             <div className={s.pad}>
               {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((d) => (
-                <button key={d} type="button" className={s.keyBtn} onClick={() => press(d)} aria-label={fmt(t.lock.digit, { d })} disabled={busy || phase === 'opening'}>
+                <button key={d} type="button" className={s.key} onClick={() => press(d)} aria-label={fmt(t.lock.digit, { d })} disabled={busy}>
                   {d}
                 </button>
               ))}
               <span />
-              <button type="button" className={s.keyBtn} onClick={() => press('0')} aria-label={fmt(t.lock.digit, { d: '0' })} disabled={busy || phase === 'opening'}>
+              <button type="button" className={s.key} onClick={() => press('0')} aria-label={fmt(t.lock.digit, { d: '0' })} disabled={busy}>
                 0
               </button>
-              <button type="button" className={[s.keyBtn, s.del].join(' ')} onClick={erase} aria-label={t.lock.del} disabled={!value || busy || phase === 'opening'}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+              <button type="button" className={cls(s.key, s.del)} onClick={erase} aria-label={t.lock.del} disabled={!value || busy}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                   <path d="M9 5h10a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-6-7z" />
                   <path d="M12.5 9.5l5 5m0-5l-5 5" />
                 </svg>
@@ -198,7 +176,7 @@ export function LockScreen({ slug, lock, onOpen }: { slug: string; lock: Lock; o
             </div>
           </>
         ) : (
-          <form onSubmit={onText} className={[s.textForm, phase === 'wrong' && s.shake].filter(Boolean).join(' ')}>
+          <form onSubmit={onText} className={cls(s.form, phase === 'wrong' && s.shake)}>
             <label htmlFor="gift-pass" className="sr-only">
               {t.lock.input}
             </label>
@@ -218,17 +196,17 @@ export function LockScreen({ slug, lock, onOpen }: { slug: string; lock: Lock; o
               enterKeyHint="go"
               maxLength={60}
               placeholder={t.lock.input}
-              className={s.textInput}
+              className={s.input}
             />
-            <button type="submit" className={s.openBtn} disabled={busy || phase === 'opening' || !value.trim()}>
-              {busy || phase === 'opening' ? t.lock.opening : t.lock.open}
+            <p className={cls(s.msg, error && s.err)} role={error ? 'alert' : undefined}>
+              {error ?? t.lock.askText}
+            </p>
+            <button type="submit" className={s.open} disabled={busy || !value.trim()}>
+              {busy ? t.lock.opening : t.lock.open}
             </button>
           </form>
         )}
       </div>
-
-      <div className={s.flash} aria-hidden />
-      <Confetti burst={burst} origin={{ x: 0.5, y: 0.22 }} colors={['#f1d58a', '#fff4cc', '#c99a3e', '#ffffff', '#f6c9d0', '#7a1f31']} count={90} />
     </div>
   );
 }
