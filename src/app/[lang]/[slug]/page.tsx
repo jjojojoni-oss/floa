@@ -75,7 +75,7 @@ export default async function GiftPage({ params }: Props) {
           slug={slug}
           templateId={meta.id}
           data={locked ? null : gift.data}
-          lock={locked ? { hint: gift.passHint, to: gift.data.to, from: gift.data.from } : null}
+          lock={locked ? { hint: gift.passHint, to: gift.data.to, from: gift.data.from, shape: gift.passShape } : null}
         />
       </div>
     </I18nProvider>

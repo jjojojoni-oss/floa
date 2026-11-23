@@ -29,6 +29,7 @@ type Row = {
   expires_at: string | null;
   pass_hash: string | null;
   pass_hint: string | null;
+  pass_shape: string | null;
 };
 
 const toGift = (r: Row): Gift => ({
@@ -51,6 +52,7 @@ const toGift = (r: Row): Gift => ({
   expiresAt: r.expires_at,
   passHash: r.pass_hash ?? null,
   passHint: r.pass_hint ?? null,
+  passShape: r.pass_shape ?? null,
 });
 
 function toRow(g: Partial<Gift>): Partial<Row> {
@@ -74,6 +76,7 @@ function toRow(g: Partial<Gift>): Partial<Row> {
   if (g.expiresAt !== undefined) r.expires_at = g.expiresAt;
   if (g.passHash !== undefined) r.pass_hash = g.passHash;
   if (g.passHint !== undefined) r.pass_hint = g.passHint;
+  if (g.passShape !== undefined) r.pass_shape = g.passShape;
   return r;
 }
 

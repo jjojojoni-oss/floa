@@ -28,6 +28,8 @@ alter table public.gifts add column if not exists pay_expires_at timestamptz;
 -- Kunci kata sandi (opsional): hanya hash scrypt yang disimpan, petunjuknya terlihat publik.
 alter table public.gifts add column if not exists pass_hash text;
 alter table public.gifts add column if not exists pass_hint text;
+-- bentuk kata sandi untuk layar kunci ('d6' = 6 angka), tanpa membocorkan isinya
+alter table public.gifts add column if not exists pass_shape text;
 
 alter table public.gifts add column if not exists lang text not null default 'id' check (lang in ('id', 'ms', 'en'));
 

@@ -34,6 +34,11 @@ const id = {
   openLetter: 'Buka suratnya',
   finale: 'Surat hari ini',
   finaleCount: 'ditulis di hari ke-{n}',
+  unitDays: 'hari',
+  unitYear: 'tahun',
+  unitYears: 'tahun',
+  markDays: '{n} hari',
+  markYears: '{n} tahun',
 };
 
 export const TEXT: Record<Locale, typeof id> = {
@@ -68,6 +73,11 @@ export const TEXT: Record<Locale, typeof id> = {
     openLetter: 'Buka suratnya',
     finale: 'Surat hari ini',
     finaleCount: 'ditulis pada hari ke-{n}',
+    unitDays: 'hari',
+    unitYear: 'tahun',
+    unitYears: 'tahun',
+    markDays: '{n} hari',
+    markYears: '{n} tahun',
   },
   en: {
     you: 'you',
@@ -99,5 +109,10 @@ export const TEXT: Record<Locale, typeof id> = {
     openLetter: 'Open the letter',
     finale: "Today's letter",
     finaleCount: 'written on day {n}',
+    unitDays: 'days',
+    unitYear: 'year',
+    unitYears: 'years',
+    markDays: '{n} days',
+    markYears: '{n} years',
   },
 };
