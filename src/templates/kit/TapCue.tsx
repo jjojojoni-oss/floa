@@ -7,8 +7,9 @@ type Kind = 'tap' | 'hold' | 'drag';
 
 /**
  * Penunjuk "sentuh di sini": cincin berdenyut + tangan kecil tepat di atas objek yang harus disentuh.
- * Muncul hanya kalau penerima diam `delay` ms (tidak menyentuh layar) selama `show` benar, dan hilang
- * begitu layar disentuh. Tidak menangkap ketukan (pointer-events: none).
+ * Muncul hanya kalau penerima diam `delay` ms (tidak menyentuh layar) selama `show` benar, dan hanya
+ * SEKALI: setelah tampil ±2 gerakan (atau setelah layar disentuh), ia pergi dan tidak kembali lagi
+ * untuk komponen ini. Tidak menangkap ketukan (pointer-events: none).
  *
  * Pasang di dalam Stage, di mana saja: posisinya dihitung dari kotak `target` setiap 250 ms,
  * jadi tetap menempel walau objeknya bergerak.
@@ -35,6 +36,9 @@ export function TapCue({
 }) {
   const self = useRef<HTMLDivElement>(null);
   const [idle, setIdle] = useState(false);
+  /** sudah pernah tampil lalu selesai: jangan muncul lagi */
+  const [done, setDone] = useState(false);
+  const seen = useRef(false);
   const [pos, setPos] = useState<{ x: number; y: number; r: number } | null>(null);
 
   // diam berapa lama?
@@ -45,6 +49,7 @@ export function TapCue({
     }
     let t: ReturnType<typeof setTimeout>;
     const arm = () => {
+      if (seen.current) setDone(true);
       setIdle(false);
       clearTimeout(t);
       t = setTimeout(() => setIdle(true), delay);
@@ -77,7 +82,15 @@ export function TapCue({
     return () => clearInterval(i);
   }, [show, idle, target, at.x, at.y]);
 
-  const on = show && idle && pos;
+  const on = show && idle && !!pos && !done;
+
+  // tampil sebentar (±2 gerakan), lalu pergi untuk selamanya
+  useEffect(() => {
+    if (!on) return;
+    seen.current = true;
+    const t = setTimeout(() => setDone(true), kind === 'hold' ? 4800 : 3700);
+    return () => clearTimeout(t);
+  }, [on, kind]);
   return (
     <div
       ref={self}
@@ -88,7 +101,7 @@ export function TapCue({
           ? ({
               left: pos.x,
               top: pos.y,
-              '--ring': `${Math.max(48, Math.min(pos.r * 0.9, 120))}px`,
+              '--ring': `${Math.max(40, Math.min(pos.r * 0.7, 84))}px`,
               '--dx': `${dir.x}em`,
               '--dy': `${dir.y}em`,
             } as CSSProperties)

@@ -35,7 +35,7 @@ const DEMO: Record<string, DemoExtra> = {
     hint: { id: 'Pesananku di kencan pertama kita', ms: 'Pesanan aku masa janji temu pertama', en: 'What I ordered on our first date' },
   },
   polaroid: {
-    song: { id: '2ajR6hbGoTWY6HBTlWNmKL', title: 'fine today', artist: 'Ardhito Pramono' },
+    song: { id: '6WUqv9T3RPTHHNKw0zVJuM', title: 'Sahabat Sejati', artist: 'Sheila On 7' },
     password: '2019',
     hint: { id: 'Tahun kita pertama ngekos bareng', ms: 'Tahun pertama kita menyewa bersama', en: 'The year we first moved in together' },
   },

@@ -1313,8 +1313,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 1.2em 1.1em;
+  justify-content: safe center;
+  overflow: hidden;
+  padding: 1em 1em;
   text-align: center;
   color: #3b2a22;
   cursor: pointer;
@@ -1362,7 +1363,7 @@
   max-width: 100%;
   font-family: var(--font-serif, Georgia, serif);
   font-variation-settings: 'SOFT' 100;
-  font-size: 2.35em;
+  font-size: 2.1em;
   font-weight: 600;
   line-height: 1.02;
   letter-spacing: -0.02em;
@@ -1383,8 +1384,8 @@
 .cardRule {
   position: relative;
   width: 9em;
-  height: 1.8em;
-  margin: 0.55em 0 0.35em;
+  height: 1.6em;
+  margin: 0.4em 0 0.25em;
   display: grid;
   place-items: center;
 }
@@ -1416,7 +1417,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  max-width: 14em;
+  max-width: 100%;
 }
 .cardItem {
   white-space: nowrap;
@@ -1445,7 +1446,7 @@
   transform: none;
 }
 .cardSlow {
-  margin-top: 0.9em;
+  margin-top: 0.7em;
   font-family: var(--font-hand, cursive);
   font-weight: 600;
   font-size: 1.12em;
@@ -1453,7 +1454,7 @@
   rotate: -3deg;
 }
 .cardStart {
-  margin-top: 1.5em;
+  margin-top: 1em;
   font-size: 0.7em;
   font-weight: 800;
   letter-spacing: 0.16em;

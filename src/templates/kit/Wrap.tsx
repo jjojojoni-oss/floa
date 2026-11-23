@@ -159,7 +159,7 @@ export function GiftWrap({
               aria-label={`${k.cardEyebrow} ${to || k.you}. ${contents.join(', ')}. ${k.cardStart}`}
             >
               <span className={s.cardEyebrow}>{k.cardEyebrow}</span>
-              <span className={cx(s.cardName, (to || k.you).length > 12 && s.long)}>{to || k.you}</span>
+              <span className={cx(s.cardName, (to || k.you).length > 9 && s.long)}>{to || k.you}</span>
               {from ? <span className={s.cardFrom}>{fmt(k.cardFrom, { from })}</span> : null}
               <span className={s.cardRule} aria-hidden>
                 <img src="/art/bunga-melati.webp" alt="" draggable={false} />
