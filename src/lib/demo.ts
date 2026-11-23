@@ -65,7 +65,7 @@ const DEMO: Record<string, DemoExtra> = {
     hint: { id: 'Hal yang paling sering kamu lupa', ms: 'Perkara yang paling kerap kamu lupa', en: 'The meal you always skip' },
   },
   scrapbook: {
-    song: { id: '3puYuuZ7lmlTjIgXBOT01k', title: 'Pilihanku', artist: "MALIQ & D'Essentials" },
+    song: { id: '754kgU5rWscRTfvlsuEwFp', title: 'Kiss Me', artist: 'Sixpence None The Richer' },
     password: '1406',
     hint: { id: 'Tanggal kita pertama ketemu (DDMM)', ms: 'Tarikh kita mula berjumpa (DDMM)', en: 'The day we first met (DDMM)' },
   },
