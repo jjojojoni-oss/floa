@@ -177,10 +177,12 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       const used = new Set(marks.map((m) => dayDiff(start, m.date)));
       const k = Math.max(0, Math.min(FILL_MAX, diff - 1 - marks.length));
       const flips: { at: number; mark: Milestone | null }[] = marks.map((m) => ({ at: dayDiff(start, m.date), mark: m }));
+      // lembar biasa tidak boleh menempel di dekat milestone (terasa seperti dobel)
+      const gap = Math.max(1, Math.floor(diff / (k + 1) / 2));
+      const near = (at: number) => marks.some((m) => Math.abs(dayDiff(start, m.date) - at) < gap);
       for (let i = 1; i <= k; i++) {
-        let at = Math.round((diff * i) / (k + 1));
-        while (used.has(at) && at < diff - 1) at += 1;
-        if (at <= 0 || at >= diff || used.has(at)) continue;
+        const at = Math.round((diff * i) / (k + 1));
+        if (at <= 0 || at >= diff || used.has(at) || near(at)) continue;
         used.add(at);
         flips.push({ at, mark: null });
       }
@@ -376,7 +378,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const pad = (n: number) => String(n).padStart(2, '0');
 
   const owner = from ? `${to} & ${from}` : to;
-  const markText = (m: Milestone) => fmt(m.kind === 'years' ? t.markYears : t.markDays, { n: num(m.n) });
+  const markText = (m: Milestone) => (m.kind === 'years' && m.n === 1 ? t.markYear : fmt(m.kind === 'years' ? t.markYears : t.markDays, { n: num(m.n) }));
 
   const openLetter = () => {
     if (finale) return;
@@ -423,8 +425,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         <span className={s.dow}>{dowFmt.format(sh.date)}</span>
         {sh.kind === 'first' ? <span className={s.scribble}>{t.firstDay}</span> : null}
         {today && el ? (
-          <span className={cx(s.scribble, s.late, arrived && s.shown)}>
-            {el.exact ? fmt(t.exact, { y: el.years }) : fmt(t.dayN, { n: num(dayShown || 1) })}
+          <span className={cx(s.scribble, s.late, sh.mark && s.withStamp, arrived && s.shown)}>
+            {el.exact ? (el.years === 1 ? t.exactOne : fmt(t.exact, { y: el.years })) : fmt(t.dayN, { n: num(dayShown || 1) })}
           </span>
         ) : null}
         {sh.mark ? stamp(sh.mark, today) : null}
@@ -502,8 +504,18 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   return (
     <div className={cx(s.wrap, ready && s.ready)}>
       <div className={s.head}>
-        <div className={s.eyebrow}>{fmt(t.headFor, { to })}</div>
-        {from ? <div className={s.from}>{fmt(t.headFrom, { from })}</div> : null}
+        {top.kind === 'flip' && start ? (
+          // selama rentetan: hitungan hari ikut berlari bersama lembar yang disobek
+          <div key="run" className={cx(s.runCount, top.mark && s.runMark)} aria-hidden>
+            <span>{fmt(t.dayN, { n: '' }).trim()}</span>
+            <b>{num(dayDiff(start, top.date) + 1)}</b>
+          </div>
+        ) : (
+          <div key="names">
+            <div className={s.eyebrow}>{fmt(t.headFor, { to })}</div>
+            {from ? <div className={s.from}>{fmt(t.headFrom, { from })}</div> : null}
+          </div>
+        )}
       </div>
 
       {/* cahaya hangat yang memancar dari balik kalender saat sampai di hari ini */}

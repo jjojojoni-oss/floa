@@ -45,6 +45,39 @@
   from { opacity: 0; transform: translateY(0.7em); }
   to { opacity: 1; transform: none; }
 }
+/* hitungan hari yang berlari selama rentetan sobekan */
+.runCount {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  animation: up 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.runCount span {
+  font-size: 0.7em;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.runCount b {
+  margin-top: 0.12em;
+  font-family: var(--font-serif, Georgia, serif);
+  font-variation-settings: 'SOFT' 0;
+  font-size: 2.1em;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums lining-nums;
+}
+.runMark b {
+  color: #c42a20;
+  animation: pulse 0.5s 0.12s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+@keyframes pulse {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
 
 /* ── kalender ── (tanpa transform/z-index supaya lembar yang jatuh bisa lewat di depan semuanya) */
 .cal {
@@ -337,6 +370,10 @@
   opacity: 0;
   transform: rotate(-3deg) scale(0.7);
 }
+.scribble.late.withStamp {
+  font-size: 1.36em;
+  margin-right: 3.6em;
+}
 .scribble.late.shown {
   opacity: 1;
   transform: rotate(-3deg) scale(1);
@@ -465,7 +502,7 @@
   font-variant-numeric: tabular-nums lining-nums;
   letter-spacing: -0.02em;
 }
-.tile span {
+.tile > span {
   margin-top: 0.32em;
   font-size: 0.54em;
   font-weight: 800;
@@ -478,7 +515,7 @@
   color: #fff3da;
   box-shadow: inset 0 0.08em 0 rgba(255, 220, 200, 0.35), inset 0 -0.1em 0 rgba(60, 8, 6, 0.3);
 }
-.tile.major span {
+.tile.major > span {
   opacity: 0.85;
 }
 .total {
@@ -591,8 +628,7 @@
   animation: slam 0.42s 0.12s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
 }
 .stampToday {
-  right: auto;
-  left: 0.2em;
+  right: 0.25em;
   bottom: 0.15em;
   width: 5.2em;
   height: 5.2em;
@@ -634,13 +670,13 @@
   border-radius: 50%;
 }
 .raysSpin {
-  background: repeating-conic-gradient(from 0deg, rgba(255, 238, 196, 0.55) 0deg 7deg, rgba(255, 238, 196, 0) 7deg 18deg);
-  -webkit-mask-image: radial-gradient(circle, #000 18%, rgba(0, 0, 0, 0.55) 38%, transparent 68%);
-  mask-image: radial-gradient(circle, #000 18%, rgba(0, 0, 0, 0.55) 38%, transparent 68%);
+  background: repeating-conic-gradient(from 0deg, rgba(255, 196, 96, 0.5) 0deg 6deg, rgba(255, 214, 140, 0) 6deg 15deg);
+  -webkit-mask-image: radial-gradient(circle, #000 22%, rgba(0, 0, 0, 0.6) 42%, transparent 70%);
+  mask-image: radial-gradient(circle, #000 22%, rgba(0, 0, 0, 0.6) 42%, transparent 70%);
   animation: spin 40s linear infinite;
 }
 .raysGlow {
-  background: radial-gradient(circle, rgba(255, 244, 214, 0.95) 0%, rgba(255, 226, 170, 0.5) 26%, rgba(255, 226, 170, 0) 60%);
+  background: radial-gradient(circle, rgba(255, 250, 230, 1) 0%, rgba(255, 214, 140, 0.62) 28%, rgba(255, 196, 110, 0.18) 46%, rgba(255, 196, 110, 0) 62%);
 }
 @keyframes spin {
   to { transform: rotate(360deg); }

@@ -15,6 +15,7 @@ const id = {
   today: 'hari ini',
   dayN: 'hari ke-{n}',
   exact: 'tepat {y} tahun!',
+  exactOne: 'tepat 1 tahun!',
   coverBand: 'kalender kita',
   coverTitle: 'Buat {to}',
   coverSub: 'sobek satu-satu ya',
@@ -39,6 +40,7 @@ const id = {
   unitYears: 'tahun',
   markDays: '{n} hari',
   markYears: '{n} tahun',
+  markYear: '1 tahun',
 };
 
 export const TEXT: Record<Locale, typeof id> = {
@@ -54,6 +56,7 @@ export const TEXT: Record<Locale, typeof id> = {
     today: 'hari ini',
     dayN: 'hari ke-{n}',
     exact: 'genap {y} tahun!',
+    exactOne: 'genap 1 tahun!',
     coverBand: 'kalendar kita',
     coverTitle: 'Buat {to}',
     coverSub: 'koyak satu-satu ya',
@@ -78,6 +81,7 @@ export const TEXT: Record<Locale, typeof id> = {
     unitYears: 'tahun',
     markDays: '{n} hari',
     markYears: '{n} tahun',
+    markYear: '1 tahun',
   },
   en: {
     you: 'you',
@@ -90,6 +94,7 @@ export const TEXT: Record<Locale, typeof id> = {
     today: 'today',
     dayN: 'day {n}',
     exact: 'exactly {y} years!',
+    exactOne: 'exactly 1 year!',
     coverBand: 'our calendar',
     coverTitle: 'For {to}',
     coverSub: 'tear them off one by one',
@@ -114,5 +119,6 @@ export const TEXT: Record<Locale, typeof id> = {
     unitYears: 'years',
     markDays: '{n} days',
     markYears: '{n} years',
+    markYear: '1 year',
   },
 };
