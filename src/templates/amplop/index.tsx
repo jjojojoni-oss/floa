@@ -1,7 +1,7 @@
 'use client';
 
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { Finale, Hint, HoldButton, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
+import { Finale, Hint, HoldButton, Sprite, Stage, TapCue, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
 import { type AmplopText, TEXT } from './i18n';
@@ -125,6 +125,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const [leaving, setLeaving] = useState(false);
   const broke = useRef(false);
   const nextRef = useRef<HTMLButtonElement>(null);
+  const frontRef = useRef<HTMLButtonElement>(null);
   const later = useTimers();
   const t = TEXT[useLocale()];
 
@@ -259,7 +260,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           <div className={cx(s.bob, !opened && s.floaty)}>
             <div className={cx(s.flip, side === 'turnOut' && s.turnOut, side === 'turnIn' && s.turnIn)}>
               {showFront ? (
-                <button type="button" className={s.front} onClick={flip} aria-label={t.flip}>
+                <button ref={frontRef} type="button" className={s.front} onClick={flip} aria-label={t.flip}>
                   <Sprite name="amplop-muka" className={s.face} />
                   {from ? <span className={s.sender}>{fmt(t.from, { from })}</span> : null}
                   <span className={s.addr}>
@@ -379,6 +380,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       </div>
 
       {side === 'front' ? <Hint>{t.hintTap}</Hint> : null}
+      <TapCue target={frontRef} show={side === 'front'} />
       {side === 'back' && phase === 'sealed' ? (
         <Hint key={taps > 0 ? 't' : 'h'}>
           {taps > 0 ? fmt(t.hintMore, { n: TAPS_TO_BREAK - taps }) : t.hintHold}

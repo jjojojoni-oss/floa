@@ -982,3 +982,4 @@ export function useTimers() {
     return id;
   }, []);
 }
+export { TapCue } from './TapCue';

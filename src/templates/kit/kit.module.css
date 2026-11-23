@@ -1499,3 +1499,19 @@
     transition-delay: 0s !important;
   }
 }
+
+/* ───────── Area sentuh diperbesar tanpa mengubah tampilan ─────────
+   Pakai: `composes: hit from '../kit/kit.module.css';` pada elemen yang sudah
+   position absolute/relative. Menambah ±0.9em ke segala arah (≈ 14px di HP). */
+.hit::before {
+  content: '';
+  position: absolute;
+  inset: -0.9em;
+  border-radius: inherit;
+}
+.hitLg::before {
+  content: '';
+  position: absolute;
+  inset: -1.6em;
+  border-radius: inherit;
+}
