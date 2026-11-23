@@ -1,6 +1,6 @@
 import type { Locale } from '@/i18n/config';
 
-/** Teks antarmuka template Amplop dalam tiga bahasa. {to}, {from}, {n} diisi lewat fmt(). */
+/** Teks antarmuka template Amplop dalam tiga bahasa. {to}, {from}, {n}, {i} diisi lewat fmt(). */
 const id = {
   you: 'kamu',
   letterFrom: 'sepucuk surat dari',
@@ -21,9 +21,31 @@ const id = {
   hintMore: 'Tahan lebih lama, atau ketuk {n}× lagi',
   hintHold: 'Tekan & tahan segelnya',
   finale: 'Surat untukmu',
+  /* selipan */
+  inside: 'ada {n} selipan di dalamnya',
+  oneByOne: 'Tarik satu per satu.',
+  itemOf: 'selipan {i} dari {n}',
+  pullNext: 'Tarik yang berikutnya.',
+  oneMore: 'satu lagi',
+  mostSpecial: 'yang paling spesial.',
+  specialTag: 'yang paling spesial',
+  andLast: 'dan terakhir,',
+  theLetter: 'suratnya.',
+  hintPull: 'Ketuk kertas yang menyembul',
+  pull: 'Tarik selipan {i} dari {n}',
+  next: 'Selipan berikutnya →',
+  toLetter: 'Sekarang suratnya →',
+  kinds: { foto: 'foto', tiket: 'karcis', pres: 'bunga pres', nota: 'nota', kartu: 'kartu' },
+  ticket: 'KARCIS',
+  ticketNo: 'No. {n}',
+  ticketValid: 'berlaku selamanya',
+  receipt: 'NOTA',
+  receiptKept: 'disimpan, bukan dibuang',
 };
 
-export const TEXT: Record<Locale, typeof id> = {
+export type AmplopText = typeof id;
+
+export const TEXT: Record<Locale, AmplopText> = {
   id,
   ms: {
     you: 'awak',
@@ -45,6 +67,25 @@ export const TEXT: Record<Locale, typeof id> = {
     hintMore: 'Tahan lebih lama, atau ketuk {n}× lagi',
     hintHold: 'Tekan & tahan meterai',
     finale: 'Surat untukmu',
+    inside: 'ada {n} selitan di dalamnya',
+    oneByOne: 'Tarik satu per satu.',
+    itemOf: 'selitan {i} daripada {n}',
+    pullNext: 'Tarik yang seterusnya.',
+    oneMore: 'satu lagi',
+    mostSpecial: 'yang paling istimewa.',
+    specialTag: 'yang paling istimewa',
+    andLast: 'dan akhir sekali,',
+    theLetter: 'suratnya.',
+    hintPull: 'Ketuk kertas yang terjulur',
+    pull: 'Tarik selitan {i} daripada {n}',
+    next: 'Selitan seterusnya →',
+    toLetter: 'Sekarang suratnya →',
+    kinds: { foto: 'foto', tiket: 'tiket', pres: 'bunga kering', nota: 'resit', kartu: 'kad' },
+    ticket: 'TIKET',
+    ticketNo: 'No. {n}',
+    ticketValid: 'sah selamanya',
+    receipt: 'RESIT',
+    receiptKept: 'disimpan, bukan dibuang',
   },
   en: {
     you: 'you',
@@ -66,5 +107,24 @@ export const TEXT: Record<Locale, typeof id> = {
     hintMore: 'Hold longer, or tap {n}× more',
     hintHold: 'Press & hold the seal',
     finale: 'A letter for you',
+    inside: 'there are {n} keepsakes inside',
+    oneByOne: 'Pull them out one by one.',
+    itemOf: 'keepsake {i} of {n}',
+    pullNext: 'Pull out the next one.',
+    oneMore: 'one more',
+    mostSpecial: 'the most special one.',
+    specialTag: 'the most special one',
+    andLast: 'and finally,',
+    theLetter: 'the letter.',
+    hintPull: 'Tap the paper peeking out',
+    pull: 'Pull out keepsake {i} of {n}',
+    next: 'Next keepsake →',
+    toLetter: 'Now the letter →',
+    kinds: { foto: 'photo', tiket: 'ticket', pres: 'pressed flower', nota: 'receipt', kartu: 'card' },
+    ticket: 'TICKET',
+    ticketNo: 'No. {n}',
+    ticketValid: 'valid forever',
+    receipt: 'RECEIPT',
+    receiptKept: 'kept, not thrown away',
   },
 };

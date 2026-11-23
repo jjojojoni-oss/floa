@@ -1,4 +1,4 @@
-/* Mau Nggak?: langit pink berawan, hati gouache untuk perayaan, rangkaian bunga tropis di sudut, kartu katalog bertulisan kuas. */
+/* Mau Nggak?: langit pink berawan, hati gouache untuk perayaan, rangkaian bunga tropis di sudut, kartu katalog berupa surat centang tanpa tulisan. */
 (() => {
   const F = window.FLOA;
   const { el, painted, dabs, mix, jitter, ramp, leaf } = F;
@@ -92,34 +92,40 @@
   }
   F.sprites['bg-mau'] = { w: W, h: H, seed: 476, scale: 1, draw(svg, R) { pinkSky(svg, R); } };
 
-  // ── tulisan kuas "Mau nggak?" untuk kartu katalog ──
-  // tiap huruf: [lebar, jalur] dengan garis dasar di y=0
-  const GLYPH = {
-    M: [92, 'M6,0L14,-88L46,-30L78,-88L86,0'],
-    a: [70, 'M52,-50C40,-64 12,-62 6,-34C1,-8 24,6 40,-6C50,-13 52,-30 52,-52L52,-12C52,-2 58,2 66,-3'],
-    u: [70, 'M6,-58L6,-24C6,2 42,6 48,-22L48,-58M48,-24L48,-10C48,-1 56,2 64,-3'],
-    n: [62, 'M6,-58L6,0M6,-36C14,-62 48,-66 48,-34L48,0'],
-    g: [66, 'M50,-50C38,-64 10,-62 4,-34C-1,-8 22,6 38,-6C48,-13 50,-30 50,-52L50,16C50,42 14,44 6,24'],
-    k: [60, 'M6,-92L6,0M46,-56L8,-26M20,-36L50,0'],
-    '?': [60, 'M6,-68C8,-98 56,-98 52,-64C50,-44 28,-42 28,-22M28,-3L28,-2'],
-    ' ': [34, ''],
-  };
-  function lettering(g, R, text, { size = 1, ink = '#8a0f30', hi = '#ff8fa8' } = {}) {
-    let x = 0;
-    const row = el('g', { filter: 'url(#cast)' }, g);
-    const paint = el('g', { filter: 'url(#impastoFine)' }, row);
-    for (const ch of text) {
-      const [w, d] = GLYPH[ch] || GLYPH[' '];
-      if (d) {
-        const t = `translate(${x * size} 0) scale(${size})`;
-        // goresan utama + goresan kedua yang sedikit bergeser, seperti cat yang ditimpa
-        el('path', { d, transform: t, fill: 'none', stroke: ink, 'stroke-width': 15, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }, paint);
-        el('path', { d, transform: `${t} translate(-1.6 -1.8)`, fill: 'none', stroke: mix(ink, hi, 0.35), 'stroke-width': 8, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-opacity': 0.75 }, paint);
-        el('path', { d, transform: `${t} translate(-3 -3.4)`, fill: 'none', stroke: hi, 'stroke-width': 2.4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-opacity': 0.7 }, paint);
+  // ── secarik surat "centang salah satu" untuk kartu katalog (tanpa tulisan, supaya cocok di semua bahasa) ──
+  /** (0,0) = pusat kertas; kertas 270×190 */
+  function noteCard(g, R) {
+    const paper = 'M-135,-95L133,-91L131,93L-133,95Z';
+    painted(g, paper, {
+      base: '#fffaf3', n: 40, R, filter: 'impastoFine', cast: 'castBig',
+      stroke: () => { const x = -135 + R() * 260, y = -95 + R() * 190; return { d: `M${x},${y}l${40 + R() * 80},${(R() - 0.5) * 3}`, color: R() < 0.5 ? '#ffffff' : '#f6ece0', width: 10 + R() * 18, opacity: 0.22 }; },
+    });
+    // coretan tulisan tangan (abstrak, tidak terbaca): ayunan pena yang tidak rata
+    const scribble = (x0, y0, len) => {
+      let d = `M${x0},${y0}`;
+      let x = x0;
+      while (x < x0 + len) {
+        const w = 9 + R() * 9, h = 7 + R() * 9;
+        d += `q${w / 2},${-h} ${w},${(R() - 0.5) * 3}`;
+        x += w;
+        if (R() < 0.18) { d += `m${6 + R() * 6},0`; x += 9; }
       }
-      x += w;
-    }
-    return x * size;
+      return d;
+    };
+    const ink = el('g', { fill: 'none', stroke: '#7d2240', 'stroke-width': 3.4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', opacity: 0.75 }, g);
+    el('path', { d: scribble(-100, -50, 182) }, ink);
+    el('path', { d: scribble(-100, -20, 120) }, ink);
+    // dua kotak centang, kotak pertama dicentang hati
+    const box = el('g', { fill: 'none', stroke: '#5a1730', 'stroke-width': 3.6, 'stroke-linejoin': 'round', opacity: 0.8 }, g);
+    el('path', { d: 'M-98,22L-70,21L-69,49L-97,50Z' }, box);
+    el('path', { d: 'M14,22L42,21L43,49L15,50Z' }, box);
+    el('path', { d: scribble(-58, 40, 40), fill: 'none', stroke: '#7d2240', 'stroke-width': 3.4, 'stroke-linecap': 'round', opacity: 0.7 }, g);
+    el('path', { d: scribble(54, 40, 52), fill: 'none', stroke: '#7d2240', 'stroke-width': 3.4, 'stroke-linecap': 'round', opacity: 0.7 }, g);
+    const hg = el('g', { transform: 'translate(-84 34) rotate(-10) scale(0.12)' }, g);
+    heart(el('g', { transform: 'translate(-150 -140)' }, hg), R, ROSE, { n: 50, cast: 'cast' });
+    // selotip merah muda di atas
+    const tg = el('g', { transform: 'translate(-34 -110) rotate(-6)', opacity: 0.88 }, g);
+    painted(tg, 'M0,0H74l-4,6l4,6l-4,6l4,6H0l4,-6l-4,-6l4,-6Z', { base: '#f08aa4', n: 14, R, filter: 'impastoFine', cast: 'cast', stroke: () => ({ d: `M${R() * 60},${3 + R() * 18}l${10 + R() * 20},0`, color: R() < 0.5 ? '#ffc3d2' : '#d9607f', width: 3 + R() * 4, opacity: 0.5 }) });
   }
 
   F.sprites['cover-mau'] = { w: 480, h: 600, seed: 477, draw(svg, R) {
@@ -131,8 +137,7 @@
     heart(el('g', { transform: 'translate(232 322) rotate(13) scale(0.62)' }, svg), R, BLUSH, { n: 120 });
     heart(el('g', { transform: 'translate(96 296) rotate(-10) scale(0.84)' }, svg), R, ROSE, { n: 180 });
     for (const [x, y, k] of [[70, 300, 0.5], [410, 330, 0.62], [402, 84, 0.42]]) spark(el('g', { transform: `translate(${x} ${y}) scale(${k})` }, svg), R);
-    // tulisan kuas dua baris
-    lettering(el('g', { transform: 'translate(158 128) rotate(-4)' }, svg), R, 'Mau', { size: 0.86 });
-    lettering(el('g', { transform: 'translate(104 214) rotate(-4)' }, svg), R, 'nggak?', { size: 0.86 });
+    // surat kecil "centang salah satu", kotak pertama sudah dicentang hati
+    noteCard(el('g', { transform: 'translate(246 176) rotate(-5)' }, svg), R);
   } };
 })();

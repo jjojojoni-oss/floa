@@ -224,6 +224,11 @@ export const ms: Dict = {
     expiredSub: 'Tempoh aktif pautan ini sudah tamat. Jika hadiah ini untukmu, beritahu pengirimnya ya.',
     makeOwn: 'Buat hadiah sendiri',
   },
+  intro: {
+    label: 'Ayat pembuka',
+    hint: 'Muncul perlahan-lahan, satu ayat setiap skrin, sebelum hadiahnya dibuka.',
+    placeholder: 'Aku jumpa ni masa kemas almari. Buka perlahan-lahan ya.',
+  },
   music: {
     label: 'Muzik',
     optional: '(pilihan)',
