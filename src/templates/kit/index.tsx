@@ -632,8 +632,8 @@ export function Finale({
                 {k.showAll}
               </button>
             ) : null}
-            {from ? (
-              <div className={cx(s.ttd, done && s.ttdOn)} aria-hidden={!done}>
+            {from && done ? (
+              <div className={s.ttd}>
                 {k.from}
                 <br />
                 <b>{from}</b>
@@ -745,14 +745,14 @@ function KeepsakeButton({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [to, from, title, photo, locale]);
 
-  const fileName = `floa-${(to || 'kado').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'kado'}.png`;
+  const fileName = `floa-${(to || 'kado').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'kado'}.jpg`;
 
   const save = async () => {
     if (!card) return;
     sfx.tap();
     try {
       const blob = await (await fetch(card)).blob();
-      const file = new File([blob], fileName, { type: 'image/png' });
+      const file = new File([blob], fileName, { type: 'image/jpeg' });
       if (navigator.canShare?.({ files: [file] })) {
         await navigator.share({ files: [file] });
         return;

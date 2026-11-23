@@ -63,6 +63,8 @@
 }
 .board {
   position: relative;
+  /* lapis plester seukuran papan digeser dengan transform; jangan sampai memperluas area gulir stage */
+  overflow: clip;
   width: min(100cqw, calc(100cqh * 0.75));
   aspect-ratio: 3 / 4;
   flex: none;

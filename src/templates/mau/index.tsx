@@ -286,7 +286,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           </div>
         )
       ) : day ? (
-        <div className={s.body} key="day">
+        <div className={cx(s.body, s.dayBody)} key="day">
           <div className={s.dayCard}>
             <span className={s.tape} />
             <Sprite name="mau-hati-besar" className={s.dayHeart} />

@@ -43,8 +43,8 @@ const PLAIN: Kind[] = ['tiket', 'nota', 'pres', 'kartu'];
 const CUES: Array<[Kind, RegExp]> = [
   ['tiket', /\b(karcis|tiket|ticket|boarding)/i],
   ['nota', /\b(nota|struk|resit|receipt|kuitansi|kwitansi)\b/i],
-  ['pres', /\b(bunga|kembang|melati|melur|mawar|kamboja|kenanga|anggrek|orkid|dahlia|aster|daun|flower|rose|jasmine|petal|daisy)/i],
-  ['kartu', /\b(kartu|kad|card|postcard)\b/i],
+  ['pres', /\b(bunga|kembang|melati|melur|mawar|kamboja|kenanga|anggrek|orkid|dahlia|aster|daun|flower|rose|jasmine|petal|daisy|taman|kebun|park|garden)/i],
+  ['kartu', /\b(kartu|kad|card|postcard|resep|recipe)\b/i],
 ];
 const FLOWERS: Array<[string, RegExp]> = [
   ['bunga-kamboja', /kamboja|frangipani|plumeria/i],
@@ -92,21 +92,22 @@ const TAPS_TO_BREAK = 3;
 function buildItems(notes: string[], photos: string[]): Item[] {
   // kado lama (tanpa catatan) tetap memakai alur lama: langsung ke surat
   if (!notes.some((n) => n.trim())) return [];
-  const out: Item[] = [];
-  const used: Kind[] = [];
+  const raw: Array<{ note: string; photo: string | null; kind: Kind | null }> = [];
   for (let i = 0; i < 5; i++) {
     const note = (notes[i] ?? '').trim();
     const photo = photos[i] || null;
     if (!note && !photo) continue;
-    let kind: Kind = 'foto';
-    if (!photo) {
-      // tanpa petunjuk: pilih wujud yang belum muncul, biar tiap selipan terasa beda
-      kind = guessKind(note) ?? PLAIN.find((k) => !used.includes(k)) ?? PLAIN[used.length % PLAIN.length];
-      used.push(kind);
-    }
-    out.push({ note, photo, kind });
+    raw.push({ note, photo, kind: photo ? 'foto' : guessKind(note) });
   }
-  return out;
+  // tanpa petunjuk: wujud yang paling jarang muncul dan tidak sama dengan tetangganya
+  raw.forEach((it, i) => {
+    if (it.kind) return;
+    const near = [raw[i - 1]?.kind, raw[i + 1]?.kind];
+    const count = (k: Kind) => raw.filter((x) => x.kind === k).length;
+    const pool = PLAIN.filter((k) => !near.includes(k));
+    it.kind = (pool.length ? pool : PLAIN).reduce((a, b) => (count(b) < count(a) ? b : a));
+  });
+  return raw.map((it) => ({ note: it.note, photo: it.photo, kind: it.kind ?? 'kartu' }));
 }
 
 function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void }) {

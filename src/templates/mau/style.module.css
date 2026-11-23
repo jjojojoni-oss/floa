@@ -711,7 +711,8 @@
   text-wrap: balance;
 }
 .footShort { height: 5em; }
-.footDay { height: 11em; }
+.footDay { height: 9.4em; }
+.dayBody { padding-top: 2.4em; }
 .dayActions {
   display: flex;
   flex-direction: column;

@@ -1,5 +1,5 @@
 /**
- * Kartu kenang-kenangan dari halaman kado (PNG 1080×1350, rasio 4:5): nama penerima, ucapan utama,
+ * Kartu kenang-kenangan dari halaman kado (JPEG 1080×1350, rasio 4:5): nama penerima, ucapan utama,
  * foto paling spesial (kalau ada), "dari …", tanggal dibuka, dan tanda floa kecil.
  * Hanya untuk dipanggil di browser.
  */
@@ -115,7 +115,7 @@ export async function drawKeepsake(input: KeepsakeInput): Promise<string> {
     if (pat) {
       ctx.save();
       ctx.globalCompositeOperation = 'multiply';
-      ctx.globalAlpha = 0.5;
+      ctx.globalAlpha = 0.28;
       ctx.fillStyle = pat;
       ctx.fillRect(0, 0, W, H);
       ctx.restore();
@@ -224,7 +224,8 @@ export async function drawKeepsake(input: KeepsakeInput): Promise<string> {
   ctx.globalAlpha = 1;
 
   try {
-    return canvas.toDataURL('image/png');
+    // JPEG: jauh lebih ringan untuk dikirim lewat chat, dan kartu ini tidak butuh transparansi
+    return canvas.toDataURL('image/jpeg', 0.9);
   } catch {
     // foto dari domain lain tanpa izin CORS membuat kanvas "tercemar": gambar ulang tanpa foto
     if (input.photo) return drawKeepsake({ ...input, photo: null });

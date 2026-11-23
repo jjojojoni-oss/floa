@@ -756,6 +756,7 @@
 
 /* kartu catatan bergaris, dijepit klip */
 .card {
+  min-height: 9.8em;
   padding: 1.6em 1.3em 1.3em 1.9em;
   border-radius: 0.1em;
   composes: paper from '../kit/kit.module.css';
