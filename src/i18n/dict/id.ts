@@ -63,7 +63,7 @@ export const id = {
     back: 'Kembali ke semua template',
     others: 'Template lain',
     note: 'Ini contoh. Isinya bisa kamu ganti.',
-    use: 'Pakai template ini · {price} →',
+    use: 'Pakai template ini →',
     titlePrefix: 'Demo',
   },
   editor: {

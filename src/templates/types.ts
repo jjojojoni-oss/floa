@@ -16,6 +16,8 @@ export type GiftData = {
   photos: string[];
   /** lagu latar dari Spotify (opsional, berlaku untuk semua template) */
   music?: GiftMusic | null;
+  /** tanggal penting, format YYYY-MM-DD (mis. tanggal jadian). Hanya untuk template yang punya kolom 'date'. */
+  date?: string;
 };
 
 export type MusicKind = 'track' | 'album' | 'playlist' | 'episode';
@@ -73,7 +75,13 @@ export type PhotosField = {
   count: number;
 };
 
-export type FieldSpec = TextField | NotesField | PhotosField;
+export type DateField = {
+  key: 'date';
+  label: string;
+  hint?: string;
+};
+
+export type FieldSpec = TextField | NotesField | PhotosField | DateField;
 
 export type TemplateMeta = {
   id: string;

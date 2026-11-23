@@ -65,7 +65,7 @@ export const en: Dict = {
     back: 'Back to all templates',
     others: 'Other templates',
     note: 'This is an example. You can change everything.',
-    use: 'Use this template · {price} →',
+    use: 'Use this template →',
     titlePrefix: 'Demo',
   },
   editor: {

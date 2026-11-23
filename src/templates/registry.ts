@@ -1,16 +1,20 @@
 import type { Locale } from '@/i18n/config';
 import type { OccasionId, TemplateMeta } from './types';
 import { meta as amplop } from './amplop/meta';
+import { meta as anniversary } from './anniversary/meta';
+import { meta as bento } from './bento/meta';
 import { meta as buket } from './buket/meta';
 import { meta as lampion } from './lampion/meta';
 import { meta as lilin } from './lilin/meta';
 import { meta as mau } from './mau/meta';
+import { meta as memories } from './memories/meta';
 import { meta as plester } from './plester/meta';
 import { meta as polaroid } from './polaroid/meta';
+import { meta as scrapbook } from './scrapbook/meta';
 import { meta as toga } from './toga/meta';
 
 /** Urutan di sini = urutan di katalog. Teks bawaannya Bahasa Indonesia; pakai localizeMeta untuk bahasa lain. */
-export const TEMPLATES: TemplateMeta[] = [buket, lilin, amplop, polaroid, mau, lampion, plester, toga];
+export const TEMPLATES: TemplateMeta[] = [scrapbook, memories, anniversary, bento, buket, lilin, amplop, polaroid, mau, lampion, plester, toga];
 
 const OCCASION_LABELS: Record<OccasionId, Record<Locale, string>> = {
   ultah: { id: 'Ulang tahun', ms: 'Hari jadi', en: 'Birthday' },

@@ -2,10 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { GiftFrame } from '@/components/GiftFrame';
-import { fmt } from '@/i18n/fmt';
 import { LOCALES } from '@/i18n/config';
 import { dictOf } from '@/i18n/server';
-import { cheapestLabel } from '@/lib/site';
 import { TemplatePlayer } from '@/templates/Player';
 import { TEMPLATES, getTemplate } from '@/templates/registry';
 
@@ -41,7 +39,7 @@ export default async function DemoPage({ params }: P) {
             <div className="text-xs text-muted">{d.demo.note}</div>
           </div>
           <Link href={`/buat/${t.id}`} className="btn btn-primary h-12 flex-1 px-5 text-[15px] sm:flex-none">
-            {fmt(d.demo.use, { price: cheapestLabel(locale) })}
+            {d.demo.use}
           </Link>
         </div>
       }

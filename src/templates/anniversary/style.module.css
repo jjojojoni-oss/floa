@@ -1,0 +1,530 @@
+/* Anniversary: kalender sobek. 20 satuan lukisan papan = 1em. */
+.wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  /* papan turun sedikit di layar yang lebih jangkung */
+  --top: calc(6.3em + (100cqh - 42em) * 0.26);
+}
+.wrap.ready {
+  opacity: 1;
+}
+
+/* ── kepala: di antara tombol musik (kiri) dan suara (kanan) ── */
+.head {
+  position: absolute;
+  left: 4em;
+  right: 4em;
+  top: 1.15em;
+  z-index: 2;
+  text-align: center;
+  pointer-events: none;
+  animation: up 0.6s 0.1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.eyebrow {
+  font-size: 0.74em;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.7;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.from {
+  margin-top: -0.05em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.5em;
+  font-weight: 600;
+  line-height: 1.05;
+  opacity: 0.85;
+  overflow-wrap: anywhere;
+}
+@keyframes up {
+  from { opacity: 0; transform: translateY(0.7em); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ── kalender ── (tanpa transform/z-index supaya lembar yang jatuh bisa lewat di depan semuanya) */
+.cal {
+  position: absolute;
+  left: 50%;
+  top: var(--top);
+  width: 17em;
+  height: 23.3em;
+  margin-left: -8.5em;
+}
+.board {
+  position: absolute;
+  left: -1em;
+  top: -3.1em;
+  width: 19em;
+  height: auto;
+  z-index: 1;
+}
+/* nama di kartus, seperti nama toko di kalender hadiah */
+.owner {
+  position: absolute;
+  left: 2em;
+  top: 1.35em;
+  width: 13em;
+  height: 4.3em;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1em;
+  text-align: center;
+  color: #f6dc9a;
+  pointer-events: none;
+}
+.ownerName {
+  max-width: 100%;
+  font-family: var(--font-serif, Georgia, serif);
+  font-variation-settings: 'SOFT' 100;
+  font-size: 1.42em;
+  font-weight: 700;
+  line-height: 1.02;
+  letter-spacing: 0.01em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  text-shadow: 0 0.06em 0 rgba(40, 6, 4, 0.55);
+}
+.ownerName.mid {
+  font-size: 1.08em;
+}
+.ownerName.small {
+  font-size: 0.86em;
+}
+.ownerSince {
+  font-size: 0.6em;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #f3cf86;
+  opacity: 0.9;
+  white-space: nowrap;
+}
+
+/* ── blok kertas ── */
+.block {
+  position: absolute;
+  left: 1.3em;
+  top: 7em;
+  width: 14.4em;
+  height: 15em;
+}
+/* tebal tumpukan kertas yang tersisa */
+.edge {
+  position: absolute;
+  left: 0.06em;
+  right: 0.06em;
+  top: 100%;
+  height: 0.72em;
+  z-index: 2;
+  transform-origin: top;
+  transform: scaleY(var(--left, 1));
+  transition: transform 0.4s ease;
+  background: repeating-linear-gradient(#f4ecd8 0 0.07em, #cfc3a6 0.07em 0.12em);
+  box-shadow: 0 0.35em 0.5em -0.2em rgba(58, 29, 18, 0.5);
+  border-radius: 0 0 0.12em 0.12em;
+}
+/* sisa sobekan yang masih terjepit bilah */
+.stub {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 0.95em;
+  z-index: 5;
+  background: #f1e8d2;
+  box-shadow: inset 0 -0.08em 0 rgba(58, 29, 18, 0.12);
+  clip-path: polygon(0 0, 100% 0, 100% 70%, 96% 96%, 91% 74%, 86% 100%, 80% 78%, 75% 94%, 69% 72%, 63% 98%, 57% 76%, 51% 100%, 45% 74%, 39% 96%, 33% 72%, 27% 100%, 21% 78%, 15% 94%, 9% 72%, 4% 98%, 0 74%);
+  opacity: 0;
+}
+.stubOn {
+  opacity: 1;
+}
+.strip {
+  position: absolute;
+  left: 0.5em;
+  top: 6em;
+  width: 16em;
+  height: auto;
+  z-index: 6;
+}
+
+.sheet {
+  position: absolute;
+  inset: 0;
+  display: block;
+  color: #2f1a13;
+  text-align: center;
+  --fy: calc(100cqh - var(--top) - 7em - var(--peek, 3em));
+  outline-offset: 0.2em;
+  -webkit-touch-callout: none;
+}
+.sheet.top {
+  cursor: pointer;
+  touch-action: none;
+  transform-origin: 50% 0;
+  transition: transform 0.35s cubic-bezier(0.3, 1.4, 0.5, 1);
+  /* kertas tipis yang sedikit bergoyang kena angin, mengundang untuk disobek */
+  animation: breeze 3.6s 1.2s ease-in-out infinite;
+}
+@keyframes breeze {
+  0%, 100% { transform: rotate(0deg) skewX(0deg); }
+  30% { transform: rotate(0.7deg) skewX(-0.9deg); }
+  65% { transform: rotate(-0.5deg) skewX(0.7deg); }
+}
+/* lembar hari ini: mendarat dengan hentakan kecil */
+.landed {
+  animation: land 0.55s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+@keyframes land {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.045) rotate(-0.6deg); }
+  100% { transform: scale(1); }
+}
+.paper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  composes: paper from '../kit/kit.module.css';
+  --paper: #fbf5e6;
+  box-shadow: inset 0 0 0 1px rgba(58, 29, 18, 0.08), inset 0 -1.2em 1.6em -1.4em rgba(58, 29, 18, 0.3);
+  overflow: hidden;
+}
+/* bayangan lembar yang sudah lepas: salinan gelap yang bergeser, tanpa blur */
+.shade {
+  position: absolute;
+  inset: 0;
+  background: rgba(58, 29, 18, 0.26);
+  transform: translate(0.16em, 0.26em);
+  opacity: 0;
+}
+.torn {
+  pointer-events: none;
+  animation: fall 1.2s linear forwards;
+}
+.torn.fast {
+  animation-duration: 0.85s;
+}
+.torn .shade {
+  opacity: 1;
+}
+@keyframes fall {
+  0% { transform: translate(0, 0) rotate(0deg); animation-timing-function: ease-out; }
+  9% { transform: translate(0.1em, 0.8em) rotate(calc(var(--sway) * 2.5deg)); animation-timing-function: ease-in; }
+  40% { transform: translate(calc(var(--fx) * -0.32), calc(var(--fy) * 0.36)) rotate(calc(var(--fr) * -0.5)) scale(1, 0.84); animation-timing-function: ease-in-out; }
+  72% { transform: translate(calc(var(--fx) * 0.8), calc(var(--fy) * 0.76)) rotate(calc(var(--fr) * 0.75)) scale(0.93, 1); animation-timing-function: ease-out; }
+  100% { transform: translate(var(--fx), var(--fy)) rotate(var(--fr)); }
+}
+
+/* isi lembar */
+.band {
+  flex: none;
+  width: 100%;
+  margin-top: 0.72em;
+  height: 1.9em;
+  padding: 0 0.9em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6em;
+  background: linear-gradient(#cf3f33, #b92c23);
+  box-shadow: inset 0 0.08em 0 rgba(255, 220, 200, 0.35), inset 0 -0.08em 0 rgba(60, 8, 6, 0.35), 0 0.12em 0 #e8c268, 0 0.2em 0 rgba(58, 29, 18, 0.18);
+  color: #fff3da;
+  font-size: 1em;
+  text-transform: uppercase;
+}
+.band b {
+  font-size: 0.86em;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.band i {
+  font-family: var(--font-serif, Georgia, serif);
+  font-style: normal;
+  font-size: 1.02em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.numWrap {
+  position: relative;
+  flex: none;
+  width: 100%;
+  height: 8.1em;
+  display: grid;
+  place-items: center;
+}
+.num {
+  font-family: var(--font-serif, Georgia, serif);
+  font-variation-settings: 'SOFT' 0;
+  font-size: 9em;
+  font-weight: 800;
+  line-height: 0.86;
+  letter-spacing: -0.045em;
+  font-variant-numeric: lining-nums;
+  color: #2f1a13;
+  transform: translateY(0.02em);
+}
+.num.two {
+  font-size: 8.6em;
+}
+.num.sunday {
+  color: #c8372d;
+}
+/* lingkaran spidol merah di sekeliling tanggal hari ini */
+.circle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 11.4em;
+  height: 8.4em;
+  margin: -4.2em 0 0 -5.7em;
+  overflow: visible;
+  transform: rotate(-3deg);
+  pointer-events: none;
+}
+.circle path {
+  fill: none;
+  stroke: #d2382b;
+  stroke-width: 0.34em;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0.92;
+}
+.circle.drawn path {
+  animation: draw 0.85s 0.15s cubic-bezier(0.5, 0, 0.3, 1) forwards;
+}
+@keyframes draw {
+  to { stroke-dashoffset: 0; }
+}
+.dow {
+  flex: none;
+  margin-top: 0.15em;
+  font-size: 0.86em;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.dow em {
+  font-style: normal;
+  color: #c8372d;
+}
+.scribble {
+  flex: none;
+  margin-top: 0.1em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.62em;
+  font-weight: 700;
+  line-height: 1;
+  color: #c8372d;
+  transform: rotate(-3deg);
+  white-space: nowrap;
+}
+.scribble.late {
+  opacity: 0;
+  transform: rotate(-3deg) scale(0.7);
+}
+.scribble.late.shown {
+  opacity: 1;
+  transform: rotate(-3deg) scale(1);
+  transition: opacity 0.3s 0.95s ease, transform 0.5s 0.95s cubic-bezier(0.34, 1.6, 0.64, 1);
+}
+
+/* lembar momen */
+.snap {
+  position: relative;
+  flex: none;
+  margin-top: 1em;
+  width: 10.4em;
+  height: 6.9em;
+  padding: 0.38em;
+  background: #fffdf6;
+  box-shadow: 0 0.06em 0.12em rgba(58, 29, 18, 0.25), 0.14em 0.3em 0 rgba(58, 29, 18, 0.14);
+  transform: rotate(-2.5deg);
+}
+.snap.compact {
+  width: 9.4em;
+  height: 6.1em;
+}
+.snap > img:not(.clip) {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  box-shadow: inset 0 0 0 1px rgba(58, 29, 18, 0.12);
+}
+.clip {
+  position: absolute;
+  left: 0.9em;
+  top: -1.25em;
+  width: 1.45em;
+  height: auto;
+  z-index: 1;
+  transform: rotate(6deg);
+}
+.sticker {
+  flex: none;
+  margin-top: 0.75em;
+  width: 3.2em;
+  height: auto;
+  transform: rotate(-12deg);
+}
+.note {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  padding: 0.25em 0.9em 0.5em;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.52em;
+  font-weight: 600;
+  line-height: 1.02;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  color: #3a2018;
+}
+/* ukuran bertingkat menurut panjang catatan, supaya 60 huruf pun tetap muat di lembar */
+.note.long:not(.big) {
+  font-size: 1.36em;
+}
+.note.xl:not(.big) {
+  font-size: 1.22em;
+  line-height: 1.04;
+}
+.note.big {
+  font-size: 2.2em;
+  line-height: 1;
+  padding-bottom: 0.5em;
+}
+.note.big.long {
+  font-size: 1.8em;
+}
+.note.big.xl {
+  font-size: 1.5em;
+  line-height: 1.04;
+}
+
+/* ── penghitung ── */
+.counter {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--top) + 23.3em + 0.5em);
+  width: 21.6em;
+  margin-left: -10.8em;
+  z-index: 40;
+  padding: 0.6em 0.6em 0.65em;
+  border-radius: 1em;
+  composes: paper from '../kit/kit.module.css';
+  --paper: #fffaf0;
+  box-shadow: 0 0.05em 0 rgba(255, 255, 255, 0.8) inset, 0 0 0 1px rgba(58, 29, 18, 0.08), 0 0.9em 1.6em -0.8em rgba(58, 29, 18, 0.6);
+  text-align: center;
+  color: #3a2018;
+  animation: rise 0.6s cubic-bezier(0.2, 0.9, 0.2, 1.1) both;
+}
+.counter.plain {
+  width: 14em;
+  margin-left: -7em;
+  padding: 0.55em;
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(1.2em) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.3em;
+}
+.tile {
+  padding: 0.34em 0 0.3em;
+  border-radius: 0.55em;
+  background: rgba(58, 29, 18, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+.tile b {
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 1.5em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: -0.02em;
+}
+.tile span {
+  margin-top: 0.32em;
+  font-size: 0.54em;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0.66;
+}
+.tile.major {
+  background: #c8372d;
+  color: #fff3da;
+  box-shadow: inset 0 0.08em 0 rgba(255, 220, 200, 0.35), inset 0 -0.1em 0 rgba(60, 8, 6, 0.3);
+}
+.tile.major span {
+  opacity: 0.85;
+}
+.total {
+  margin-top: 0.4em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.12em;
+  font-weight: 600;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+  text-wrap: balance;
+  opacity: 0.86;
+}
+.open {
+  margin-top: 0.5em;
+  width: 100%;
+  height: 2.75em;
+  border-radius: 99em;
+  background: linear-gradient(#3f2218, #2c160f);
+  color: #fff3da;
+  font-size: 0.95em;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  box-shadow: inset 0 0.08em 0 rgba(255, 255, 255, 0.18), 0 0.3em 0.7em -0.3em rgba(58, 29, 18, 0.7);
+  transition: transform 0.15s ease;
+}
+.counter.plain .open {
+  margin-top: 0;
+}
+.open:active {
+  transform: scale(0.97);
+}
+
+.finaleCount {
+  margin-top: 0.9em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.35em;
+  font-weight: 600;
+  text-align: center;
+  opacity: 0.8;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .torn,
+  .torn.fast {
+    animation-duration: 0.01s;
+  }
+}

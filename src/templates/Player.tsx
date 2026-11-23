@@ -17,6 +17,10 @@ function Loading() {
 
 /** Tiap template dimuat terpisah, jadi halaman kado hanya mengunduh kode template miliknya. */
 const PLAYERS: Record<string, ComponentType<TemplateProps>> = {
+  scrapbook: dynamic(() => import('./scrapbook'), { ssr: false, loading: Loading }),
+  memories: dynamic(() => import('./memories'), { ssr: false, loading: Loading }),
+  anniversary: dynamic(() => import('./anniversary'), { ssr: false, loading: Loading }),
+  bento: dynamic(() => import('./bento'), { ssr: false, loading: Loading }),
   buket: dynamic(() => import('./buket'), { ssr: false, loading: Loading }),
   lilin: dynamic(() => import('./lilin'), { ssr: false, loading: Loading }),
   amplop: dynamic(() => import('./amplop'), { ssr: false, loading: Loading }),

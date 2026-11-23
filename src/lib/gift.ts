@@ -69,6 +69,19 @@ export function clean(v: unknown, max: number, multiline = false) {
   return s.trim().slice(0, max);
 }
 
+/** Tanggal kalender YYYY-MM-DD yang benar-benar ada, antara 1900 dan besok (zona waktu pembuat bisa lebih maju). */
+export function cleanDate(v: unknown): string | null {
+  if (typeof v !== 'string') return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v.trim());
+  if (!m) return null;
+  const [y, mo, d] = [Number(m[1]), Number(m[2]), Number(m[3])];
+  const t = Date.UTC(y, mo - 1, d);
+  const back = new Date(t);
+  if (back.getUTCFullYear() !== y || back.getUTCMonth() !== mo - 1 || back.getUTCDate() !== d) return null;
+  if (y < 1900 || t > Date.now() + 36 * 3600_000) return null;
+  return m[0];
+}
+
 /**
  * Menyaring isi kado sesuai kolom milik templatenya. Apa pun yang tidak dikenal dibuang,
  * panjang dibatasi, dan foto hanya boleh dari penyimpanan kita sendiri.
@@ -85,6 +98,9 @@ export function sanitizeData(meta: TemplateMeta, input: unknown, allowPhoto: (ur
     } else if (f.key === 'photos') {
       const arr = Array.isArray(src.photos) ? src.photos : [];
       out.photos = arr.filter((u): u is string => typeof u === 'string' && allowPhoto(u)).slice(0, f.count);
+    } else if (f.key === 'date') {
+      const d = cleanDate(src.date);
+      if (d) out.date = d;
     } else {
       out[f.key] = clean(src[f.key], f.max, 'multiline' in f && !!f.multiline);
     }

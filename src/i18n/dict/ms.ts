@@ -65,7 +65,7 @@ export const ms: Dict = {
     back: 'Kembali ke semua templat',
     others: 'Templat lain',
     note: 'Ini contoh. Isinya boleh awak tukar.',
-    use: 'Guna templat ini · {price} →',
+    use: 'Guna templat ini →',
     titlePrefix: 'Demo',
   },
   editor: {

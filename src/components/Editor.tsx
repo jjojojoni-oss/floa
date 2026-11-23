@@ -39,7 +39,7 @@ export function Editor({ templateId }: { templateId: string }) {
   const formRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   // jumlah foto/kalimat mengubah susunan adegan, jadi pratinjau diputar ulang dari awal
-  const previewKey = `${run}:${data.photos.length}:${data.notes.filter((n) => n.trim()).length}`;
+  const previewKey = `${run}:${data.photos.length}:${data.notes.filter((n) => n.trim()).length}:${data.date ?? ''}`;
 
   // muat: mode ubah (?edit=&key=) atau draf tersimpan
   useEffect(() => {
@@ -350,6 +350,16 @@ function Field({
           <Notes spec={spec} value={data.notes} onChange={(v) => update('notes', v)} />
         ) : spec.key === 'photos' ? (
           <Photos spec={spec} value={data.photos} onChange={(v) => update('photos', v)} onError={onError} />
+        ) : spec.key === 'date' ? (
+          <input
+            id="f-date"
+            type="date"
+            value={data.date ?? ''}
+            min="1950-01-01"
+            max={new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0, 10)}
+            onChange={(e) => update('date', e.target.value)}
+            className={inputCls + ' min-h-[50px] appearance-none'}
+          />
         ) : (
           <Text spec={spec} value={data[spec.key]} onChange={(v) => update(spec.key, v)} invalid={!!error} />
         )}
