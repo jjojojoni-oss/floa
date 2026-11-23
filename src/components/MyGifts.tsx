@@ -8,6 +8,7 @@ import { EMPTY_DATA } from '@/lib/gift';
 import { COVERS } from '@/templates/covers';
 import { getTemplate } from '@/templates/registry';
 import { CheckoutSheet } from './CheckoutSheet';
+import { QrDialog } from './GiftQr';
 
 export function MyGifts() {
   const t = useT();
@@ -15,6 +16,7 @@ export function MyGifts() {
   const [list, setList] = useState<MyGift[] | null>(null);
   const [resume, setResume] = useState<MyGift | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
+  const [qrFor, setQrFor] = useState<MyGift | null>(null);
 
   const refresh = () => setList(readMyGifts());
 
@@ -121,6 +123,9 @@ export function MyGifts() {
                       <button type="button" onClick={() => copy(g)} className="btn btn-ink h-9 px-3.5 text-[13px]">
                         {copied === g.id ? t.myGifts.copied : t.myGifts.copyLink}
                       </button>
+                      <button type="button" onClick={() => setQrFor(g)} className="btn btn-ghost h-9 px-3.5 text-[13px]">
+                        {t.qr.open}
+                      </button>
                       <a href={`/${g.slug}`} target="_blank" rel="noopener" className="btn btn-ghost h-9 px-3.5 text-[13px]">
                         {t.myGifts.view}
                       </a>
@@ -135,6 +140,7 @@ export function MyGifts() {
           );
         })}
       </ul>
+      {qrFor ? <QrDialog slug={qrFor.slug} to={qrFor.to} from={qrFor.from} templateId={qrFor.template} onClose={() => setQrFor(null)} /> : null}
       {resume && getTemplate(resume.template) ? (
         <CheckoutSheet
           meta={getTemplate(resume.template, locale)!}

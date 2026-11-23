@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { fmt, useLocale, useT } from '@/i18n/client';
 import type { Dict } from '@/i18n/dict';
 import { type MyGift, type OrderInfo, api, clearDraft, errorText, upsertMyGift, uploadPhotos } from '@/lib/client';
+import { qrDataUrl } from '@/lib/qr';
+import { QrPanel } from './GiftQr';
 import { MARKET_CURRENCY, type Market, PLANS, type PlanId, money, planAmount } from '@/lib/site';
 import { SLUG_MAX, SLUG_MIN, slugProblem, slugify, suggestSlug } from '@/lib/slug';
 import { Confetti } from '@/templates/kit';
@@ -19,10 +21,6 @@ function slugReason(code: string | undefined, t: Dict) {
 type MarketInfo = { available: boolean; test: boolean; provider: string | null };
 export type PaymentOptions = { country: string | null; suggested: Market; options: Record<Market, MarketInfo> };
 
-async function qrDataUrl(text: string, size = 720) {
-  const QR = (await import('qrcode')).default;
-  return QR.toDataURL(text, { margin: 2, width: size, errorCorrectionLevel: 'M', color: { dark: '#1e1b18', light: '#ffffff' } });
-}
 
 /** Menyimpan pesanan ke daftar "Kado saya" di perangkat ini. */
 export function rememberOrder(
@@ -654,7 +652,6 @@ export function DoneStep({
 }) {
   const t = useT();
   const [origin, setOrigin] = useState('https://floa.site');
-  const [qr, setQr] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [burst, setBurst] = useState(0);
   const url = `${origin}/${order.slug}`;
@@ -663,14 +660,6 @@ export function DoneStep({
     setOrigin(window.location.origin);
     setBurst(1);
   }, []);
-  useEffect(() => {
-    let alive = true;
-    qrDataUrl(url, 900).then((u) => alive && setQr(u));
-    return () => {
-      alive = false;
-    };
-  }, [url]);
-
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(url);
@@ -710,22 +699,13 @@ export function DoneStep({
         <a href={`https://wa.me/?text=${encodeURIComponent(waText)}`} target="_blank" rel="noopener" className="btn btn-primary h-13 w-full py-4 text-[15px]">
           {t.checkout.sendWa}
         </a>
-        <div className="grid grid-cols-2 gap-2">
-          <a href={`/${order.slug}`} target="_blank" rel="noopener" className="btn btn-ghost h-12 text-[14px]">
-            {t.checkout.viewGift}
-          </a>
-          {qr ? (
-            <a href={qr} download={`qr-kado-${order.slug}.png`} className="btn btn-ghost h-12 text-[14px]">
-              {t.checkout.downloadQr}
-            </a>
-          ) : (
-            <span className="btn btn-ghost h-12 text-[14px] opacity-50">{t.checkout.downloadQr}</span>
-          )}
-        </div>
+        <QrPanel slug={order.slug} to={to} from={from} templateId={templateId} />
+        <a href={`/${order.slug}`} target="_blank" rel="noopener" className="btn btn-ghost h-12 w-full text-[14px]">
+          {t.checkout.viewGift}
+        </a>
       </div>
 
       <p className="mt-4 text-[12.5px] leading-snug text-muted">
-        {t.checkout.printTip}{' '}
         {order.editKey && templateId ? (
           <>
             {t.checkout.editLater}{' '}
