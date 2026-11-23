@@ -947,8 +947,9 @@
   gap: 0.7em;
 }
 .navBtn {
-  width: 2.5em;
-  height: 2.5em;
+  position: relative;
+  width: 2.9em;
+  height: 2.9em;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -956,6 +957,7 @@
   box-shadow: 0 0.1em 0.4em rgba(60, 30, 20, 0.22);
   color: var(--ink);
   cursor: pointer;
+  composes: hit from '../kit/kit.module.css';
   transition: transform 0.15s ease, opacity 0.2s ease;
 }
 .navBtn:active {

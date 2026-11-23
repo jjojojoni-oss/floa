@@ -5,10 +5,11 @@ import {
   type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
-import { Confetti, Finale, Hint, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
+import { Confetti, Finale, Hint, Sprite, Stage, TapCue, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
 import { TEXT } from './i18n';
@@ -218,6 +219,9 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const drag = useRef<Drag | null>(null);
   const moved = useRef(false);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const lidRef = useRef<HTMLButtonElement>(null);
+  const noteRef = useRef<HTMLButtonElement>(null);
+  const cellEls = useRef<(HTMLButtonElement | null)[]>([]);
   const later = useTimers();
   const ready = useArtReady(ART);
 
@@ -335,6 +339,28 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     setFinale(true);
   };
 
+  const nextBite = eaten.length ? cells.findIndex((_, i) => !eaten[i]) : 0;
+  const biteCue = useMemo(
+    () => ({
+      get current() {
+        return cellEls.current[nextBite] ?? null;
+      },
+    }),
+    [nextBite],
+  );
+  /** satu penunjuk sentuh untuk langkah yang sedang aktif */
+  const cue = finale
+    ? null
+    : phase === 'closed'
+      ? { key: 'lid', target: lidRef }
+      : phase === 'open' && active === null && bounce === null && nextBite >= 0
+        ? { key: `bite${nextBite}`, target: biteCue }
+        : phase === 'open' && active !== null
+          ? { key: `card${active}`, target: closeRef, delay: 4000 }
+          : phase === 'done'
+            ? { key: 'note', target: noteRef }
+            : null;
+
   const act = active !== null ? items[active] : null;
   const actFood = active !== null ? FOODS[active % FOODS.length] : null;
   const isLast = active !== null && !eaten[active] && count === n - 1;
@@ -382,6 +408,9 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               return (
                 <button
                   key={i}
+                  ref={(el) => {
+                    cellEls.current[i] = el;
+                  }}
                   type="button"
                   className={cx(s.cell, done && s.eaten, bounce === i && s.bounce)}
                   style={{ left: `${x}%`, top: `${y}%`, width: `${w}%`, height: `${h}%` }}
@@ -442,6 +471,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
           {phase === 'closed' || phase === 'opening' ? (
             <button
+              ref={lidRef}
               type="button"
               className={cx(s.lid, phase === 'opening' && s.lidOff)}
               style={{ '--dir': dir } as CSSProperties}
@@ -467,7 +497,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           {phase === 'done' ? (
             <div className={s.lidBack}>
               <Sprite name="bento-tutup-dalam" className={s.lidArt} />
-              <button type="button" className={s.note} onClick={openLetter} aria-label={t.openLetter}>
+              <button ref={noteRef} type="button" className={s.note} onClick={openLetter} aria-label={t.openLetter}>
                 <Sprite name="bento-selotip" className={s.noteTape} />
                 <span className={s.noteEyebrow}>{t.noteEyebrow}</span>
                 <span className={cx(s.noteTo, to.length > 12 && s.long)}>{fmt(t.noteTo, { to })}</span>
@@ -488,6 +518,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
       {phase === 'closed' ? <Hint>{t.hintOpen}</Hint> : null}
       {phase === 'open' && count === 0 && active === null ? <Hint key="e">{t.hintEat}</Hint> : null}
+      {phase === 'open' && count > 0 && count < n && active === null ? <Hint key="m">{t.hintEatMore}</Hint> : null}
       {phase === 'done' && !finale ? <Hint key="l">{t.hintLetter}</Hint> : null}
 
       {act && actFood ? (
@@ -512,6 +543,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           </div>
         </div>
       ) : null}
+
+      {cue ? <TapCue key={cue.key} target={cue.target} delay={cue.delay} /> : null}
 
       {finale ? (
         <Finale

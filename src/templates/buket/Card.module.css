@@ -1,0 +1,289 @@
+/* Kartu ucapan buket: lipatan di atas, dibuka ke atas. Ukuran em mengikuti Stage (≈16px di HP). */
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(252, 244, 234, 0);
+  transition: background 0.8s ease, backdrop-filter 0.8s ease;
+}
+.overlay.settled {
+  background: rgba(252, 244, 234, 0.55);
+  backdrop-filter: blur(5px) saturate(1.05);
+  -webkit-backdrop-filter: blur(5px) saturate(1.05);
+}
+
+.card {
+  position: relative;
+  width: 17em;
+  height: 12.2em;
+  perspective: 70em;
+  transform-style: preserve-3d;
+  transition: transform 1s cubic-bezier(0.3, 0.75, 0.2, 1);
+  animation: arrive 0.9s cubic-bezier(0.2, 0.8, 0.25, 1.05) backwards;
+}
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translate(1.5em, 10em) scale(0.3) rotate(9deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.card.open,
+.card.written {
+  transform: translateY(5.6em);
+}
+
+.paper {
+  border-radius: 0.3em;
+  background-color: #fffaf0;
+  background-image: linear-gradient(rgba(255, 250, 240, 0.55), rgba(255, 250, 240, 0.55)), url('/art/tex-kertas.webp');
+  background-size: auto, 200px 200px;
+  background-blend-mode: normal, multiply;
+}
+
+/* ───── bagian dalam bawah ───── */
+.inside {
+  composes: paper;
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 1em 1.25em 0.9em;
+  color: #3b2a22;
+  box-shadow: 0 0.1em 0.2em rgba(60, 30, 20, 0.12), 0 1.4em 2.4em -1.2em rgba(60, 30, 20, 0.45);
+}
+.salam {
+  font-family: var(--font-hand, cursive);
+  font-size: 1.4em;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.body {
+  margin-top: 0.35em;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.12em;
+  font-weight: 600;
+  line-height: 1.32;
+}
+.sign {
+  align-self: flex-end;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.15em;
+  font-weight: 700;
+  opacity: 0;
+  transform: translateY(0.3em);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.sign.shown {
+  opacity: 0.85;
+  transform: none;
+}
+
+/* ───── sampul ───── */
+.cover {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  transform-origin: 50% 0;
+  transform-style: preserve-3d;
+  transition: transform 1.15s cubic-bezier(0.35, 0.7, 0.2, 1);
+  cursor: pointer;
+  border-radius: 0.3em;
+}
+.cover:disabled {
+  cursor: default;
+}
+.open .cover,
+.written .cover {
+  transform: rotateX(178deg);
+}
+.closed .cover {
+  animation: peek 3.2s 0.6s ease-in-out infinite;
+}
+@keyframes peek {
+  0%, 70%, 100% { transform: rotateX(0deg); }
+  80% { transform: rotateX(14deg); }
+  88% { transform: rotateX(4deg); }
+}
+.front,
+.back {
+  composes: paper;
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+}
+.front {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 1.4em;
+  background-color: #fbf1e3;
+  box-shadow:
+    inset 0 0 0 0.45em #fbf1e3,
+    inset 0 0 0 0.52em rgba(214, 104, 86, 0.45),
+    0 0.1em 0.2em rgba(60, 30, 20, 0.14),
+    0 1.6em 2.6em -1.2em rgba(60, 30, 20, 0.5);
+}
+.leaf {
+  position: absolute;
+  left: 50%;
+  top: 0.7em;
+  width: 3.6em;
+  height: auto;
+  max-width: none;
+  transform: translateX(-95%) rotate(-48deg);
+  opacity: 0.85;
+}
+.pressed {
+  position: absolute;
+  left: 50%;
+  top: 1em;
+  width: 4.4em;
+  height: auto;
+  max-width: none;
+  transform: translateX(-42%) rotate(-8deg);
+  filter: saturate(0.85) drop-shadow(0 0.15em 0.2em rgba(60, 30, 20, 0.2));
+}
+.frontTo {
+  position: relative;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.7em;
+  font-weight: 700;
+  color: #4a2a20;
+  line-height: 1;
+  max-width: 88%;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.frontRule {
+  position: relative;
+  margin-top: 0.4em;
+  width: 5.5em;
+  height: 1px;
+  background: rgba(74, 42, 32, 0.35);
+}
+.back {
+  transform: rotateX(180deg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
+  background-color: #fdf5ea;
+  color: #6b4a3c;
+  box-shadow: inset 0 -0.6em 1em -0.6em rgba(60, 30, 20, 0.18);
+}
+.tape {
+  position: absolute;
+  left: 50%;
+  top: 2.1em;
+  width: 3.6em;
+  height: 1.1em;
+  transform: translateX(-50%) rotate(-4deg);
+  background: rgba(238, 196, 120, 0.55);
+  box-shadow: 0 0 0 1px rgba(200, 150, 80, 0.15);
+}
+.inner {
+  margin-top: 1.6em;
+  max-width: 85%;
+  text-align: center;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.18em;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.heart {
+  font-size: 1.2em;
+  color: #d66856;
+}
+
+/* ───── melati kering yang jatuh ───── */
+.fall {
+  position: absolute;
+  left: 56%;
+  top: 46%;
+  width: 3.2em;
+  pointer-events: none;
+  animation: fall 2.6s 0.55s cubic-bezier(0.45, 0.05, 0.55, 0.95) both;
+  z-index: 3;
+}
+.fallArt {
+  width: 100%;
+  height: auto;
+  max-width: none;
+  filter: saturate(0.8) drop-shadow(0 0.2em 0.3em rgba(60, 30, 20, 0.25));
+}
+@keyframes fall {
+  0% { opacity: 0; transform: translate(0, -1em) rotate(0deg) scale(0.7); }
+  12% { opacity: 1; }
+  35% { transform: translate(-2.4em, 4em) rotate(80deg) scale(0.9); }
+  60% { transform: translate(1.2em, 8.5em) rotate(170deg) scale(0.95); }
+  85% { transform: translate(-0.8em, 12.2em) rotate(230deg) scale(1); }
+  100% { opacity: 1; transform: translate(-0.4em, 13em) rotate(245deg) scale(1); }
+}
+
+/* ───── tombol & petunjuk ───── */
+.read {
+  position: absolute;
+  left: 50%;
+  bottom: 2em;
+  min-height: 3.2em;
+  padding: 0.95em 1.6em;
+  border-radius: 99em;
+  font-weight: 800;
+  font-size: 0.98em;
+  color: #fffaf2;
+  background: #d6553f;
+  box-shadow: 0 0.7em 1.4em -0.7em rgba(160, 50, 30, 0.7);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 0.8em);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.34, 1.4, 0.64, 1);
+  cursor: pointer;
+}
+.read.shown {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, 0);
+}
+.hint {
+  position: absolute;
+  left: 50%;
+  bottom: 2.2em;
+  transform: translateX(-50%);
+  padding: 0.62em 1.05em;
+  border-radius: 99em;
+  font-size: 0.86em;
+  font-weight: 700;
+  white-space: nowrap;
+  color: #fffaf2;
+  background: rgba(40, 24, 18, 0.78);
+  animation: hintIn 0.5s 0.6s both;
+}
+@keyframes hintIn {
+  from { opacity: 0; transform: translate(-50%, 0.6em); }
+  to { opacity: 1; transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .cover,
+  .fall,
+  .closed .cover {
+    animation: none;
+    transition-duration: 0.01s;
+  }
+}

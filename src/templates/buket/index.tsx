@@ -1,9 +1,10 @@
 'use client';
 
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { Confetti, Finale, Hint, HoldButton, Petals, Sprite, Stage, Typewriter, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
+import { Confetti, Finale, Hint, HoldButton, Petals, Sprite, Stage, TapCue, Typewriter, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
+import { BouquetCard } from './Card';
 import { TEXT } from './i18n';
 import { meta } from './meta';
 import s from './style.module.css';
@@ -45,7 +46,14 @@ const ART = ['bg-pagi', 'buket-belakang', 'buket-daun', 'buket-depan', 'pita', '
  * smell   → hirup wanginya
  * card    → kartu kecil terselip → Finale
  */
-type Phase = 'tag' | 'bloom' | 'shy' | 'tie' | 'smell' | 'card';
+/** hati kecil yang melayang: [posisi x %, jeda detik, skala, putar] */
+const HEARTS: Array<[number, number, number, number]> = [
+  [24, 0, 1.1, -12], [36, 0.2, 0.8, 8], [48, 0.05, 1.4, -4], [60, 0.3, 1, 14], [72, 0.12, 1.2, -8],
+  [30, 0.55, 0.8, 10], [44, 0.7, 1.1, -14], [56, 0.45, 0.9, 6], [68, 0.8, 1.2, -6], [40, 1, 0.9, 12],
+  [52, 1.15, 1.3, -10], [64, 1.3, 0.8, 9], [34, 1.45, 1, -5], [58, 1.6, 1.1, 11],
+];
+
+type Phase = 'tag' | 'bloom' | 'shy' | 'tie' | 'smell' | 'hug' | 'card';
 
 export default function Buket(props: TemplateProps) {
   const [run, setRun] = useState(0);
@@ -78,9 +86,14 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const [tied, setTied] = useState(false);
   const [sniffed, setSniffed] = useState(false);
   const [finale, setFinale] = useState(false);
+  const [hug, setHug] = useState(0);
+  const [hugged, setHugged] = useState(false);
+  const [cardOpen, setCardOpen] = useState(false);
   const [burst, setBurst] = useState(0);
   const peak = useRef(0);
   const nextBtn = useRef<HTMLButtonElement>(null);
+  /** benda yang sekarang harus disentuh (untuk penunjuk TapCue) */
+  const cueEl = useRef<HTMLElement | null>(null);
   const later = useTimers();
 
   const open = (i: number) => order.indexOf(i) < step;
@@ -173,24 +186,64 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     setSniffed(true);
     sfx.whoosh();
     haptic(15);
-    later(() => setPhase('card'), 2600);
+    later(() => setPhase('hug'), 2600);
+  };
+
+  const hugDone = () => {
+    if (hugged) return;
+    setHugged(true);
+    setHug(0);
+    sfx.chime();
+    haptic(30);
+    later(() => setPhase('card'), 2900);
   };
 
   const openCard = () => {
-    sfx.chime();
+    if (cardOpen) return;
+    sfx.whoosh();
     haptic(15);
-    setFinale(true);
+    setCardOpen(true);
   };
 
   /* kupu-kupu: hinggap di kuncup berikutnya; setelah pita terikat, hinggap di pita */
   const butterfly = (() => {
-    if (phase === 'tag' || phase === 'card' || finale) return null;
+    if (phase === 'tag' || phase === 'hug' || phase === 'card' || finale) return null;
     if (phase === 'smell' && sniffed) return { x: 520, y: -60, away: true };
     if (phase === 'tie' || phase === 'smell') return tied ? { x: 318, y: 548, away: false } : { x: 470, y: 520, away: false };
     if (card !== null || slip !== null || target === null) return { x: 520, y: 40, away: false };
     const h = heads[target];
     return { x: h.x + h.d * 0.18, y: h.y - h.d * 0.28, away: false };
   })();
+
+  /** apa yang sekarang harus disentuh: satu saja pada satu waktu */
+  const cueOn: string | null = finale
+    ? null
+    : phase === 'tag'
+      ? ready ? (flipped ? 'tagGo' : 'tag') : null
+      : phase === 'bloom'
+        ? slip !== null
+          ? 'slip'
+          : card !== null
+            ? typed ? 'next' : null
+            : target !== null
+              ? `f${target}`
+              : null
+        : phase === 'shy'
+          ? card !== null
+            ? typed ? 'next' : null
+            : slip !== null
+              ? 'slip'
+              : step < n
+                ? 'shy'
+                : null
+          : phase === 'tie'
+            ? tied ? null : 'bow'
+            : phase === 'smell'
+              ? sniffed ? null : 'smell'
+              : phase === 'hug'
+                ? hugged ? null : 'hug'
+                : cardOpen ? null : 'open';
+  const cue = (key: string) => (cueOn === key ? (el: HTMLElement | null) => { cueEl.current = el; } : undefined);
 
   const k = card;
   const note = k !== null ? notes[k] : null;
@@ -199,7 +252,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
   return (
     <div className={cx(s.wrap, ready && s.ready, sniffed && s.sniffed)}>
-      <Petals kinds={['putih', 'pink', 'jingga']} count={sniffed ? 16 : 8} />
+      <Petals kinds={['putih', 'pink', 'jingga']} count={hugged ? 22 : sniffed ? 16 : 8} />
 
       <div className={s.head}>
         {tied ? (
@@ -226,7 +279,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         )}
       </div>
 
-      <div className={s.art}>
+      <div className={cx(s.art, hug > 0 && s.hugging)} style={{ '--hug': hug } as CSSProperties}>
         <div className={cx(s.bq, sniffed && s.inhale)} role="group" aria-label={t.bouquet}>
           <Sprite name="buket-belakang" className={s.layer} />
           <Sprite name="buket-daun" className={cx(s.layer, s.greens)} />
@@ -250,6 +303,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                     '--hold': isShy ? hold : 0,
                   } as CSSProperties
                 }
+                ref={cue(`f${i}`) ?? (i === CENTER ? cue('shy') : undefined)}
                 onClick={() => tapFlower(i)}
                 disabled={isOpen || phase !== 'bloom' || card !== null || slip !== null}
                 tabIndex={i === target && phase === 'bloom' && card === null && slip === null ? 0 : -1}
@@ -276,7 +330,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
             <HoldButton
               ms={1700}
               className={s.holdZone}
-              style={{ left: `${(heads[CENTER].x / 600) * 100}%`, top: `${(heads[CENTER].y / 720) * 100}%`, width: `${(heads[CENTER].d / 600) * 62}%` } as CSSProperties}
+              style={{ left: `${(heads[CENTER].x / 600) * 100}%`, top: `${(heads[CENTER].y / 720) * 100}%`, width: `${(heads[CENTER].d / 600) * 92}%` } as CSSProperties}
               label={t.holdLabel}
               onProgress={onHoldProgress}
               onComplete={bloomShy}
@@ -285,6 +339,19 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
             </HoldButton>
           ) : null}
           <Sprite name="buket-depan" className={s.layer} />
+
+          {/* area sentuh kuncup giliran: di atas kertas pembungkus & kuncup lain yang bertumpuk,
+              jadi ketukan di kuncup yang bercahaya selalu kena (tampilan tidak berubah) */}
+          {phase === 'bloom' && card === null && slip === null && target !== null ? (
+            <button
+              type="button"
+              tabIndex={-1}
+              aria-hidden
+              className={s.budHit}
+              style={{ left: `${(heads[target].x / 600) * 100}%`, top: `${(heads[target].y / 720) * 100}%`, width: `${(heads[target].d / 600) * 100}%` } as CSSProperties}
+              onClick={() => tapFlower(target)}
+            />
+          ) : null}
 
           {/* gulungan kertas yang menyembul dari bunga yang baru mekar */}
           {slip !== null ? (
@@ -297,6 +364,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               aria-label={t.slipLabel}
               ref={(el) => {
                 if (el && mode !== 'preview') el.focus({ preventScroll: true });
+                if (cueOn === 'slip') cueEl.current = el;
               }}
             >
               <Sprite name={isLast(slip) ? 'buket-gulungan-emas' : 'buket-gulungan'} className={s.slipArt} />
@@ -305,7 +373,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
           {/* pita: menjuntai longgar sampai diikat */}
           {phase === 'tie' || phase === 'smell' || phase === 'card' ? (
-            <button type="button" className={cx(s.bowBtn, tied && s.tied)} onClick={tie} disabled={tied} aria-label={t.tieLabel}>
+            <button ref={cue('bow')} type="button" className={cx(s.bowBtn, tied && s.tied)} onClick={tie} disabled={tied} aria-label={t.tieLabel}>
               <Sprite name="pita" className={s.bow} />
             </button>
           ) : null}
@@ -332,7 +400,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       <div className={s.foot}>
         {phase === 'tag' ? (
           <div className={s.tagStage}>
-            <button type="button" className={cx(s.tagCard, flipped && s.flipped)} onClick={() => { if (!flipped) { setFlipped(true); sfx.crack(); haptic(10); } }} aria-label={t.tagFlip} disabled={flipped}>
+            <button ref={cue('tag')} type="button" className={cx(s.tagCard, flipped && s.flipped)} onClick={() => { if (!flipped) { setFlipped(true); sfx.crack(); haptic(10); } }} aria-label={t.tagFlip} disabled={flipped}>
               <span className={s.string} aria-hidden />
               <span className={s.tagFace}>
                 <Sprite name="buket-label" className={s.tagArt} />
@@ -347,7 +415,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               </span>
             </button>
             {flipped ? (
-              <button type="button" className={s.cta} onClick={() => { sfx.tap(); setPhase('bloom'); }}>
+              <button ref={cue('tagGo')} type="button" className={s.cta} onClick={() => { sfx.tap(); setPhase('bloom'); }}>
                 {t.tagGo}
               </button>
             ) : null}
@@ -360,13 +428,29 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                 <em>{t.smellAside}</em>
               </div>
             ) : (
-              <button type="button" className={s.ghost} onClick={sniff}>
+              <button ref={cue('smell')} type="button" className={s.ghost} onClick={sniff}>
                 {t.smell}
               </button>
             )}
           </div>
-        ) : phase === 'card' ? (
-          <button type="button" className={s.cta} onClick={openCard}>
+        ) : phase === 'hug' ? (
+          <div className={s.smellStage}>
+            {hugged ? (
+              <div className={s.smellText} aria-live="polite">
+                <span>{t.hugLine}</span>
+                <em>{t.hugAside}</em>
+              </div>
+            ) : (
+              <span ref={cue('hug')} className={s.hugWrap}>
+                <HoldButton ms={1500} onComplete={hugDone} onProgress={setHug} label={t.hugLabel} className={s.hugBtn}>
+                  <span className={s.hugHeart} aria-hidden>♥</span>
+                  <span className={s.hugText}>{t.hug}</span>
+                </HoldButton>
+              </span>
+            )}
+          </div>
+        ) : phase === 'card' && !cardOpen ? (
+          <button ref={cue('open')} type="button" className={s.cta} onClick={openCard}>
             {t.open}
           </button>
         ) : phase === 'bloom' || phase === 'shy' ? (
@@ -380,7 +464,15 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
       {/* kartu pesan per bunga */}
       {k !== null && note && head ? (
-        <div className={cx(s.noteCard, isLast(k) && s.special)} key={k} role="group" aria-live="polite">
+        <div
+          className={cx(s.noteCard, isLast(k) && s.special, typed && s.noteReady)}
+          key={k}
+          role="group"
+          aria-live="polite"
+          onClick={(e) => {
+            if (typed && e.target === e.currentTarget) nextCard();
+          }}
+        >
           {photo ? (
             <span className={s.snap}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -394,7 +486,15 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           <p className={cx(s.noteText, note.length > 60 && s.long)}>
             <Typewriter text={note} speed={30} onDone={() => setTyped(true)} />
           </p>
-          <button ref={nextBtn} type="button" className={cx(s.nextBtn, typed && s.shown)} onClick={nextCard}>
+          <button
+            ref={(el) => {
+              nextBtn.current = el;
+              if (cueOn === 'next') cueEl.current = el;
+            }}
+            type="button"
+            className={cx(s.nextBtn, typed && s.shown)}
+            onClick={nextCard}
+          >
             {isLast(k) ? t.tieGo : k + 1 === n - 1 ? t.nextLast : t.next}
           </button>
         </div>
@@ -405,9 +505,40 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       {phase === 'bloom' && card === null && slip === null ? <Hint key={hint ?? 'b'}>{hint ?? t.hintBud}</Hint> : null}
       {phase === 'shy' && step < n && card === null && slip === null ? <Hint key={hint ?? 's'}>{hint ?? t.hold}</Hint> : null}
       {phase === 'tie' && !tied ? <Hint>{t.tieHint}</Hint> : null}
-      {phase === 'card' ? <Hint>{t.cardHint}</Hint> : null}
+      {phase === 'hug' && !hugged ? <Hint>{t.hugHint}</Hint> : null}
+      {phase === 'card' && !cardOpen ? <Hint>{t.cardHint}</Hint> : null}
+
+      {/* hati-hati kecil setelah buketnya dipeluk */}
+      {hugged ? (
+        <div className={s.hearts} aria-hidden>
+          {HEARTS.map((h, i) => (
+            <span key={i} style={{ '--x': `${h[0]}%`, '--d': `${h[1]}s`, '--s': h[2], '--r': `${h[3]}deg` } as CSSProperties}>
+              ♥
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      <TapCue
+        target={cueEl}
+        show={cueOn !== null}
+        kind={cueOn === 'shy' || cueOn === 'hug' ? 'hold' : 'tap'}
+        at={cueOn === 'shy' ? { x: 0.5, y: 0.38 } : cueOn === 'hug' ? { x: 0.66, y: 0.28 } : undefined}
+        delay={cueOn?.startsWith('f') || cueOn === 'tag' ? 2200 : 2800}
+      />
 
       <Confetti burst={burst} colors={['#ee6a58', '#ffcb3d', '#ff9f1f', '#f47a8c', '#fffdf7', '#5a9f79']} origin={{ x: 0.5, y: 0.45 }} count={tied ? 110 : 60} />
+
+      {cardOpen && !finale ? (
+        <BouquetCard
+          to={data.to.trim()}
+          from={data.from.trim()}
+          first={(data.message.split(/\n\s*\n/)[0] ?? '').trim()}
+          t={t}
+          fmt={fmt}
+          onRead={() => setFinale(true)}
+        />
+      ) : null}
 
       {finale ? (
         <Finale

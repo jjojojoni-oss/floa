@@ -253,7 +253,9 @@
 .candle::before {
   content: '';
   position: absolute;
-  inset: -16% -12% -4%;
+  /* lilin itu kurus: area ketuknya dilebarkan (tumpang tindih dengan tetangga tidak masalah,
+     lilin mana pun yang belum menyala boleh dinyalakan) */
+  inset: -22% -55% -6%;
 }
 /* lilin yang sudah menyala tidak boleh menghalangi ketukan ke tetangganya */
 .candle:disabled {
@@ -581,7 +583,9 @@
   position: relative;
   z-index: 4;
   width: 100%;
-  height: 12em;
+  /* tumbuh kalau isinya lebih tinggi (kartu berfoto + tombol di layar pendek): kuenya yang mengecil,
+     bukan tombolnya yang terpotong di bawah */
+  min-height: 12em;
   flex: none;
   display: flex;
   flex-direction: column;
@@ -843,6 +847,7 @@
 }
 .again {
   margin-top: 0.9em;
+  min-height: max(3.1em, 46px);
   padding: 0.85em 1.5em;
   border-radius: 99em;
   background: radial-gradient(circle at 35% 20%, #ffe0a0, #ffb347 60%, #e88a22);
@@ -894,6 +899,13 @@
 }
 .songLong .lyric { font-size: 1.08em; }
 .lyric.sung { opacity: 0.78; }
+/* lagu selesai: kartunya dirapatkan supaya tombol lanjut muat utuh di layar */
+.songCard { transition: padding 0.4s ease; }
+.lyric { transition: opacity 0.35s ease, color 0.35s ease, scale 0.35s ease, font-size 0.4s ease; }
+.songDone { padding: 0.4em 1em 0.45em; }
+.songDone .lyric,
+.songLong.songDone .lyric { font-size: 0.98em; line-height: 1.12; }
+.songBox:has(.songDone) > .cta { margin-top: 0.55em; }
 .lyric.sing {
   opacity: 1;
   color: #d0473a;
@@ -908,6 +920,7 @@
 }
 .clapBtn {
   composes: paper from '../kit/kit.module.css';
+  min-height: 44px;
   padding: 0.6em 1.15em;
   border-radius: 99em;
   color: #4a2238;
@@ -1154,6 +1167,7 @@
 .cta {
   position: relative;
   margin-top: 0.8em;
+  min-height: max(3.1em, 46px);
   padding: 0.95em 1.7em;
   border-radius: 99em;
   background: linear-gradient(180deg, #f7735d, #e0503c);
@@ -1184,3 +1198,21 @@
   .develop { animation-duration: 0.01s; animation-delay: 0s; }
   .lids::before, .lids::after { transition: none; }
 }
+
+/* tautan kecil (lewati lagu, ketuk saja, pakai mikrofon): area sentuhnya diperluas tanpa mengubah tampilan */
+.skip,
+.alt,
+.mic {
+  position: relative;
+}
+.skip::after,
+.alt::after,
+.mic::after {
+  content: '';
+  position: absolute;
+  /* ke atas sedikit saja, supaya tidak memakan bagian bawah tombol tahan di atasnya */
+  inset: -0.3em -0.7em -0.75em;
+}
+
+/* layar pembuka: seluruh kotak (kalimat + saklar) bisa diketuk */
+.introBox { cursor: pointer; }

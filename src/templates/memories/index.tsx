@@ -10,7 +10,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Finale, Hint, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
+import { Finale, Hint, Sprite, Stage, TapCue, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
 import { TEXT } from './i18n';
@@ -135,6 +135,9 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const closeEl = useRef<HTMLButtonElement>(null);
   const opening = useRef(false);
   const swipe = useRef<{ id: number; x: number } | null>(null);
+  const switchEl = useRef<HTMLButtonElement>(null);
+  const envEl = useRef<HTMLButtonElement>(null);
+  const nextEl = useRef<HTMLButtonElement>(null);
 
   const to = data.to.trim() || t.you;
   const from = data.from.trim();
@@ -270,9 +273,39 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     if (!sw || sw.id !== e.pointerId) return;
     const dx = e.clientX - sw.x;
     if (Math.abs(dx) > 36) go(dx < 0 ? 1 : -1);
+    else if (Math.abs(dx) < 8 && !(e.target as HTMLElement).closest('button')) {
+      // ketuk fotonya: separuh kanan = berikutnya (atau surat di foto terakhir), separuh kiri = sebelumnya
+      const r = e.currentTarget.getBoundingClientRect();
+      const right = e.clientX - r.left > r.width * 0.4;
+      if (right && view !== null && view >= total - 1) openLetter();
+      else go(right ? 1 : -1);
+    }
   };
 
   const cur = view !== null ? cards[view] : null;
+  const nextUnseen = seen.findIndex((v) => !v);
+  const cardCue = useMemo(
+    () => ({
+      get current() {
+        return cardEls.current[nextUnseen] ?? null;
+      },
+    }),
+    [nextUnseen],
+  );
+  /** satu penunjuk sentuh untuk langkah yang sedang aktif */
+  const cue = finale
+    ? null
+    : !on
+      ? { key: 'switch', target: switchEl }
+      : view !== null
+        ? shown
+          ? { key: `next${view}`, target: nextEl }
+          : null
+        : allSeen
+          ? { key: 'env', target: envEl }
+          : nextUnseen >= 0
+            ? { key: `card${nextUnseen}`, target: cardCue }
+            : null;
   const envSpot = slot.env;
   const envWire = SWAGS[envSpot[0]];
 
@@ -385,6 +418,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
             }
           >
             <button
+              ref={envEl}
               type="button"
               className={cx(s.env, on && allSeen && view === null && s.pulse)}
               onClick={(e: ReactMouseEvent) => {
@@ -416,6 +450,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       ) : null}
 
       <button
+        ref={switchEl}
         type="button"
         className={s.switch}
         onClick={(e) => {
@@ -432,7 +467,9 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
       {!on ? <Hint key="h0">{t.hintSwitch}</Hint> : null}
       {on && view === null && !finale && seenCount === 0 && total > 0 ? <Hint key="h1">{photos.length ? t.hintPhoto : t.hintNote}</Hint> : null}
+      {on && view === null && !finale && seenCount > 0 && !allSeen ? <Hint key="h3">{photos.length ? t.hintMore : t.hintMoreNote}</Hint> : null}
       {on && view === null && !finale && allSeen ? <Hint key="h2">{t.hintLetter}</Hint> : null}
+      {cue ? <TapCue key={cue.key} target={cue.target} /> : null}
 
       {view !== null && cur ? (
         <div className={cx(s.viewer, shown && s.vOpen)} role="dialog" aria-label={t.viewer}>
@@ -467,13 +504,13 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                 <b>{view + 1}</b> / {total}
               </span>
               {view < total - 1 ? (
-                <button type="button" className={s.nav} onClick={() => go(1)} aria-label={t.next}>
+                <button ref={nextEl} type="button" className={s.nav} onClick={() => go(1)} aria-label={t.next}>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                     <path d="M9.5 5.5L16 12l-6.5 6.5" />
                   </svg>
                 </button>
               ) : (
-                <button type="button" className={s.toLetter} onClick={openLetter}>
+                <button ref={nextEl} type="button" className={s.toLetter} onClick={openLetter}>
                   {t.toLetter}
                 </button>
               )}

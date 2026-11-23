@@ -1,7 +1,7 @@
 'use client';
 
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import { Finale, Hint, HoldButton, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
+import { Finale, Hint, HoldButton, Sprite, Stage, TapCue, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
 import { type AmplopText, TEXT } from './i18n';
@@ -125,6 +125,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const [leaving, setLeaving] = useState(false);
   const broke = useRef(false);
   const nextRef = useRef<HTMLButtonElement>(null);
+  /** benda yang sekarang harus disentuh (untuk penunjuk TapCue) */
+  const cueEl = useRef<HTMLElement | null>(null);
   const later = useTimers();
   const t = TEXT[useLocale()];
 
@@ -211,6 +213,22 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const opened = phase !== 'sealed';
   const laidCount = Math.min(cur, n);
 
+  /** apa yang sekarang harus disentuh: satu saja pada satu waktu */
+  const cueOn: 'front' | 'seal' | 'pull' | 'next' | 'open' | null = finale
+    ? null
+    : side === 'front'
+      ? ready ? 'front' : null
+      : side !== 'back'
+        ? null
+        : phase === 'sealed'
+          ? 'seal'
+          : inItems
+            ? reading ? (leaving ? null : 'next') : 'pull'
+            : phase === 'out'
+              ? 'open'
+              : null;
+  const cue = (key: typeof cueOn) => (cueOn === key ? (el: HTMLElement | null) => { cueEl.current = el; } : undefined);
+
   /* ── kepala ── */
   let head: { k: string; eyebrow: string; name: string } | null = null;
   if (showFront) head = null;
@@ -259,7 +277,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           <div className={cx(s.bob, !opened && s.floaty)}>
             <div className={cx(s.flip, side === 'turnOut' && s.turnOut, side === 'turnIn' && s.turnIn)}>
               {showFront ? (
-                <button type="button" className={s.front} onClick={flip} aria-label={t.flip}>
+                <button ref={cue('front')} type="button" className={s.front} onClick={flip} aria-label={t.flip}>
                   <Sprite name="amplop-muka" className={s.face} />
                   {from ? <span className={s.sender}>{fmt(t.from, { from })}</span> : null}
                   <span className={s.addr}>
@@ -297,6 +315,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                   {inItems && cur < n ? (
                     <button
                       key={cur}
+                      ref={cue('pull')}
                       type="button"
                       className={cx(s.sticking, reading && s.pulled, s[`k_${items[cur].kind}`])}
                       style={{ '--tint': TICKET_TINT[cur % TICKET_TINT.length], '--img': items[cur].photo ? `url(${items[cur].photo})` : undefined } as CSSProperties}
@@ -314,7 +333,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                     <Sprite decoding="sync" name="amplop-tutup-dalam" className={cx(s.layer, s.flapIn)} />
                   </div>
 
-                  <div className={s.sealWrap} onClick={tapSeal}>
+                  <div ref={cue('seal')} className={s.sealWrap} onClick={tapSeal}>
                     {phase === 'sealed' ? (
                       <HoldButton
                         ms={1300}
@@ -364,7 +383,15 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
             {isLast ? <span className={s.specialTag}>{t.specialTag}</span> : null}
             <Keepsake item={items[cur]} i={cur} n={n} t={t} />
           </div>
-          <button ref={nextRef} type="button" className={cx(s.cta, s.ctaSoft)} onClick={putDown}>
+          <button
+            ref={(el) => {
+              nextRef.current = el;
+              if (cueOn === 'next') cueEl.current = el;
+            }}
+            type="button"
+            className={cx(s.cta, s.ctaSoft)}
+            onClick={putDown}
+          >
             {isLast ? t.toLetter : t.next}
           </button>
         </div>
@@ -372,19 +399,26 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
       <div className={s.foot}>
         {phase === 'out' ? (
-          <button type="button" className={s.cta} onClick={openLetter}>
+          <button ref={cue('open')} type="button" className={s.cta} onClick={openLetter}>
             {t.cta}
           </button>
         ) : null}
       </div>
 
       {side === 'front' ? <Hint>{t.hintTap}</Hint> : null}
+      <TapCue
+        target={cueEl}
+        show={cueOn !== null}
+        kind={cueOn === 'seal' ? 'hold' : 'tap'}
+        at={cueOn === 'pull' ? { x: 0.5, y: 0.22 } : undefined}
+        delay={cueOn === 'front' ? 2200 : 2800}
+      />
       {side === 'back' && phase === 'sealed' ? (
         <Hint key={taps > 0 ? 't' : 'h'}>
           {taps > 0 ? fmt(t.hintMore, { n: TAPS_TO_BREAK - taps }) : t.hintHold}
         </Hint>
       ) : null}
-      {inItems && !reading && cur === 0 ? <Hint key="pull">{t.hintPull}</Hint> : null}
+      {inItems && !reading ? <Hint key="pull">{t.hintPull}</Hint> : null}
 
       {finale ? (
         <Finale

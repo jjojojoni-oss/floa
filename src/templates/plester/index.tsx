@@ -1,7 +1,7 @@
 'use client';
 
-import { type CSSProperties, type PointerEvent as RPointerEvent, useEffect, useRef, useState } from 'react';
-import { Confetti, Finale, Hint, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
+import { type CSSProperties, type PointerEvent as RPointerEvent, useEffect, useMemo, useRef, useState } from 'react';
+import { Confetti, Finale, Hint, Sprite, Stage, TapCue, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { useText } from './i18n';
 import { meta } from './meta';
@@ -82,8 +82,18 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const drag = useRef<{ i: number; x0: number; y0: number; moved: boolean } | null>(null);
   const dragEnd = useRef(0);
   const stuckSet = useRef(new Set<number>());
+  // target penunjuk sentuh
+  const startRef = useRef<HTMLButtonElement>(null);
+  const nextRef = useRef<HTMLButtonElement>(null);
+  const butRef = useRef<HTMLButtonElement>(null);
+  const readRef = useRef<HTMLButtonElement>(null);
+  const trayRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const stuck = states.filter((p) => p.at === 'heart').length;
+  /** plester berikutnya yang masih di nampan (untuk ketukan di hati & penunjuk sentuh) */
+  const nextPl = states.findIndex((p) => p.at === 'tray');
+  const crackCue = useMemo(() => ({ get current() { return crackRefs.current[seen] ?? null; } }), [seen]);
+  const trayCue = useMemo(() => ({ get current() { return trayRefs.current[nextPl] ?? null; } }), [nextPl]);
   const healed = phase === 'healed' || phase === 'ask' || phase === 'answered';
   const gap = healed ? 0 : 1 - stuck / n;
   const to = data.to.trim() || t.you;
@@ -318,8 +328,16 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               ))
             : null}
 
+          {/* hati utuh sebagai area sentuh: membuka retakan berikutnya / menempel plester berikutnya */}
+          {phase === 'admit' && seen < n ? (
+            <button type="button" className={s.heartHit} aria-hidden tabIndex={-1} onClick={() => reveal(seen)} />
+          ) : null}
+          {phase === 'mend' && nextPl >= 0 ? (
+            <button type="button" className={s.heartHit} aria-hidden tabIndex={-1} onClick={() => stick(nextPl)} />
+          ) : null}
+
           {phase === 'but' && but === 'idle' ? (
-            <button type="button" className={cx(s.hit, s.hitBut)} style={{ left: '50%', width: '26%' }} aria-label={t.butAria} onClick={tryBut} />
+            <button ref={butRef} type="button" className={cx(s.hit, s.hitBut)} style={{ left: '50%', width: '30%' }} aria-label={t.butAria} onClick={tryBut} />
           ) : null}
 
           {phase === 'mend'
@@ -327,9 +345,12 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                 p.at === 'heart' ? null : (
                   <button
                     key={i}
+                    ref={(el) => {
+                      trayRefs.current[i] = el;
+                    }}
                     type="button"
                     className={s.hit}
-                    style={{ left: `${(trayX(i, n) / BW) * 100}%`, width: n >= 3 ? '20%' : '24%' }}
+                    style={{ left: `${(trayX(i, n) / BW) * 100}%`, width: n >= 3 ? '28%' : '32%' }}
                     aria-label={fmt(t.stickAria, { n: i + 1 })}
                     onClick={() => {
                       if (performance.now() - dragEnd.current < 120) return;
@@ -351,7 +372,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           <div className={s.open}>
             <p className={s.openLine}>{fmt(t.openA, { to })}</p>
             <p className={cx(s.openLine, s.openLine2)}>{t.openB}</p>
-            <button type="button" className={s.ghost} onClick={start}>
+            <button ref={startRef} type="button" className={s.ghost} onClick={start}>
               {t.openCta}
             </button>
           </div>
@@ -365,12 +386,12 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         ) : null}
 
         {phase === 'admit' && seen >= n ? (
-          <button type="button" className={s.ghost} onClick={() => go('but')} autoFocus>
+          <button ref={nextRef} type="button" className={s.ghost} onClick={() => go('but')} autoFocus>
             {t.next}
           </button>
         ) : null}
         {phase === 'but' && but === 'gone' ? (
-          <button type="button" className={s.ghost} onClick={() => go('mend')} autoFocus>
+          <button ref={nextRef} type="button" className={s.ghost} onClick={() => go('mend')} autoFocus>
             {t.next}
           </button>
         ) : null}
@@ -405,6 +426,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               {from ? <span className={s.sign}>{fmt(t.sign, { name: from })}</span> : null}
             </div>
             <button
+              ref={readRef}
               type="button"
               className={s.cta}
               onClick={() => {
@@ -421,6 +443,14 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       {phase === 'admit' && seen === 0 ? <Hint>{t.admitHint}</Hint> : null}
       {phase === 'but' && but === 'idle' ? <Hint key="b">{t.butHint}</Hint> : null}
       {phase === 'mend' && stuck === 0 ? <Hint key="m">{t.hint}</Hint> : null}
+
+      {/* penunjuk sentuh kalau penerima diam, satu per tahap */}
+      <TapCue target={startRef} show={phase === 'intro'} delay={4200} />
+      <TapCue target={crackCue} show={phase === 'admit' && seen < n} />
+      <TapCue target={nextRef} show={(phase === 'admit' && seen >= n) || (phase === 'but' && but === 'gone')} delay={3600} />
+      <TapCue target={butRef} show={phase === 'but' && but === 'idle'} />
+      <TapCue target={trayCue} show={phase === 'mend' && nextPl >= 0} kind="drag" dir={{ x: 0, y: -6 }} />
+      <TapCue target={readRef} show={phase === 'answered' && !finale} delay={3600} />
 
       <Confetti burst={burst} shapes="hearts" count={answer === 'forgive' ? 46 : 64} colors={['#ef6a6a', '#ff9aa8', '#ffc9cf', '#ffffff', '#f7b3a0']} origin={{ x: 0.5, y: 0.45 }} />
 
