@@ -243,7 +243,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     if (rereadTimer.current) clearTimeout(rereadTimer.current);
     setReread(i);
     sfx.note(i);
-    rereadTimer.current = later(() => setReread(null), 4200);
+    rereadTimer.current = later(() => setReread(null), 3200 + (notes[i]?.length ?? 0) * 45);
   };
 
   const pointer = (i: number) => ({
@@ -365,7 +365,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         const idle = phase === 'intro' && i === 0 && beat >= 1;
         const waiting = !flown && !isReady && !idle;
         const special = i === n - 1 && n >= 2;
-        const canReread = flown && skyish && !!notes[i];
+        // setelah narasi penutup, lampion di langit bisa diketuk untuk membaca lagi harapannya
+        const canReread = flown && phase === 'letter' && !!notes[i];
         return (
           // dua lapis seukuran stage: gerak mendatar dan menaik punya lengkung waktu sendiri
           <div
@@ -439,18 +440,6 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         </button>
       ) : null}
 
-      {reread !== null && notes[reread] ? (
-        <div
-          key={reread}
-          className={s.reread}
-          style={{ left: `${Math.min(72, Math.max(28, slots[reread][0]))}%`, top: `calc(${slots[reread][1]}% + 3.4em)` } as CSSProperties}
-          role="status"
-        >
-          <span className={s.cardNo}>{fmt(t.wishNo, { n: reread + 1, total: n })}</span>
-          {notes[reread]}
-        </div>
-      ) : null}
-
       <div className={s.foot}>
         {narration ? (
           <button
@@ -477,6 +466,19 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
             {typed ? <span>{narration}</span> : <Typewriter key={narration} text={narration} speed={30} onDone={() => setTyped(true)} />}
             {typed ? <span className={s.tapNext}>{t.tapNext}</span> : <span className={s.tapNext} style={{ visibility: 'hidden' }}>·</span>}
           </button>
+        ) : phase === 'letter' && reread !== null && notes[reread] ? (
+          <div key={`r${reread}`} className={cx(s.card, s.recall, notes[reread].length > 58 && s.cardLong, photos[reread] && s.cardPhoto)} role="status">
+            {photos[reread] ? (
+              <span className={s.snap}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={photos[reread]} alt={fmt(t.photoAlt, { n: reread + 1 })} draggable={false} />
+              </span>
+            ) : null}
+            <span className={cx(s.cardNo, reread === n - 1 && n >= 2 && s.cardNoSpecial)}>
+              {reread === n - 1 && n >= 2 ? t.lastWish : fmt(t.wishNo, { n: reread + 1, total: n })}
+            </span>
+            {notes[reread]}
+          </div>
         ) : phase === 'wish' && cur < n && !preLast ? (
           <div key={`w${cur}`} className={cx(s.card, isLast && n >= 2 && s.cardSpecial, notes[cur] && notes[cur].length > 58 && s.cardLong, photo && s.cardPhoto)}>
             {photo ? (

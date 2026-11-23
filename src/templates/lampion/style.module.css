@@ -497,28 +497,7 @@
   overflow-wrap: anywhere;
 }
 
-/* ── baca lagi harapan di langit ── */
-.reread {
-  position: absolute;
-  z-index: 10;
-  width: max-content;
-  max-width: 12.5em;
-  translate: -50% 0;
-  padding: 0.38em 0.85em 0.5em;
-  composes: paper from '../kit/kit.module.css';
-  --paper: #fff3dc;
-  color: #2b2440;
-  border-radius: 0.25em;
-  font-family: var(--font-hand, cursive);
-  font-size: 1.22em;
-  font-weight: 600;
-  line-height: 1.12;
-  text-align: center;
-  text-wrap: balance;
-  overflow-wrap: anywhere;
-  animation: cardIn 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both;
-  pointer-events: none;
-}
+
 
 /* ── kaki: kartu harapan di kertas, tulisan tangan ── */
 .foot {
@@ -615,7 +594,8 @@
   to { opacity: 1; transform: rotate(-7deg); }
 }
 /* narasi: kartu kertas yang bisa diketuk */
-.tell::before { display: none; }
+.tell::before,
+.recall::before { display: none; }
 .tell {
   display: block;
   width: 100%;
