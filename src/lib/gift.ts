@@ -34,6 +34,8 @@ export type Gift = {
   passHash: string | null;
   /** petunjuk kata sandi, terlihat oleh siapa pun yang membuka link */
   passHint: string | null;
+  /** bentuk kata sandi untuk layar kunci: 'd6' = 6 angka (papan angka), null = teks bebas */
+  passShape: string | null;
 };
 
 export const EMPTY_DATA: GiftData = { to: '', from: '', title: '', message: '', notes: [], photos: [], music: null };

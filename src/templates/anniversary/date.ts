@@ -67,11 +67,45 @@ export function elapsed(start: Date, now: Date): Elapsed {
   };
 }
 
-const PASARAN = ['Legi', 'Pahing', 'Pon', 'Wage', 'Kliwon'];
-/** 17 Agustus 1945 = Jumat Legi */
-const LEGI = Math.round(Date.UTC(1945, 7, 17) / DAY);
+export type Milestone = { date: Date; kind: 'days' | 'years'; n: number };
 
-/** Pasaran Jawa (siklus lima hari) untuk sebuah tanggal. */
-export function pasaran(d: Date) {
-  return PASARAN[(((dayNo(d) - LEGI) % 5) + 5) % 5];
+/** angka hari yang biasa dirayakan pasangan (hari jadian = hari ke-1) */
+const DAY_MARKS = [100, 500, 1000, 2000, 3000, 5000, 10000];
+const MAX_MARKS = 6;
+
+/**
+ * Milestone yang sudah terlewati di antara tanggal mulai dan hari ini (tidak termasuk keduanya):
+ * ulang tahun jadian dan hari ke-100/500/1000/…. Kalau terlalu banyak, yang dipilih ulang tahun
+ * terdekat dulu, lalu hari-hari bulat; hasilnya urut tanggal.
+ */
+export function milestones(start: Date, today: Date): Milestone[] {
+  const total = dayDiff(start, today);
+  const all: (Milestone & { p: number })[] = [];
+  for (let y = 1; y < 200; y++) {
+    const d = addMonths(start, 12 * y);
+    const at = dayDiff(start, d);
+    if (at >= total) break;
+    all.push({ date: d, kind: 'years', n: y, p: 3 + y / 1000 });
+  }
+  for (const n of DAY_MARKS) {
+    const at = n - 1;
+    if (at <= 0 || at >= total) continue;
+    if (all.some((m) => dayDiff(start, m.date) === at)) continue;
+    all.push({ date: addDays(start, at), kind: 'days', n, p: n >= 1000 ? 2 + n / 1e6 : 1 + n / 1e6 });
+  }
+  return all
+    .sort((a, b) => b.p - a.p)
+    .slice(0, MAX_MARKS)
+    .sort((a, b) => a.date.getTime() - b.date.getTime())
+    .map(({ date, kind, n }) => ({ date, kind, n }));
+}
+
+/** Milestone yang jatuh tepat pada `day` (dipakai untuk lembar hari ini). */
+export function milestoneOn(start: Date, day: Date): Milestone | null {
+  const at = dayDiff(start, day);
+  if (at <= 0) return null;
+  const months = (day.getFullYear() - start.getFullYear()) * 12 + (day.getMonth() - start.getMonth());
+  if (months > 0 && months % 12 === 0 && dayDiff(addMonths(start, months), day) === 0) return { date: day, kind: 'years', n: months / 12 };
+  const n = at + 1;
+  return DAY_MARKS.includes(n) ? { date: day, kind: 'days', n } : null;
 }

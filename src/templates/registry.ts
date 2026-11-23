@@ -14,7 +14,7 @@ import { meta as scrapbook } from './scrapbook/meta';
 import { meta as toga } from './toga/meta';
 
 /** Urutan di sini = urutan di katalog. Teks bawaannya Bahasa Indonesia; pakai localizeMeta untuk bahasa lain. */
-export const TEMPLATES: TemplateMeta[] = [scrapbook, memories, anniversary, bento, buket, lilin, amplop, polaroid, mau, lampion, plester, toga];
+export const TEMPLATES: TemplateMeta[] = [memories, bento, scrapbook, buket, anniversary, lilin, lampion, amplop, polaroid, mau, plester, toga];
 
 const OCCASION_LABELS: Record<OccasionId, Record<Locale, string>> = {
   ultah: { id: 'Ulang tahun', ms: 'Hari jadi', en: 'Birthday' },

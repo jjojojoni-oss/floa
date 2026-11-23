@@ -13,6 +13,15 @@ export function normalizePassword(p: string) {
   return p.normalize('NFKC').trim().replace(/\s+/g, ' ').toLowerCase();
 }
 
+/**
+ * Bentuk kata sandi yang boleh diketahui penerima: kalau isinya 3–8 angka (biasanya tanggal),
+ * layar kunci menampilkan papan angka dengan jumlah kotak yang pas. Selain itu kolom teks biasa.
+ */
+export function passwordShape(password: string): string | null {
+  const p = normalizePassword(password);
+  return /^\d{3,8}$/.test(p) ? `d${p.length}` : null;
+}
+
 export function hashPassword(password: string) {
   const salt = randomBytes(16);
   const hash = scryptSync(normalizePassword(password), salt, 32);
@@ -47,8 +56,10 @@ export function readLock(v: unknown): LockInput | null | undefined {
 /** Kolom kunci untuk disimpan, dari permintaan pembuat dan keadaan sebelumnya. */
 export function lockFields(req: LockInput | null | undefined, prev: { passHash: string | null }) {
   if (req === undefined) return {};
-  if (req === null) return { passHash: null, passHint: null };
-  if (normalizePassword(req.password)) return { passHash: hashPassword(req.password), passHint: req.hint || null };
+  if (req === null) return { passHash: null, passHint: null, passShape: null };
+  if (normalizePassword(req.password)) {
+    return { passHash: hashPassword(req.password), passHint: req.hint || null, passShape: passwordShape(req.password) };
+  }
   // tanpa kata sandi baru: pertahankan yang lama (kalau ada), cukup perbarui petunjuknya
-  return prev.passHash ? { passHint: req.hint || null } : { passHash: null, passHint: null };
+  return prev.passHash ? { passHint: req.hint || null } : { passHash: null, passHint: null, passShape: null };
 }

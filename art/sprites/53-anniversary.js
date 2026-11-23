@@ -208,6 +208,28 @@
     return p;
   }
 
+  /* ── cap karet milestone: cincin tinta merah dengan tinta yang tidak rata (angka & satuan dari DOM) ── */
+  F.sprites['anniversary-cap'] = { w: 220, h: 220, seed: 536, draw(svg, R) {
+    const id = F.uid('m');
+    const defs = svg.querySelector('defs');
+    const mask = el('mask', { id, maskUnits: 'userSpaceOnUse', x: 0, y: 0, width: 220, height: 220 }, defs);
+    el('rect', { width: 220, height: 220, fill: '#fff' }, mask);
+    // bercak tinta yang tidak menempel
+    for (let i = 0; i < 150; i++) {
+      const a = R() * Math.PI * 2, r = 50 + R() * 58;
+      el('circle', { cx: 110 + Math.cos(a) * r, cy: 110 + Math.sin(a) * r, r: 0.6 + R() * (R() < 0.12 ? 4.2 : 1.6), fill: '#000', opacity: 0.5 + R() * 0.5 }, mask);
+    }
+    for (let i = 0; i < 6; i++) {
+      const a = R() * Math.PI * 2;
+      el('path', { d: `M${110 + Math.cos(a) * 60},${110 + Math.sin(a) * 60}l${(R() - 0.5) * 60},${(R() - 0.5) * 18}`, stroke: '#000', 'stroke-width': 1 + R() * 2, opacity: 0.7 }, mask);
+    }
+    const ink = '#c42a20';
+    const g = el('g', { mask: `url(#${id})`, filter: 'url(#wobble)', fill: 'none', stroke: ink, 'stroke-linecap': 'round' }, svg);
+    el('circle', { cx: 110, cy: 110, r: 100, 'stroke-width': 8 }, g);
+    el('circle', { cx: 110, cy: 110, r: 87, 'stroke-width': 2.6 }, g);
+    el('circle', { cx: 110, cy: 110, r: 78, 'stroke-width': 2, 'stroke-dasharray': '1.5 7' }, g);
+  } };
+
   F.sprites['cover-anniversary'] = { w: 480, h: 600, seed: 535, draw(svg, R) {
     wall(el('g', { transform: 'translate(0 -244) scale(0.6154)' }, svg), R, { props: false });
     const cal = el('g', { transform: 'translate(104 76) scale(0.8)' }, svg);

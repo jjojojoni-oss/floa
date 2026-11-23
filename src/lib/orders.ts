@@ -117,6 +117,7 @@ export async function createOrder(input: {
     expiresAt: null,
     passHash: null,
     passHint: null,
+    passShape: null,
     ...lockFields(readLock(input.lock ?? null), { passHash: null }),
   };
 

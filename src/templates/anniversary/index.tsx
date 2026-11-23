@@ -4,15 +4,17 @@ import { type CSSProperties, type MouseEvent as ReactMouseEvent, type PointerEve
 import { Confetti, Finale, Hint, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
-import { addDays, dayDiff, elapsed, parseDate, pasaran, startOfDay } from './date';
+import { type Milestone, addDays, dayDiff, elapsed, milestoneOn, milestones, parseDate, startOfDay } from './date';
 import { LOCALE_TAG, TEXT } from './i18n';
 import { meta } from './meta';
 import s from './style.module.css';
 
 const BACKDROP = '/art/bg-anniversary.webp';
-const ART = ['bg-anniversary', 'anniversary-papan', 'anniversary-bilah', 'anniversary-klip'];
-/** lembar tanggal yang berkelebat di antara dulu dan sekarang */
-const FLURRY_MAX = 14;
+const ART = ['bg-anniversary', 'anniversary-papan', 'anniversary-bilah', 'anniversary-klip', 'anniversary-cap'];
+/** lembar tanggal biasa yang berkelebat di antara milestone */
+const FILL_MAX = 10;
+/** lama lembar milestone bertahan di atas (cap dihentakkan, lalu sempat terbaca) */
+const MARK_HOLD = 900;
 
 export default function Anniversary(props: TemplateProps) {
   const [run, setRun] = useState(0);
@@ -24,12 +26,14 @@ export default function Anniversary(props: TemplateProps) {
 }
 
 type Sheet =
-  | { kind: 'first' | 'flip' | 'today'; date: Date }
+  | { kind: 'first' | 'flip' | 'today'; date: Date; mark?: Milestone | null }
   | { kind: 'moment'; n: number; note: string; photo: string | null }
   | { kind: 'cover' }
   | { kind: 'end' };
 
-type Fall = { fx: number; fr: number; peek: number; sway: number; fast: boolean };
+type Fall = { fx: number; fr: number; peek: number; sway: number; rx: number; ry: number; fast: boolean };
+
+const reduced = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 /** acak yang selalu sama untuk indeks yang sama, supaya render ulang tidak mengubah bentuk sobekan */
 function prng(seed: number) {
@@ -59,8 +63,88 @@ function fallOf(i: number, fast: boolean, flyOff: boolean): Fall {
     fr: side * (6 + r() * 24) * (r() < 0.3 ? -1 : 1),
     peek: flyOff ? -19 : 2.3 + r() * 2.9,
     sway: r() < 0.5 ? -1 : 1,
+    // kertas berkibar: seberapa jauh lembar menekuk ke depan/belakang & memutar saat jatuh
+    rx: 30 + r() * 26,
+    ry: 14 + r() * 18,
     fast,
   };
+}
+
+/* ───────────── odometer: angka berputar ke nilainya, lalu berdetak mulus ───────────── */
+
+const STRIP = Array.from({ length: 30 }, (_, i) => i % 10);
+
+/** satu kolom angka; berputar maju (9 → 0 lewat putaran berikutnya, tidak mundur) */
+function Col({ d, go, dur, delay }: { d: number; go: boolean; dur: number; delay: number }) {
+  const [pos, setPos] = useState(0);
+  const [snap, setSnap] = useState(false);
+  const first = useRef(true);
+  useEffect(() => {
+    if (!go) return;
+    if (first.current) {
+      first.current = false;
+      setPos(10 + d);
+      return;
+    }
+    setSnap(false);
+    setPos((p) => {
+      const cur = p % 10;
+      if (d === cur) return p;
+      return d > cur ? p - cur + d : p - cur + 10 + d;
+    });
+  }, [go, d]);
+  return (
+    <span className={s.col}>
+      <span
+        className={cx(s.reel, snap && s.snapNow)}
+        style={{ '--p': pos, '--dur': `${dur}ms`, '--delay': `${delay}ms` } as CSSProperties}
+        onTransitionEnd={() => {
+          if (pos >= 20) {
+            setSnap(true);
+            setPos((p) => p - 10);
+          }
+        }}
+      >
+        {STRIP.map((n, i) => (
+          <span key={i}>{n}</span>
+        ))}
+      </span>
+    </span>
+  );
+}
+
+function Roll({ value, delay = 0, spin = 1500 }: { value: string; delay?: number; spin?: number }) {
+  const [go, setGo] = useState(false);
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    const quick = reduced();
+    const a = setTimeout(() => setGo(true), quick ? 0 : delay + 40);
+    const b = setTimeout(() => setSettled(true), quick ? 0 : delay + spin + 400);
+    return () => {
+      clearTimeout(a);
+      clearTimeout(b);
+    };
+  }, [delay, spin]);
+  const chars = [...value];
+  const digits = chars.filter((c) => /\d/.test(c)).length;
+  let k = 0;
+  return (
+    <span className={s.roll} aria-hidden>
+      {chars.map((ch, i) => {
+        const key = chars.length - i;
+        if (!/\d/.test(ch)) {
+          return (
+            <span key={`s${key}`} className={s.sep}>
+              {ch}
+            </span>
+          );
+        }
+        // kolom kanan berhenti terakhir: putaran awal sedikit berjenjang dari kiri ke kanan
+        const stagger = (k++ / Math.max(1, digits)) * 260;
+        return <Col key={`d${key}`} d={Number(ch)} go={go} dur={settled ? 420 : spin} delay={settled ? 0 : stagger} />;
+      })}
+    </span>
+  );
 }
 
 function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void }) {
@@ -88,14 +172,22 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     }
     if (start && counting) {
       const diff = dayDiff(start, today);
-      const k = Math.max(0, Math.min(FLURRY_MAX, diff - 1));
-      let prev = 0;
+      // milestone yang sungguh terlewati + lembar biasa di antaranya, urut tanggal
+      const marks = milestones(start, today);
+      const used = new Set(marks.map((m) => dayDiff(start, m.date)));
+      const k = Math.max(0, Math.min(FILL_MAX, diff - 1 - marks.length));
+      const flips: { at: number; mark: Milestone | null }[] = marks.map((m) => ({ at: dayDiff(start, m.date), mark: m }));
+      // lembar biasa tidak boleh menempel di dekat milestone (terasa seperti dobel)
+      const gap = Math.max(1, Math.floor(diff / (k + 1) / 2));
+      const near = (at: number) => marks.some((m) => Math.abs(dayDiff(start, m.date) - at) < gap);
       for (let i = 1; i <= k; i++) {
-        const at = Math.max(prev + 1, Math.round((diff * i) / (k + 1)));
-        prev = at;
-        list.push({ kind: 'flip', date: addDays(start, at) });
+        const at = Math.round((diff * i) / (k + 1));
+        if (at <= 0 || at >= diff || used.has(at) || near(at)) continue;
+        used.add(at);
+        flips.push({ at, mark: null });
       }
-      list.push({ kind: 'today', date: today });
+      flips.sort((a, b) => a.at - b.at).forEach((f) => list.push({ kind: 'flip', date: addDays(start, f.at), mark: f.mark }));
+      list.push({ kind: 'today', date: today, mark: milestoneOn(start, today) });
     } else list.push({ kind: 'end' });
     return { sheets: list, start, counting };
   }, [data.date, data.notes, data.photos]);
@@ -103,6 +195,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const last = sheets.length - 1;
   const moments = sheets.filter((x) => x.kind === 'moment').length;
   const flips = sheets.filter((x) => x.kind === 'flip').length;
+  const firstFlip = last - flips;
 
   /** indeks lembar teratas; lembar di bawah indeks ini sudah disobek */
   const [idx, setIdx] = useState(0);
@@ -113,6 +206,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const [burst, setBurst] = useState(0);
   const [finale, setFinale] = useState(false);
   const [now, setNow] = useState(() => new Date());
+  const [dayShown, setDayShown] = useState(0);
   const drag = useRef<{ id: number; x0: number; y0: number; dy: number; el: HTMLElement } | null>(null);
   const moved = useRef(false);
   /** sobekan terakhir dari keyboard: fokus dipindah ke lembar berikutnya supaya bisa lanjut tanpa Tab */
@@ -121,20 +215,34 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const openRef = useRef<HTMLButtonElement>(null);
 
   const jags = useMemo(() => sheets.map((_, i) => jagged(i)), [sheets]);
+  const lastSheet = sheets[last];
+  const isToday = lastSheet.kind === 'today';
+  const todayMark = lastSheet.kind === 'today' ? lastSheet.mark : null;
+
+  const el = start && counting ? elapsed(start, now) : null;
+
+  const stampSound = () => {
+    sfx.crack();
+    sfx.pop();
+    haptic(24);
+  };
 
   const arrive = () => {
     later(() => {
       setArrived(true);
-      const isToday = sheets[last].kind === 'today';
       if (isToday) {
         sfx.success();
         haptic(30);
-        later(() => setBurst((v) => v + 1), 550);
+        later(() => setBurst((v) => v + 1), 650);
+        if (todayMark) later(stampSound, 1700);
       } else sfx.chime();
-      later(() => {
-        setNow(new Date());
-        setShowCounter(true);
-      }, isToday ? 1250 : 500);
+      later(
+        () => {
+          setNow(new Date());
+          setShowCounter(true);
+        },
+        isToday ? (todayMark ? 2500 : 2100) : 500,
+      );
     }, 320);
   };
 
@@ -143,25 +251,34 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     if (i >= last) return;
     idxRef.current = i + 1;
     const cur = sheets[i];
-    // di tengah rentetan, separuh lembar terbang keluar layar supaya tumpukan di bawah tidak menggunung
-    const flyOff = cur.kind === 'flip' && i % 2 === 0;
+    // di tengah rentetan, separuh lembar biasa terbang keluar layar supaya tumpukan di bawah tidak menggunung
+    const flyOff = cur.kind === 'flip' && !cur.mark && i % 2 === 0;
     setFalls((f) => ({ ...f, [i]: fallOf(i, fast, flyOff) }));
     setIdx(i + 1);
     if (cur.kind === 'flip') {
       // rentetan: sobekan ringan + nada yang terus naik
       sfx.tap();
-      const k = i - (last - flips);
-      if (k % 2 === 0) sfx.note(k / 2);
-    } else sfx.crack();
+      const k = i - firstFlip;
+      if (k % 2 === 0 || cur.mark) sfx.note(Math.floor(k / 2));
+    } else {
+      sfx.crack();
+      later(() => sfx.whoosh(), 110);
+    }
     haptic(fast ? 6 : 14);
     const next = sheets[i + 1];
     if (next.kind === 'flip') {
-      // rentetan: pelan → cepat → pelan lagi
-      const k = i + 1 - (last - flips);
+      if (next.mark) later(stampSound, 170);
+      // pelan → cepat → pelan lagi; berhenti sejenak di tiap milestone supaya capnya terbaca
+      const k = i + 1 - firstFlip;
       const u = flips > 1 ? k / (flips - 1) : 1;
-      const wait = cur.kind === 'flip' ? 85 + 250 * Math.pow(Math.abs(2 * u - 1), 2.2) : 520;
+      const wait = next.mark ? MARK_HOLD : cur.kind === 'flip' ? 70 + 280 * Math.pow(Math.abs(2 * u - 1), 2.4) : 560;
       later(() => tearOne(true), wait);
-    } else if (i + 1 === last) arrive();
+    } else if (i + 1 === last) {
+      if (next.kind === 'today' && cur.kind === 'flip') {
+        // rem terakhir: jeda sebentar sebelum hari ini mendarat
+        later(arrive, 120);
+      } else arrive();
+    }
   };
 
   const top = sheets[idx];
@@ -170,13 +287,13 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const onDown = (e: ReactPointerEvent<HTMLButtonElement>) => {
     if (e.button > 0 || !canTear) return;
     moved.current = false;
-    const el = e.currentTarget;
+    const target = e.currentTarget;
     try {
-      el.setPointerCapture(e.pointerId);
+      target.setPointerCapture(e.pointerId);
     } catch {
       /* pointer sudah tidak aktif */
     }
-    drag.current = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dy: 0, el };
+    drag.current = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dy: 0, el: target };
   };
   const onMove = (e: ReactPointerEvent<HTMLButtonElement>) => {
     const d = drag.current;
@@ -185,9 +302,11 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     d.dy = e.clientY - d.y0;
     if (Math.abs(dx) > 6 || Math.abs(d.dy) > 6) moved.current = true;
     if (moved.current) {
+      const pull = Math.max(0, d.dy);
       d.el.style.animation = 'none';
       d.el.style.transition = 'none';
-      d.el.style.transform = `translate(${dx * 0.12}px, ${Math.max(0, d.dy) * 0.4}px) rotate(${dx / 60}deg)`;
+      // kertas tertarik: menekuk ke depan dari tepi atasnya yang masih terjepit
+      d.el.style.transform = `perspective(40em) translate(${dx * 0.12}px, ${pull * 0.4}px) rotate(${dx / 60}deg) rotateX(${Math.min(28, pull / 6)}deg)`;
     }
   };
   const onEnd = (e: ReactPointerEvent<HTMLButtonElement>, cancelled: boolean) => {
@@ -216,16 +335,41 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     blockRef.current?.querySelector<HTMLButtonElement>('button')?.focus({ preventScroll: true });
   }, [idx]);
 
-  // penghitung berdetak tiap detik setelah sampai di hari ini
   useEffect(() => {
     if (showCounter && viaKeys.current) openRef.current?.focus({ preventScroll: true });
   }, [showCounter]);
 
+  // penghitung berdetak tiap detik setelah sampai di hari ini
   useEffect(() => {
     if (!showCounter || !counting) return;
     const id = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(id);
   }, [showCounter, counting]);
+
+  // "hari ke-N" menghitung naik setelah lingkaran spidol selesai digambar
+  const target = el?.dayNumber ?? 0;
+  useEffect(() => {
+    if (!arrived || !isToday || !target) return;
+    if (reduced() || target < 3) {
+      setDayShown(target);
+      return;
+    }
+    let raf = 0;
+    let t0 = 0;
+    const startAt = performance.now() + 950;
+    const tick = (now: number) => {
+      if (now < startAt) {
+        raf = requestAnimationFrame(tick);
+        return;
+      }
+      t0 = t0 || now;
+      const u = Math.min(1, (now - t0) / 1300);
+      setDayShown(Math.max(1, Math.round(target * (1 - Math.pow(1 - u, 3)))));
+      if (u < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [arrived, isToday, target]);
 
   const monthFmt = useMemo(() => new Intl.DateTimeFormat(tag, { month: 'long' }), [tag]);
   const dowFmt = useMemo(() => new Intl.DateTimeFormat(tag, { weekday: 'long' }), [tag]);
@@ -233,8 +377,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const num = (n: number) => n.toLocaleString(tag);
   const pad = (n: number) => String(n).padStart(2, '0');
 
-  const el = start && counting ? elapsed(start, now) : null;
   const owner = from ? `${to} & ${from}` : to;
+  const markText = (m: Milestone) => (m.kind === 'years' && m.n === 1 ? t.markYear : fmt(m.kind === 'years' ? t.markYears : t.markDays, { n: num(m.n) }));
 
   const openLetter = () => {
     if (finale) return;
@@ -243,9 +387,27 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     setFinale(true);
   };
 
+  const stamp = (m: Milestone, today: boolean) => {
+    const n = num(m.n);
+    const unit = m.kind === 'days' ? t.unitDays : m.n === 1 ? t.unitYear : t.unitYears;
+    return (
+      <span className={cx(s.stamp, today && s.stampToday, today && arrived && s.stampOn)} aria-hidden>
+        <Sprite name="anniversary-cap" className={s.stampRing} />
+        <span className={s.stampTxt}>
+          <svg viewBox="-10 -10 20 16" className={s.stampHeart}>
+            <path d="M0,5C-9,-2 -5,-9 0,-4C5,-9 9,-2 0,5Z" />
+          </svg>
+          <b className={cx(n.length > 3 && s.longNum, n.length > 5 && s.xlNum)}>{n}</b>
+          <i>{unit}</i>
+        </span>
+      </span>
+    );
+  };
+
   const dateSheet = (sh: Extract<Sheet, { date: Date }>) => {
     const sunday = sh.date.getDay() === 0;
     const day = sh.date.getDate();
+    const today = sh.kind === 'today';
     return (
       <>
         <span className={s.band}>
@@ -254,22 +416,21 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         </span>
         <span className={s.numWrap}>
           <span className={cx(s.num, sunday && s.sunday, day > 9 && s.two)}>{day}</span>
-          {sh.kind === 'today' ? (
+          {today ? (
             <svg className={cx(s.circle, arrived && s.drawn)} viewBox="0 0 300 220" preserveAspectRatio="none" aria-hidden>
               <path pathLength={1} d="M158,14C246,6 290,58 280,112C268,180 168,212 86,198C20,186 -4,122 26,70C52,26 118,8 186,20" />
             </svg>
           ) : null}
         </span>
-        <span className={s.dow}>
-          {dowFmt.format(sh.date)}
-          {locale === 'id' ? <em> {pasaran(sh.date)}</em> : null}
-        </span>
+        <span className={s.dow}>{dowFmt.format(sh.date)}</span>
         {sh.kind === 'first' ? <span className={s.scribble}>{t.firstDay}</span> : null}
-        {sh.kind === 'today' && el ? (
-          <span className={cx(s.scribble, s.late, arrived && s.shown)}>
-            {el.exact ? fmt(t.exact, { y: el.years }) : fmt(t.dayN, { n: num(el.dayNumber) })}
+        {today && el ? (
+          <span className={cx(s.scribble, s.late, sh.mark && s.withStamp, arrived && s.shown)}>
+            {el.exact ? (el.years === 1 ? t.exactOne : fmt(t.exact, { y: el.years })) : fmt(t.dayN, { n: num(dayShown || 1) })}
           </span>
         ) : null}
+        {sh.mark ? stamp(sh.mark, today) : null}
+        {today ? <span className={cx(s.glint, arrived && s.glintGo)} aria-hidden /> : null}
       </>
     );
   };
@@ -326,23 +487,41 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   };
 
   const label = (sh: Sheet, i: number) => {
-    const what =
+    let what =
       sh.kind === 'moment'
         ? `${fmt(t.sheetMoment, { i: sh.n, n: moments })}${sh.note ? `: ${sh.note}` : ''}`
         : sh.kind === 'cover' || sh.kind === 'end'
           ? t.coverBand
           : fmt(t.sheetDate, { date: fullFmt.format(sh.date) });
+    if ((sh.kind === 'flip' || sh.kind === 'today') && sh.mark) what += ` · ${markText(sh.mark)}`;
     return i < last ? `${what}${/[.!?…]$/.test(what) ? '' : '.'} ${t.tearLabel}` : what;
   };
 
   // yang dirender: semua lembar yang sudah disobek + lembar teratas + satu di bawahnya
   const visible = sheets.map((sh, i) => ({ sh, i })).filter(({ i }) => i <= idx + 1);
+  const [pre, post] = t.total.split('{n}');
 
   return (
     <div className={cx(s.wrap, ready && s.ready)}>
       <div className={s.head}>
-        <div className={s.eyebrow}>{fmt(t.headFor, { to })}</div>
-        {from ? <div className={s.from}>{fmt(t.headFrom, { from })}</div> : null}
+        {top.kind === 'flip' && start ? (
+          // selama rentetan: hitungan hari ikut berlari bersama lembar yang disobek
+          <div key="run" className={cx(s.runCount, top.mark && s.runMark)} aria-hidden>
+            <span>{fmt(t.dayN, { n: '' }).trim()}</span>
+            <b>{num(dayDiff(start, top.date) + 1)}</b>
+          </div>
+        ) : (
+          <div key="names">
+            <div className={s.eyebrow}>{fmt(t.headFor, { to })}</div>
+            {from ? <div className={s.from}>{fmt(t.headFrom, { from })}</div> : null}
+          </div>
+        )}
+      </div>
+
+      {/* cahaya hangat yang memancar dari balik kalender saat sampai di hari ini */}
+      <div className={cx(s.rays, arrived && isToday && s.raysOn)} aria-hidden>
+        <span className={s.raysSpin} />
+        <span className={s.raysGlow} />
       </div>
 
       <div className={s.cal}>
@@ -359,7 +538,15 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
             const isTop = i === idx;
             const f = falls[i];
             const style = torn
-              ? ({ '--fx': `${f.fx}em`, '--fr': `${f.fr}deg`, '--peek': `${f.peek}em`, '--sway': f.sway, zIndex: 20 + i } as CSSProperties)
+              ? ({
+                  '--fx': `${f.fx}em`,
+                  '--fr': `${f.fr}deg`,
+                  '--peek': `${f.peek}em`,
+                  '--sway': f.sway,
+                  '--rx': `${f.rx}deg`,
+                  '--ry': `${f.ry * f.sway}deg`,
+                  zIndex: 20 + i,
+                } as CSSProperties)
               : ({ zIndex: isTop ? 4 : 3 } as CSSProperties);
             const inner = (
               <>
@@ -387,7 +574,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
             ) : (
               <div
                 key={i}
-                className={cx(s.sheet, torn && s.torn, torn && f.fast && s.fast, isTop && arrived && s.landed)}
+                className={cx(s.sheet, torn && s.torn, torn && f.fast && s.fast, isTop && s.current, isTop && arrived && s.landed)}
                 style={style}
                 role={isTop ? 'img' : undefined}
                 aria-label={isTop ? label(sh, i) : undefined}
@@ -406,24 +593,32 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         <div className={cx(s.counter, !el && s.plain)}>
           {el ? (
             <>
-              <div className={s.tiles} role="timer" aria-label={t.counterLabel}>
+              <div className={s.tiles} role="timer" aria-label={`${t.counterLabel} ${el.years} ${t.years}, ${el.months} ${t.months}, ${el.days} ${t.days}`}>
                 {(
                   [
-                    [num(el.years), t.years, true],
-                    [num(el.months), t.months, true],
-                    [num(el.days), t.days, true],
+                    [String(el.years), t.years, true],
+                    [String(el.months), t.months, true],
+                    [String(el.days), t.days, true],
                     [pad(el.hours), t.hours, false],
                     [pad(el.minutes), t.minutes, false],
                     [pad(el.seconds), t.seconds, false],
                   ] as const
                 ).map(([v, l, big], i) => (
                   <div key={i} className={cx(s.tile, big && s.major)}>
-                    <b>{v}</b>
+                    <b>
+                      <Roll value={v} delay={i * 110} />
+                    </b>
                     <span>{l}</span>
                   </div>
                 ))}
               </div>
-              <div className={s.total}>{fmt(t.total, { n: num(el.totalSeconds) })}</div>
+              <div className={s.total}>
+                {pre}
+                <span className={s.totalNum}>
+                  <Roll value={num(el.totalSeconds)} delay={500} spin={1900} />
+                </span>
+                {post}
+              </div>
             </>
           ) : null}
           <button type="button" ref={openRef} className={s.open} onClick={openLetter}>
@@ -432,7 +627,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         </div>
       ) : null}
 
-      <Confetti burst={burst} shapes="hearts" count={70} origin={{ x: 0.5, y: 0.46 }} colors={['#c8372d', '#e8c268', '#fff3da', '#f29aa5', '#f2542d']} />
+      <Confetti burst={burst} shapes="hearts" count={80} origin={{ x: 0.5, y: 0.42 }} colors={['#c8372d', '#e8c268', '#fff3da', '#f29aa5', '#f2542d']} />
+      <Confetti burst={burst} count={70} origin={{ x: 0.5, y: 0.5 }} colors={['#fbf5e6', '#f4ecd8', '#c8372d', '#e8c268']} />
 
       {idx === 0 && canTear ? <Hint>{t.hintTear}</Hint> : null}
 
