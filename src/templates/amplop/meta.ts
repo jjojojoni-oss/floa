@@ -1,13 +1,13 @@
 import type { TemplateMeta } from '../types';
 
-const PHOTOS = ['/contoh/masak-tungku.webp', '/contoh/nyalakan-lilin.webp'];
+const PHOTOS = ['/contoh/dua-cangkir.webp', '/contoh/gandengan.webp'];
 
 export const meta: TemplateMeta = {
   id: 'amplop',
   name: 'Amplop Rahasia',
   tagline: 'Amplop bersegel lilin berisi selipan kecil: karcis, bunga pres, foto, nota. Ditarik satu per satu, sampai suratnya.',
   steps: ['Patahkan segelnya', 'Tarik selipannya', 'Baca surat'],
-  occasions: ['ortu', 'maaf', 'kangen', 'sahabat', 'anniv'],
+  occasions: ['anniv', 'kangen', 'maaf', 'sahabat', 'ortu'],
   palette: { bg: '#d5dbc0', ink: '#2c3122', accent: '#b3261e' },
   fields: [
     { key: 'to', label: 'Untuk siapa', placeholder: 'Nama dia', max: 20 },
@@ -31,20 +31,20 @@ export const meta: TemplateMeta = {
     { key: 'message', label: 'Isi surat', hint: 'Dibaca paling akhir, setelah semua selipan.', max: 1200, multiline: true },
   ],
   sample: {
-    to: 'Mama',
-    from: 'Kakak',
-    title: 'Yang belum sempat aku bilang',
+    to: 'Tiara',
+    from: 'Galih',
+    title: 'Hal-hal kecil yang aku simpan',
     notes: [
-      'Dapur kita jam lima pagi. Mama selalu bangun duluan, bahkan di hari libur.',
-      'Kue ulang tahunku yang ketujuh. Mama nyalain lilinnya, koreknya tiga kali gagal.',
-      'Karcis kereta waktu aku pertama berangkat kuliah. Mama nunggu di peron sampai keretanya hilang.',
-      'Nota bakso dekat stasiun. Mama bilang sudah kenyang, padahal uangnya cuma cukup satu porsi.',
-      'Melati dari pagar depan. Aku petik waktu pamit, biar wangi rumah ikut ke kos.',
+      'Kopi pertama kita. Aku ikut pesan latte biar kelihatan nyambung. Padahal aku nggak suka kopi.',
+      'Pertama kali gandengan. Katanya biar nggak ketinggalan. Padahal jalanannya sepi banget.',
+      'Karcis bioskop film horor. Kamu yang ngajak, kamu juga yang tutup mata dari menit kelima.',
+      'Struk martabak manis jam sebelas malam. Katanya lagi diet. Habis tiga potong.',
+      'Melati yang kamu selipkan di saku kemejaku waktu kondangan. Sudah kering, tapi masih aku simpan.',
     ],
     message:
-      'Ma, aku jarang ngomong langsung, jadi aku tulis aja.\n\nMakasih buat bekal yang selalu ada padahal Mama juga buru-buru. Makasih sudah pura-pura nggak capek. Makasih buat doa yang aku tahu dikirim tiap malam, walau aku jarang nelpon.\n\nAku baik-baik di sini. Makan teratur (hampir). Nanti kalau pulang, aku yang masak. Mama duduk aja.',
+      'Ti, aku bukan orang yang jago ngomong, jadi aku kumpulin aja semuanya di sini.\n\nKamu mungkin sudah lupa sama hal-hal kecil ini. Aku nggak. Tiap buka laci dan ketemu salah satunya, aku senyum sendiri kayak orang aneh.\n\nMakasih sudah sabar sama aku yang suka telat balas chat dan suka lupa tanggal, tapi nggak pernah sekali pun lupa sama kamu.\n\nAmplop ini belum penuh. Isi lagi bareng aku, ya?',
     photos: PHOTOS,
-    captions: ['Wangi asap tungku, tanda Mama sudah bangun.', 'Ulang tahun ketujuh. Kuenya bikinan Mama sendiri.'],
+    captions: ['Latte pertama. Bukan yang terakhir.', 'Tanganmu dingin. Aku pura-pura nggak sadar.'],
   },
   i18n: {
     ms: {
@@ -67,20 +67,20 @@ export const meta: TemplateMeta = {
         message: { label: 'Isi surat', hint: 'Dibaca paling akhir, selepas semua selitan.' },
       },
       sample: {
-        to: 'Mak',
-        from: 'Along',
-        title: 'Yang belum sempat Along cakap',
+        to: 'Nurul',
+        from: 'Amir',
+        title: 'Benda-benda kecil yang aku simpan',
         notes: [
-          'Dapur kita pukul lima pagi. Mak selalu bangun dulu, hari cuti pun sama.',
-          'Kek hari jadi Along yang ketujuh. Mak nyalakan lilin, mancisnya tiga kali tak menyala.',
-          'Tiket bas masa Along mula-mula pergi belajar. Mak tunggu sampai bas hilang dari pandangan.',
-          'Resit mi sup dekat stesen. Mak kata dah kenyang, padahal duit cukup untuk semangkuk je.',
-          'Melur dari pagar depan. Along petik masa nak pergi, supaya bau rumah ikut sekali.',
+          'Kopi pertama kita. Aku pesan latte sama macam awak, konon sepadan. Padahal aku tak minum kopi.',
+          'Kali pertama berpimpin tangan. Kononnya takut tertinggal. Padahal jalan tu lengang.',
+          'Tiket wayang cerita seram. Awak yang ajak, awak juga yang tutup mata dari minit kelima.',
+          'Resit roti canai pukul sebelas malam. Katanya tengah diet. Habis tiga keping.',
+          'Melur yang awak selit dalam poket kemeja aku masa kenduri. Dah kering, tapi masih aku simpan.',
         ],
         message:
-          'Mak, Along jarang cakap depan-depan, jadi Along tulis je.\n\nTerima kasih untuk bekal yang sentiasa ada walaupun Mak pun kelam-kabut. Terima kasih sebab buat-buat tak penat. Terima kasih untuk doa yang Along tahu Mak kirim setiap malam, walaupun Along jarang telefon.\n\nAlong sihat kat sini. Makan ikut masa (hampir). Nanti bila balik, Along yang masak. Mak duduk je.',
+          'Nurul, aku bukan orang yang pandai bercakap, jadi aku kumpul semuanya di sini.\n\nMungkin awak dah lupa perkara-perkara kecil ni. Aku tak. Setiap kali buka laci dan jumpa salah satunya, aku senyum seorang diri macam orang pelik.\n\nTerima kasih sebab sabar dengan aku yang selalu lambat balas mesej dan selalu lupa tarikh, tapi tak pernah sekali pun lupa awak.\n\nSampul ni belum penuh. Isi lagi sama-sama dengan aku, ya?',
         photos: PHOTOS,
-        captions: ['Bau asap dapur kayu, tanda Mak dah bangun.', 'Hari jadi ketujuh. Keknya Mak buat sendiri.'],
+        captions: ['Latte pertama. Bukan yang terakhir.', 'Tangan awak sejuk. Aku buat-buat tak perasan.'],
       },
     },
     en: {
@@ -103,20 +103,20 @@ export const meta: TemplateMeta = {
         message: { label: 'Your letter', hint: 'Read last, after all the keepsakes.' },
       },
       sample: {
-        to: 'Mom',
-        from: 'Lily',
-        title: 'What I never got around to saying',
+        to: 'Grace',
+        from: 'Leo',
+        title: 'The little things I kept',
         notes: [
-          'Our kitchen at five in the morning. You were always up first, even on days off.',
-          'My seventh birthday cake. You lit the candles, and the lighter failed three times.',
-          'My train ticket the day I left for college. You stayed on the platform until the train was gone.',
-          'Receipt from the noodle stall by the station. You said you were full. We could only afford one bowl.',
-          'Jasmine from our front fence. I picked it the day I left, so home would come with me.',
+          'Our first coffee. I ordered a latte like you so we would match. I do not even like coffee.',
+          'The first time we held hands. You said it was so we would not get lost. The street was empty.',
+          'Our ticket to that horror film. You picked it, then covered your eyes from minute five.',
+          'Receipt from the late-night pancake stall, 11 pm. You were on a diet. You had three slices.',
+          'The jasmine you tucked in my shirt pocket at the wedding. It has dried, but I still keep it.',
         ],
         message:
-          "Mom, I don't say this out loud much, so I'm writing it down.\n\nThank you for the packed lunches that were always there, even when you were rushing too. Thank you for pretending you weren't tired. Thank you for the prayers I know you send every night, even though I don't call enough.\n\nI'm doing fine here. Eating properly (mostly). Next time I'm home, I'm cooking. You just sit down.",
+          "Grace, I'm not good at saying things out loud, so I gathered everything here instead.\n\nYou've probably forgotten these little things. I haven't. Every time I open the drawer and find one of them, I smile to myself like a fool.\n\nThank you for being patient with someone who replies late and forgets dates, but has never once forgotten you.\n\nThis envelope isn't full yet. Fill it up with me?",
         photos: PHOTOS,
-        captions: ['The smell of woodsmoke meant you were up.', 'Seventh birthday. You baked the cake yourself.'],
+        captions: ['Our first latte. Not our last.', 'Your hand was cold. I pretended not to notice.'],
       },
     },
   },

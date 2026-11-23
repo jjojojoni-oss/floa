@@ -30,9 +30,9 @@ const DEMO: Record<string, DemoExtra> = {
     hint: { id: 'Langit favorit kita', ms: 'Langit kegemaran kita', en: 'Our favourite time of day' },
   },
   amplop: {
-    song: { id: '0gGGd15z7kFQ1pTlb8WofS', title: 'Ibu', artist: 'Iwan Fals' },
-    password: '1912',
-    hint: { id: 'Tanggal lahir Mama (DDMM)', ms: 'Tarikh lahir Mama (DDMM)', en: "Mum's birthday (DDMM)" },
+    song: { id: '2sjA4DTYveWwXo9aC62vWd', title: 'Kasih Putih', artist: 'Glenn Fredly' },
+    password: 'latte',
+    hint: { id: 'Pesananku di kencan pertama kita', ms: 'Pesanan aku masa janji temu pertama', en: 'What I ordered on our first date' },
   },
   polaroid: {
     song: { id: '5ne9Rt0oVt3YRG41kAElLk', title: 'Sahabat Kecil', artist: 'Ipang' },
