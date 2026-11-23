@@ -20,7 +20,7 @@ const DEMO: Record<string, DemoExtra> = {
     hint: { id: 'Tanggal kencan pertama kita (DDMM)', ms: 'Tarikh janji temu pertama kita (DDMM)', en: 'Our first date (DDMM)' },
   },
   lilin: {
-    song: { id: '5WhXF5UP1oJxuG9X4CsbxP', title: 'Asa Asmara', artist: 'Baila' },
+    song: { id: '5WWQGoY0FEB8NdhKiwpz2E', title: 'Selamat Ulang Tahun', artist: 'Jamrud' },
     password: '2104',
     hint: { id: 'Tanggal ulang tahunmu (DDMM)', ms: 'Tarikh hari jadimu (DDMM)', en: 'Your birthday (DDMM)' },
   },
