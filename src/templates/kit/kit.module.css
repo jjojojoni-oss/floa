@@ -102,8 +102,8 @@
   top: 0.9em;
   right: 0.9em;
   z-index: 60;
-  width: 2.5em;
-  height: 2.5em;
+  width: 2.75em;
+  height: 2.75em;
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -1534,4 +1534,12 @@
 }
 .replay {
   position: relative;
+}
+
+/* tombol suara: area sentuh ±48px walau gambarnya tetap kecil */
+.mute::before {
+  content: '';
+  position: absolute;
+  inset: -0.5em;
+  border-radius: 50%;
 }

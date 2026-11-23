@@ -181,8 +181,8 @@ export function MusicPlayer({ music, start = 'tap' }: { music: GiftMusic; start?
         aria-label={!begun && !autoplay ? t.music.playSong : open ? t.music.hide : t.music.show}
         aria-expanded={open}
         className={
-          'pointer-events-auto flex h-10 items-center justify-center gap-2 rounded-full bg-[#1e1b18]/45 text-white shadow-[0_6px_16px_-6px_rgba(0,0,0,0.5)] backdrop-blur-md transition-transform active:scale-95 ' +
-          (!begun && !autoplay ? 'pl-3 pr-4' : 'w-10')
+          'pointer-events-auto relative flex h-11 items-center justify-center gap-2 rounded-full before:absolute before:-inset-1.5 bg-[#1e1b18]/45 text-white shadow-[0_6px_16px_-6px_rgba(0,0,0,0.5)] backdrop-blur-md transition-transform active:scale-95 ' +
+          (!begun && !autoplay ? 'pl-3.5 pr-4' : 'w-11')
         }
       >
         {playing ? (
