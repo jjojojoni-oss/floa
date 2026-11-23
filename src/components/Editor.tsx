@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { EMPTY_DATA } from '@/lib/gift';
+import { EMPTY_DATA, INTRO_MAX } from '@/lib/gift';
 import { type Draft, api, compressImage, findMyGift, loadDraft, saveDraft, upsertMyGift, uploadPhotos } from '@/lib/client';
 import { fmt, useLocale, useT } from '@/i18n/client';
 import { errorText } from '@/lib/client';
@@ -12,7 +12,7 @@ import { TemplatePlayer } from '@/templates/Player';
 import { getTemplate } from '@/templates/registry';
 import type { FieldSpec, GiftData, NotesField, PhotosField, TextField } from '@/templates/types';
 import { CheckoutSheet } from './CheckoutSheet';
-import { type LockState, LockField, MusicField, NO_LOCK } from './ExtrasFields';
+import { IntroField, type LockState, LockField, MusicField, NO_LOCK } from './ExtrasFields';
 
 type EditCtx = { id: string; key: string; slug: string };
 
@@ -221,6 +221,7 @@ export function Editor({ templateId }: { templateId: string }) {
                 onError={setToast}
               />
             ))}
+            <IntroField value={data.intro ?? ''} max={INTRO_MAX} onChange={(v) => setData((d) => ({ ...d, intro: v }))} />
             <MusicField music={data.music} onChange={(m) => setData((d) => ({ ...d, music: m }))} />
             <LockField lock={lock} onChange={setLockState} error={fieldError?.key === 'lock' ? fieldError.msg : null} />
           </div>

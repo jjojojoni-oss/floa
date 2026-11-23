@@ -1,6 +1,6 @@
 'use client';
 
-import { type CSSProperties, type PointerEvent as RPointerEvent, useRef, useState } from 'react';
+import { type CSSProperties, type PointerEvent as RPointerEvent, useEffect, useRef, useState } from 'react';
 import { Confetti, Finale, Hint, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { useText } from './i18n';
@@ -12,29 +12,43 @@ import s from './style.module.css';
 const BW = 600;
 const BH = 800;
 
-/** Tempat plester menempel di retakan: [x, y, sudut]. */
+/** Titik di sepanjang retakan: tempat pengakuan dibaca, lalu tempat plester janjinya menempel. [x, y, sudut] */
 const SLOTS: Record<number, [number, number, number][]> = {
+  1: [[300, 268, 17]],
+  2: [
+    [301, 200, -20],
+    [303, 400, 15],
+  ],
   3: [
     [300, 164, -22],
     [300, 268, 17],
     [298, 428, -14],
   ],
-  4: [
-    [300, 160, -22],
-    [300, 264, 18],
-    [300, 408, -16],
-    [298, 468, 13],
-  ],
 };
 const TRAY_Y = 692;
-const trayX = (i: number, n: number) => 300 + (i - (n - 1) / 2) * (n === 3 ? 124 : 104);
+const trayX = (i: number, n: number) => 300 + (i - (n - 1) / 2) * (n >= 3 ? 124 : 150);
 /** warna titik di kartu, mengikuti warna plester kain */
 const DOTS = ['#e0aa74', '#f08fa5', '#7fc3a6', '#eebd3f'];
 
+type Phase = 'intro' | 'admit' | 'but' | 'mend' | 'healed' | 'ask' | 'answered';
 type PlasterState = { at: 'tray' } | { at: 'drag'; x: number; y: number } | { at: 'heart'; slot: number };
+type ButState = 'idle' | 'try' | 'fall' | 'gone';
 
 const BG = '/art/bg-plester.webp';
-const ART = [BG, 'plester-hati-kiri', 'plester-hati-kanan', 'plester-nampan', 'plester-kain-1', 'plester-kain-2', 'plester-kain-3'];
+const ART = [BG, 'plester-hati-kiri', 'plester-hati-kanan', 'plester-hati-pulih', 'plester-nampan', 'plester-kain-1', 'plester-kain-2', 'plester-kain-3', 'plester-kain-4'];
+
+/**
+ * Catatan diisi berpasangan: baris ganjil = yang disadari (dibaca di retakan),
+ * baris genap = janji untuk itu (tertulis di plester yang menutup retakan tersebut).
+ * Kado lama (kurang dari 4 baris) memakai semua barisnya sebagai pengakuan.
+ */
+function split(notes: string[]) {
+  const raw = notes.map((n) => n.trim()).filter(Boolean).slice(0, 6);
+  if (raw.length >= 4) {
+    return { admits: raw.filter((_, i) => i % 2 === 0).slice(0, 3), promises: raw.filter((_, i) => i % 2 === 1).slice(0, 3) };
+  }
+  return { admits: raw.slice(0, 3), promises: [] as string[] };
+}
 
 export default function Plester(props: TemplateProps) {
   const [run, setRun] = useState(0);
@@ -46,26 +60,77 @@ export default function Plester(props: TemplateProps) {
 }
 
 function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void }) {
-  const notes = data.notes.map((t) => t.trim()).filter(Boolean).slice(0, 4);
-  const n = Math.min(4, Math.max(3, notes.length));
+  const { admits, promises } = split(data.notes);
+  const n = admits.length ? admits.length : 3;
   const slots = SLOTS[n];
   const ready = useArtReady(ART);
+  const t = useText();
+  const later = useTimers();
+
+  const [phase, setPhase] = useState<Phase>('intro');
+  const [seen, setSeen] = useState(0);
+  const [but, setBut] = useState<ButState>('idle');
   const [states, setStates] = useState<PlasterState[]>(() => Array.from({ length: n }, () => ({ at: 'tray' })));
   const [last, setLast] = useState<{ slot: number; plaster: number } | null>(null);
-  const [healed, setHealed] = useState(false);
+  const [answer, setAnswer] = useState<'forgive' | 'time' | null>(null);
+  const [shiver, setShiver] = useState(0);
   const [finale, setFinale] = useState(false);
   const [burst, setBurst] = useState(0);
+
   const board = useRef<HTMLDivElement>(null);
+  const crackRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const drag = useRef<{ i: number; x0: number; y0: number; moved: boolean } | null>(null);
   const dragEnd = useRef(0);
   const stuckSet = useRef(new Set<number>());
-  const later = useTimers();
-  const t = useText();
-  const stuck = states.filter((p) => p.at === 'heart').length;
-  const gap = healed ? 0 : 1 - stuck / n;
 
+  const stuck = states.filter((p) => p.at === 'heart').length;
+  const healed = phase === 'healed' || phase === 'ask' || phase === 'answered';
+  const gap = healed ? 0 : 1 - stuck / n;
+  const to = data.to.trim() || t.you;
+  const from = data.from.trim();
+
+  // pembaca keyboard: fokus pindah ke retakan berikutnya
+  useEffect(() => {
+    if (phase !== 'admit' || seen >= n) return;
+    crackRefs.current[seen]?.focus({ preventScroll: true });
+  }, [phase, seen, n]);
+
+  /* ── 1. pembuka → 2. pengakuan ── */
+  const start = () => {
+    sfx.tap();
+    setPhase(admits.length ? 'admit' : 'but');
+  };
+
+  const reveal = (i: number) => {
+    if (phase !== 'admit' || i !== seen) return;
+    setSeen(i + 1);
+    setShiver((v) => v + 1);
+    sfx.tap();
+    sfx.note(Math.max(0, 2 - i));
+    haptic(12);
+  };
+
+  const go = (p: Phase) => {
+    sfx.tap();
+    setPhase(p);
+  };
+
+  /* ── 3. plester "tapi…" yang tidak mau menempel ── */
+  const tryBut = () => {
+    if (but !== 'idle') return;
+    setBut('try');
+    sfx.pop();
+    haptic(10);
+    later(() => {
+      setBut('fall');
+      sfx.whoosh();
+    }, 760);
+    later(() => setBut('gone'), 1750);
+  };
+
+  /* ── 4. janji: plester ditempel satu per satu ── */
   const stick = (i: number) => {
-    if (stuckSet.current.has(i)) return;
+    if (phase !== 'mend' || stuckSet.current.has(i)) return;
     const slot = stuckSet.current.size;
     if (slot >= n) return;
     stuckSet.current.add(i);
@@ -77,14 +142,30 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     setLast({ slot, plaster: i });
     haptic(14);
     sfx.pop();
-    sfx.note(slot);
+    sfx.note(slot + 2);
     if (slot + 1 >= n) {
       later(() => {
-        setHealed(true);
+        setPhase('healed');
         setBurst((b) => b + 1);
         sfx.success();
         haptic(40);
-      }, 1000);
+      }, 1100);
+      // jeda supaya janji terakhir & hati yang utuh sempat dinikmati, baru pertanyaannya
+      later(() => setPhase('ask'), 1100 + (promises[slot] ? 3400 : 2200));
+    }
+  };
+
+  /* ── 5. pertanyaan lembut, dua jawaban sama-sama dihormati ── */
+  const respond = (a: 'forgive' | 'time') => {
+    setAnswer(a);
+    setPhase('answered');
+    if (a === 'forgive') {
+      sfx.chime();
+      haptic(30);
+      later(() => setBurst((b) => b + 1), 250);
+    } else {
+      sfx.tap();
+      haptic(10);
     }
   };
 
@@ -94,7 +175,6 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     if (!r || !r.width || !r.height) return null;
     return { x: ((e.clientX - r.left) / r.width) * BW, y: ((e.clientY - r.top) / r.height) * BH };
   };
-
   const onDragStart = (i: number, e: RPointerEvent<HTMLButtonElement>) => {
     if (states[i].at === 'heart') return;
     drag.current = { i, x0: e.clientX, y0: e.clientY, moved: false };
@@ -120,20 +200,30 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     if (!d || d.i !== i || !d.moved) return;
     dragEnd.current = performance.now();
     const p = toBoard(e);
-    if (p && p.y < 584) {
-      stick(i);
-    } else {
+    if (p && p.y < 584) stick(i);
+    else
       setStates((prev) => {
         if (prev[i].at !== 'drag') return prev;
         const next = prev.slice();
         next[i] = { at: 'tray' };
         return next;
       });
-    }
   };
 
-  const note = last ? notes[last.slot] : null;
-  const long = (data.to || '').length > 12;
+  const showTray = phase === 'but' || phase === 'mend';
+  const promise = last ? promises[last.slot] : null;
+  const long = to.length > 12;
+
+  /* ── kartu di kaki layar, mengikuti tahap ── */
+  let card: { label?: string; text: string; dot?: string; k: string; size?: string } | null = null;
+  if (phase === 'admit' && seen > 0) {
+    const text = admits[seen - 1];
+    card = { k: `a${seen}`, label: fmt(t.admitLabel, { i: seen, n }), text, size: text.length > 48 ? s.long : undefined };
+  } else if (phase === 'but' && but === 'gone') {
+    card = { k: 'but', text: t.butLine };
+  } else if ((phase === 'mend' || phase === 'healed') && promise && last) {
+    card = { k: `p${last.slot}`, label: fmt(t.promiseLabel, { i: last.slot + 1, n }), text: promise, dot: DOTS[last.plaster % DOTS.length], size: promise.length > 48 ? s.long : undefined };
+  }
 
   return (
     <div className={cx(s.wrap, ready && s.ready)}>
@@ -141,13 +231,13 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         {healed ? (
           <div key="t">
             <div className={s.eyebrow}>{t.healedEyebrow}</div>
-            <div className={cx(s.name, s.small)}>{data.title || fmt(t.titleFallback, { to: data.to })}</div>
+            <div className={cx(s.name, s.small)}>{data.title || fmt(t.titleFallback, { to })}</div>
           </div>
         ) : (
           <div key="n">
             <div className={s.eyebrow}>{t.eyebrow}</div>
-            <div className={cx(s.name, long && s.small)}>{data.to || t.you}</div>
-            {data.from ? <div className={s.from}>{fmt(t.fromName, { name: data.from })}</div> : null}
+            <div className={cx(s.name, long && s.small)}>{to}</div>
+            {from ? <div className={s.from}>{fmt(t.fromName, { name: from })}</div> : null}
           </div>
         )}
       </div>
@@ -155,15 +245,16 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       <div className={s.art}>
         <div
           ref={board}
-          className={cx(s.board, healed && s.healed)}
+          className={cx(s.board, healed && s.healed, showTray && s.trayOn, phase === 'mend' && s.mendOn, answer === 'forgive' && s.forgiven, answer === 'time' && s.waiting)}
           style={{ '--gap': gap } as CSSProperties}
           role="group"
           aria-label={healed ? t.healedAria : t.brokenAria}
         >
           <span className={s.shadow} />
+          <span className={s.glow} aria-hidden />
           <Sprite name="plester-nampan" className={s.tray} />
 
-          <div className={s.beat}>
+          <div key={shiver} className={cx(s.beat, shiver > 0 && !healed && s.shiver)}>
             <div className={s.heart}>
               <div className={s.halfL}>
                 <Sprite name="plester-hati-kiri" className={s.layer} />
@@ -175,6 +266,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               <Sprite name="plester-hati-pulih" className={cx(s.layer, s.whole)} />
             </div>
 
+            {/* plester janji */}
             {states.map((p, i) => {
               let x = trayX(i, n);
               let y = TRAY_Y;
@@ -183,10 +275,9 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               if (p.at === 'heart') [x, y, rot, scale] = [slots[p.slot][0], slots[p.slot][1], slots[p.slot][2], 0.8];
               else if (p.at === 'drag') [x, y, rot, scale] = [p.x, p.y, 24, 0.9];
               return (
-                // lapis seukuran papan: translate dalam % = posisi di papan
                 <div
                   key={i}
-                  className={cx(s.pl, p.at === 'drag' && s.dragging, p.at === 'heart' && s.stuck)}
+                  className={cx(s.pl, p.at === 'tray' && s.inTray, p.at === 'drag' && s.dragging, p.at === 'heart' && s.stuck)}
                   style={{ transform: `translate(${(x / BW) * 100}%, ${(y / BH) * 100}%)` }}
                 >
                   <Sprite
@@ -199,57 +290,139 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
             })}
           </div>
 
-          {states.map((p, i) =>
-            p.at === 'heart' ? null : (
-              <button
-                key={i}
-                type="button"
-                className={s.hit}
-                style={{ left: `${(trayX(i, n) / BW) * 100}%`, width: n === 3 ? '20%' : '17%' }}
-                aria-label={fmt(t.stickAria, { n: i + 1 })}
-                onClick={() => {
-                  if (performance.now() - dragEnd.current < 120) return;
-                  stick(i);
-                }}
-                onPointerDown={(e) => onDragStart(i, e)}
-                onPointerMove={(e) => onDragMove(i, e)}
-                onPointerUp={(e) => onDragEnd(i, e)}
-                onPointerCancel={(e) => onDragEnd(i, e)}
-              />
-            ),
-          )}
+          {/* plester "tapi…": mencoba menempel, terkelupas, jatuh */}
+          {phase === 'but' && but !== 'gone' ? (
+            <div className={cx(s.tapi, but === 'try' && s.tapiTry, but === 'fall' && s.tapiFall)}>
+              <div className={s.tapiInner}>
+                <Sprite name="plester-kain-1" className={s.tapiImg} />
+                <span className={s.tapiWord}>{t.butWord}</span>
+              </div>
+            </div>
+          ) : null}
+
+          {/* retakan yang bisa disentuh, satu per satu */}
+          {phase === 'admit'
+            ? slots.map(([x, y], i) => (
+                <button
+                  key={i}
+                  ref={(el) => {
+                    crackRefs.current[i] = el;
+                  }}
+                  type="button"
+                  className={cx(s.crack, i === seen && s.crackNow, i < seen && s.crackSeen)}
+                  style={{ left: `${(x / BW) * 100}%`, top: `${(y / BH) * 100}%` }}
+                  aria-label={fmt(t.crackAria, { i: i + 1, n })}
+                  disabled={i !== seen}
+                  onClick={() => reveal(i)}
+                />
+              ))
+            : null}
+
+          {phase === 'but' && but === 'idle' ? (
+            <button type="button" className={cx(s.hit, s.hitBut)} style={{ left: '50%', width: '26%' }} aria-label={t.butAria} onClick={tryBut} />
+          ) : null}
+
+          {phase === 'mend'
+            ? states.map((p, i) =>
+                p.at === 'heart' ? null : (
+                  <button
+                    key={i}
+                    type="button"
+                    className={s.hit}
+                    style={{ left: `${(trayX(i, n) / BW) * 100}%`, width: n >= 3 ? '20%' : '24%' }}
+                    aria-label={fmt(t.stickAria, { n: i + 1 })}
+                    onClick={() => {
+                      if (performance.now() - dragEnd.current < 120) return;
+                      stick(i);
+                    }}
+                    onPointerDown={(e) => onDragStart(i, e)}
+                    onPointerMove={(e) => onDragMove(i, e)}
+                    onPointerUp={(e) => onDragEnd(i, e)}
+                    onPointerCancel={(e) => onDragEnd(i, e)}
+                  />
+                ),
+              )
+            : null}
         </div>
       </div>
 
       <div className={s.foot}>
-        {note ? (
-          <div key={last?.slot} className={s.tag} style={{ '--dot': DOTS[(last?.plaster ?? 0) % DOTS.length] } as CSSProperties}>
-            {note}
+        {phase === 'intro' ? (
+          <div className={s.open}>
+            <p className={s.openLine}>{fmt(t.openA, { to })}</p>
+            <p className={cx(s.openLine, s.openLine2)}>{t.openB}</p>
+            <button type="button" className={s.ghost} onClick={start}>
+              {t.openCta}
+            </button>
           </div>
         ) : null}
-        {healed ? (
-          <button
-            type="button"
-            className={s.cta}
-            onClick={() => {
-              sfx.chime();
-              setFinale(true);
-            }}
-          >
-            {t.read}
+
+        {card ? (
+          <div key={card.k} className={cx(s.tag, card.size)} style={{ '--dot': card.dot ?? 'var(--accent)' } as CSSProperties}>
+            {card.label ? <span className={s.tagLabel}>{card.label}</span> : null}
+            <span className={s.tagText}>{card.text}</span>
+          </div>
+        ) : null}
+
+        {phase === 'admit' && seen >= n ? (
+          <button type="button" className={s.ghost} onClick={() => go('but')} autoFocus>
+            {t.next}
           </button>
-        ) : (
+        ) : null}
+        {phase === 'but' && but === 'gone' ? (
+          <button type="button" className={s.ghost} onClick={() => go('mend')} autoFocus>
+            {t.next}
+          </button>
+        ) : null}
+
+        {phase === 'mend' ? (
           <div className={s.count} aria-label={fmt(t.countAria, { stuck, n })}>
             {states.map((_, i) => (
               <i key={i} className={i < stuck ? s.on : undefined} />
             ))}
           </div>
-        )}
+        ) : null}
+
+        {phase === 'ask' ? (
+          <div className={s.ask}>
+            <p className={s.askEyebrow}>{t.askEyebrow}</p>
+            <p className={s.askQ}>{t.askQ}</p>
+            <div className={s.choices}>
+              <button type="button" className={s.choice} onClick={() => respond('forgive')}>
+                {t.forgive}
+              </button>
+              <button type="button" className={cx(s.choice, s.choiceSoft)} onClick={() => respond('time')}>
+                {t.needTime}
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {phase === 'answered' && answer ? (
+          <>
+            <div key={answer} className={cx(s.tag, s.reply)}>
+              <span className={s.tagText}>{fmt(answer === 'forgive' ? t.forgiveReply : t.timeReply, { to })}</span>
+              {from ? <span className={s.sign}>{fmt(t.sign, { name: from })}</span> : null}
+            </div>
+            <button
+              type="button"
+              className={s.cta}
+              onClick={() => {
+                sfx.chime();
+                setFinale(true);
+              }}
+            >
+              {t.read}
+            </button>
+          </>
+        ) : null}
       </div>
 
-      {stuck === 0 ? <Hint>{t.hint}</Hint> : null}
+      {phase === 'admit' && seen === 0 ? <Hint>{t.admitHint}</Hint> : null}
+      {phase === 'but' && but === 'idle' ? <Hint key="b">{t.butHint}</Hint> : null}
+      {phase === 'mend' && stuck === 0 ? <Hint key="m">{t.hint}</Hint> : null}
 
-      <Confetti burst={burst} shapes="hearts" count={70} colors={['#ef6a6a', '#ff9aa8', '#ffc9cf', '#ffffff', '#f7b3a0']} origin={{ x: 0.5, y: 0.5 }} />
+      <Confetti burst={burst} shapes="hearts" count={answer === 'forgive' ? 46 : 64} colors={['#ef6a6a', '#ff9aa8', '#ffc9cf', '#ffffff', '#f7b3a0']} origin={{ x: 0.5, y: 0.45 }} />
 
       {finale ? (
         <Finale

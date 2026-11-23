@@ -26,6 +26,34 @@ function Switch({ title, sub, checked, onChange, className = '' }: { title: stri
   );
 }
 
+/* ───────────────────────── kalimat pembuka ───────────────────────── */
+
+export function IntroField({ value, max, onChange }: { value: string; max: number; onChange: (v: string) => void }) {
+  const t = useT();
+  return (
+    <div data-field="intro">
+      <label htmlFor="f-intro" className="text-[15px] font-extrabold">
+        {t.intro.label} <span className="font-semibold text-muted">{t.music.optional}</span>
+      </label>
+      <p className="mt-0.5 text-[13px] leading-snug text-muted">{t.intro.hint}</p>
+      <div className="relative mt-2">
+        <textarea
+          id="f-intro"
+          value={value}
+          maxLength={max}
+          rows={3}
+          placeholder={t.intro.placeholder}
+          onChange={(e) => onChange(e.target.value)}
+          className={inputCls + ' resize-none pb-7'}
+        />
+        <span className="pointer-events-none absolute bottom-2.5 right-3.5 text-[11px] font-bold tabular-nums text-muted/70">
+          {value.length}/{max}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 /* ───────────────────────── musik ───────────────────────── */
 
 export function MusicField({ music, onChange }: { music: GiftMusic | null | undefined; onChange: (m: GiftMusic | null) => void }) {

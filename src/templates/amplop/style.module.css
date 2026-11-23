@@ -429,3 +429,379 @@
   0%, 100% { scale: 1; }
   50% { scale: 1.04; }
 }
+
+/* ───────────────────────── selipan ─────────────────────────
+   Setelah segel patah, amplop turun ke bawah; selipan ditarik satu per satu ke tengah,
+   dibaca, lalu diletakkan berserakan di meja di atas amplop. */
+.withItems .bob {
+  transform: translateY(calc(50cqh - 13.5em)) scale(0.8);
+  transition: transform 0.9s cubic-bezier(0.3, 0.9, 0.25, 1);
+}
+.withItems.isReading .bob {
+  transform: translateY(calc(50cqh - 7em)) scale(0.8);
+}
+/* surat menunggu di dasar amplop sampai semua selipan habis */
+.withItems .back:not(.out) .letter {
+  visibility: hidden;
+}
+.withItems .head {
+  min-height: 5.2em;
+}
+
+/* kertas yang menyembul dari mulut amplop, menunggu ditarik */
+.sticking {
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  top: 4%;
+  height: 70%;
+  z-index: 3;
+  display: block;
+  border-radius: 0.2em;
+  composes: paper from '../kit/kit.module.css';
+  --paper: #fffaf0;
+  cursor: pointer;
+  transform: translateY(-3.4em) rotate(-2deg);
+  animation: stickIn 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.1) both, nudgeUp 2.4s 0.9s ease-in-out infinite;
+  transition: transform 0.45s cubic-bezier(0.5, 0, 0.75, 0), opacity 0.3s 0.12s ease;
+}
+.sticking.pulled {
+  animation: none;
+  transform: translateY(-15em) rotate(-2deg);
+  opacity: 0;
+  pointer-events: none;
+}
+.stickTop {
+  position: absolute;
+  left: 0.7em;
+  right: 0.7em;
+  top: 0.6em;
+  height: 0.5em;
+  border-radius: 99em;
+  background: rgba(59, 42, 34, 0.12);
+}
+.k_tiket {
+  --paper: color-mix(in srgb, var(--tint) 62%, #fff8e8);
+}
+.k_tiket .stickTop {
+  background: none;
+  border-top: 0.12em dashed rgba(59, 42, 34, 0.35);
+}
+.k_foto {
+  --paper: #fbf6ea;
+}
+.k_foto .stickTop {
+  top: 0.7em;
+  height: 3.2em;
+  border-radius: 0.1em;
+  background: var(--img, linear-gradient(160deg, #8fb1c9, #c9a27c)) center / cover;
+}
+.k_pres {
+  --paper: #f7f0de;
+}
+.k_nota {
+  --paper: #fffdf7;
+}
+.k_nota .stickTop {
+  height: 0.35em;
+  background: repeating-linear-gradient(90deg, rgba(59, 42, 34, 0.3) 0 0.35em, transparent 0.35em 0.6em);
+}
+.k_kartu {
+  --paper: #fdfbf4;
+}
+.k_kartu .stickTop {
+  height: 1.8em;
+  background: repeating-linear-gradient(transparent 0 0.42em, rgba(70, 110, 170, 0.28) 0.42em 0.5em);
+  border-radius: 0;
+}
+@keyframes stickIn {
+  from { transform: translateY(1.5em) rotate(-2deg); }
+  to { transform: translateY(-3.4em) rotate(-2deg); }
+}
+@keyframes nudgeUp {
+  0%, 100% { transform: translateY(-3.4em) rotate(-2deg); }
+  50% { transform: translateY(-4em) rotate(-1deg); }
+}
+
+/* selipan yang sedang dibaca */
+.reader {
+  position: absolute;
+  left: 50%;
+  top: 7.4em;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%);
+  animation: pullOut 0.75s cubic-bezier(0.2, 0.85, 0.25, 1) both;
+}
+.readerCard {
+  position: relative;
+  transform: rotate(var(--r));
+  filter: drop-shadow(0 1.1em 1.3em rgba(60, 30, 20, 0.35)) drop-shadow(0 0.1em 0.12em rgba(60, 30, 20, 0.18));
+}
+.reader .cta {
+  margin-top: 1.5em;
+}
+@keyframes pullOut {
+  from { transform: translate(-50%, 14em) scale(0.62); opacity: 0; }
+  35% { opacity: 1; }
+  to { transform: translateX(-50%); opacity: 1; }
+}
+.reader.leaving {
+  animation: putDown 0.42s cubic-bezier(0.5, 0, 0.75, 0) forwards;
+}
+@keyframes putDown {
+  from { transform: translateX(-50%); opacity: 1; }
+  to { transform: translate(-50%, 4em) scale(0.4); opacity: 0; }
+}
+.specialTag {
+  position: absolute;
+  left: 50%;
+  top: -2.3em;
+  z-index: 2;
+  transform: translateX(-50%) rotate(-3deg);
+  white-space: nowrap;
+  font-family: var(--font-hand, cursive);
+  font-weight: 700;
+  font-size: 1.5em;
+  line-height: 1;
+  color: #b3261e;
+  animation: up 0.6s 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* selipan yang sudah dibaca: berserakan di meja di atas amplop */
+.table {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 10em;
+  height: max(9em, calc(100cqh - 28.4em));
+  z-index: 0;
+  pointer-events: none;
+}
+.laid {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  transform: translate(-50%, -50%) rotate(var(--r)) scale(0.36);
+  filter: drop-shadow(0 0.8em 0.8em rgba(60, 30, 20, 0.3));
+  animation: land 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+@keyframes land {
+  from { transform: translate(-50%, -30%) rotate(calc(var(--r) * 0.3)) scale(0.55); opacity: 0; }
+  to { transform: translate(-50%, -50%) rotate(var(--r)) scale(0.36); opacity: 1; }
+}
+
+/* ── jenis-jenis selipan (ukuran asli; di meja diperkecil) ── */
+.ks {
+  position: relative;
+  width: 16em;
+  color: #3b2a22;
+  text-align: center;
+}
+.note {
+  display: block;
+  font-family: var(--font-hand, cursive);
+  font-weight: 600;
+  font-size: 1.5em;
+  line-height: 1.16;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.note.noteLong {
+  font-size: 1.32em;
+}
+
+/* foto polaroid berselotip */
+.polaroid {
+  padding: 0.8em 0.8em 1em;
+  border-radius: 0.15em;
+  composes: paper from '../kit/kit.module.css';
+  --paper: #fbf6ea;
+}
+.tape {
+  position: absolute;
+  left: 50%;
+  top: -1.2em;
+  width: 6em;
+  margin-left: -3em;
+  transform: rotate(-4deg);
+  z-index: 1;
+}
+.pic {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  max-height: max(8em, calc(100cqh - 31em));
+  overflow: hidden;
+  background: #e9e2d2;
+  box-shadow: inset 0 0 0 1px rgba(60, 30, 20, 0.1);
+}
+.pic img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.polaroid .note {
+  margin-top: 0.5em;
+}
+
+/* karcis berlubang di kedua sisi */
+.ticket {
+  padding: 1em 1.6em 0.9em;
+  border-radius: 0.3em;
+  background-color: color-mix(in srgb, var(--tint) 58%, #fff8e8);
+  background-image: linear-gradient(rgba(255, 250, 238, 0.35), rgba(255, 250, 238, 0.35)), url('/art/tex-kertas.webp');
+  background-size: auto, 220px 220px;
+  background-blend-mode: normal, multiply;
+  -webkit-mask:
+    radial-gradient(circle at 0 50%, transparent 0.85em, #000 0.88em) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 50%, transparent 0.85em, #000 0.88em) right / 51% 100% no-repeat;
+  mask:
+    radial-gradient(circle at 0 50%, transparent 0.85em, #000 0.88em) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% 50%, transparent 0.85em, #000 0.88em) right / 51% 100% no-repeat;
+}
+.tkHead {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 0.55em;
+  margin-bottom: 0.7em;
+  border-bottom: 0.12em dashed rgba(59, 42, 34, 0.4);
+  font-size: 0.72em;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+}
+.tkFoot {
+  display: block;
+  margin-top: 0.75em;
+  padding-top: 0.5em;
+  border-top: 0.12em dashed rgba(59, 42, 34, 0.4);
+  font-size: 0.66em;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.6;
+}
+
+/* nota kecil bertepi gerigi, ditulisi pulpen biru */
+.receipt {
+  width: 13.6em;
+  padding: 1.1em 1.1em 1.5em;
+  background-color: #fffdf7;
+  background-image: linear-gradient(rgba(255, 253, 247, 0.55), rgba(255, 253, 247, 0.55)), url('/art/tex-kertas.webp');
+  background-size: auto, 220px 220px;
+  background-blend-mode: normal, multiply;
+  -webkit-mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 0.9em 100%;
+  mask: conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / 0.9em 100%;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, monospace;
+}
+.rcHead {
+  display: block;
+  font-size: 0.82em;
+  font-weight: 700;
+  letter-spacing: 0.4em;
+  opacity: 0.7;
+}
+.rcRule {
+  display: block;
+  margin: 0.6em 0;
+  border-top: 0.12em dotted rgba(59, 42, 34, 0.45);
+}
+.receipt .note {
+  color: #24427e;
+  transform: rotate(-2deg);
+  margin: 0.25em 0;
+}
+.rcFoot {
+  display: block;
+  font-size: 0.66em;
+  letter-spacing: 0.06em;
+  opacity: 0.6;
+}
+
+/* bunga pres di kartu krem */
+.pressed {
+  padding: 0.9em 1.1em 1.1em;
+  border-radius: 0.15em;
+  composes: paper from '../kit/kit.module.css';
+  --paper: #f7f0de;
+}
+.prFlower {
+  position: relative;
+  display: block;
+  width: 7.4em;
+  height: 7.4em;
+  margin: 0 auto 0.4em;
+}
+.prImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  filter: saturate(0.72) sepia(0.2) brightness(1.02) drop-shadow(0 0.08em 0.08em rgba(60, 30, 20, 0.25));
+  opacity: 0.92;
+  transform: rotate(-12deg);
+}
+.prTape {
+  position: absolute;
+  left: 50%;
+  bottom: 0.4em;
+  width: 4.4em;
+  margin-left: -2.2em;
+  transform: rotate(8deg);
+  opacity: 0.88;
+}
+
+/* kartu catatan bergaris, dijepit klip */
+.card {
+  min-height: 9.8em;
+  padding: 1.6em 1.3em 1.3em 1.9em;
+  border-radius: 0.1em;
+  composes: paper from '../kit/kit.module.css';
+  --paper: #fdfbf4;
+  text-align: left;
+  background-image: repeating-linear-gradient(transparent 0 1.72em, rgba(70, 110, 170, 0.22) 1.72em 1.78em);
+  background-position: 0 1.15em;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  left: 1.2em;
+  top: 0;
+  bottom: 0;
+  border-left: 0.1em solid rgba(205, 80, 70, 0.4);
+}
+.card .note {
+  text-align: left;
+  line-height: 1.16;
+}
+.clip {
+  position: absolute;
+  right: 1.6em;
+  top: -2.6em;
+  width: 1.8em;
+  transform: rotate(8deg);
+}
+
+/* tombol "selipan berikutnya": lebih tenang dari tombol surat */
+.ctaSoft {
+  padding: 0.85em 1.5em;
+  background: #fffaf0;
+  color: #3b2a22;
+  box-shadow:
+    inset 0 0.08em 0 rgba(255, 255, 255, 0.8),
+    0 0.16em 0 rgba(60, 30, 20, 0.25),
+    0 1.1em 1.6em -0.9em rgba(60, 30, 20, 0.6);
+  animation: ctaIn 0.5s 0.6s cubic-bezier(0.34, 1.5, 0.64, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticking,
+  .reader,
+  .laid {
+    animation-duration: 0.01s;
+    animation-iteration-count: 1;
+  }
+}

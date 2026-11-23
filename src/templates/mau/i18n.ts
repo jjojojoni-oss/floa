@@ -6,8 +6,8 @@ type MauText = {
   noLabels: string[];
   /** komentar di bawah pertanyaan, sejajar dengan noLabels */
   tease: string[];
-  /** nomor catatan pembuka */
-  words: string[];
+  /** penanda tiap kalimat: "detak 2 dari 6" */
+  beatOf: string;
   defaultQuestion: string;
   introFrom: string;
   introAnon: string;
@@ -19,17 +19,33 @@ type MauText = {
   wait: string;
   hi: string;
   you: string;
+  /** jeda sebelum pertanyaan */
+  breathEyebrow: string;
+  breath: string;
+  breathSub: string;
+  breathIn: string;
+  breathOut: string;
+  ready: string;
   yeay: string;
   pairYou: string;
   pairMe: string;
   so: string;
   yes: string;
+  oneMore: string;
+  /** kartu "hari kita mulai" */
+  dayEyebrow: string;
+  dayAt: string;
+  dayNote: string;
+  dayKeep: string;
+  dayFile: string;
   read: string;
   tapNext: string;
   finaleTitle: string;
   finaleEyebrowFrom: string;
   finaleEyebrow: string;
 };
+
+export const LOCALE_TAG: Record<Locale, string> = { id: 'id-ID', ms: 'ms-MY', en: 'en-US' };
 
 export const TEXT: Record<Locale, MauText> = {
   id: {
@@ -43,10 +59,10 @@ export const TEXT: Record<Locale, MauText> = {
       'Nyerah aja, ya?',
       'Nah, gitu dong.',
     ],
-    words: ['satu', 'dua', 'tiga'],
+    beatOf: 'detak {i} dari {n}',
     defaultQuestion: 'Mau nggak jadi pacarku?',
-    introFrom: 'Ada yang mau aku bilang.',
-    introAnon: 'Ada yang mau dibilang.',
+    introFrom: 'Ada yang mau aku bilang. Pelan-pelan ya, satu-satu.',
+    introAnon: 'Ada yang mau dibilang. Pelan-pelan ya, satu-satu.',
     next: 'Lanjut',
     heartbeatOf: 'detak jantung {name}',
     heartbeat: 'detak jantung',
@@ -55,11 +71,23 @@ export const TEXT: Record<Locale, MauText> = {
     wait: 'sebentar ya',
     hi: 'Hai, {name}.',
     you: 'kamu',
+    breathEyebrow: 'sebentar',
+    breath: 'Oke. Tarik napas dulu.',
+    breathSub: '(ini buat aku, bukan buat kamu)',
+    breathIn: 'tarik…',
+    breathOut: 'hembuskan…',
+    ready: 'Ketuk kalau kamu sudah siap',
     yeay: 'Yeay!',
     pairYou: 'Kamu',
     pairMe: 'aku',
     so: 'jadi, {name}…',
     yes: 'Mau',
+    oneMore: 'Satu lagi →',
+    dayEyebrow: 'Hari kita mulai',
+    dayAt: 'Kamu bilang mau jam {time}.',
+    dayNote: 'Simpan baik-baik. Tahun depan kita rayakan.',
+    dayKeep: 'Simpan kartunya',
+    dayFile: 'hari-kita-mulai',
     read: 'Baca pesannya →',
     tapNext: 'Ketuk untuk lanjut',
     finaleTitle: 'Kamu bilang mau.',
@@ -77,10 +105,10 @@ export const TEXT: Record<Locale, MauText> = {
       'Mengalah je lah, ya?',
       'Haa, macam tu lah.',
     ],
-    words: ['satu', 'dua', 'tiga'],
+    beatOf: 'degup {i} daripada {n}',
     defaultQuestion: 'Nak tak jadi kekasih aku?',
-    introFrom: 'Ada benda aku nak cakap.',
-    introAnon: 'Ada benda nak diberitahu.',
+    introFrom: 'Ada benda aku nak cakap. Perlahan-lahan ya, satu-satu.',
+    introAnon: 'Ada benda nak diberitahu. Perlahan-lahan ya, satu-satu.',
     next: 'Seterusnya',
     heartbeatOf: 'degup jantung {name}',
     heartbeat: 'degup jantung',
@@ -89,11 +117,23 @@ export const TEXT: Record<Locale, MauText> = {
     wait: 'kejap ya',
     hi: 'Hai, {name}.',
     you: 'awak',
+    breathEyebrow: 'kejap',
+    breath: 'Okey. Tarik nafas dulu.',
+    breathSub: '(ni untuk aku, bukan untuk awak)',
+    breathIn: 'tarik…',
+    breathOut: 'hembus…',
+    ready: 'Ketuk bila awak dah sedia',
     yeay: 'Yeay!',
     pairYou: 'Awak',
     pairMe: 'aku',
     so: 'jadi, {name}…',
     yes: 'Nak',
+    oneMore: 'Satu lagi →',
+    dayEyebrow: 'Hari kita bermula',
+    dayAt: 'Awak kata nak pada {time}.',
+    dayNote: 'Simpan elok-elok. Tahun depan kita raikan.',
+    dayKeep: 'Simpan kad ini',
+    dayFile: 'hari-kita-bermula',
     read: 'Baca mesejnya →',
     tapNext: 'Ketuk untuk teruskan',
     finaleTitle: 'Awak kata nak.',
@@ -111,10 +151,10 @@ export const TEXT: Record<Locale, MauText> = {
       'Just give in?',
       'There we go.',
     ],
-    words: ['one', 'two', 'three'],
+    beatOf: 'beat {i} of {n}',
     defaultQuestion: 'Will you be mine?',
-    introFrom: 'There’s something I want to say.',
-    introAnon: 'There’s something to tell you.',
+    introFrom: 'There’s something I want to say. Slowly, one at a time.',
+    introAnon: 'There’s something to tell you. Slowly, one at a time.',
     next: 'Next',
     heartbeatOf: '{name}’s heartbeat',
     heartbeat: 'heartbeat',
@@ -123,11 +163,23 @@ export const TEXT: Record<Locale, MauText> = {
     wait: 'hold on',
     hi: 'Hi, {name}.',
     you: 'you',
+    breathEyebrow: 'hold on',
+    breath: 'Okay. Deep breath first.',
+    breathSub: '(that one’s for me, not you)',
+    breathIn: 'in…',
+    breathOut: 'and out…',
+    ready: 'Tap when you’re ready',
     yeay: 'Yay!',
     pairYou: 'You',
     pairMe: 'me',
     so: 'so, {name}…',
     yes: 'Yes',
+    oneMore: 'One more thing →',
+    dayEyebrow: 'The day we began',
+    dayAt: 'You said yes at {time}.',
+    dayNote: 'Keep it safe. We’ll celebrate it next year.',
+    dayKeep: 'Save the card',
+    dayFile: 'the-day-we-began',
     read: 'Read the message →',
     tapNext: 'Tap to continue',
     finaleTitle: 'You said yes.',

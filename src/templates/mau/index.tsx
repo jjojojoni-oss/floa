@@ -4,14 +4,17 @@ import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from
 import { Confetti, Finale, Hint, Petals, Sprite, Stage, Typewriter, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { HeartIcon, Pulse } from './art';
-import { TEXT, useText } from './i18n';
-import { fmt } from '@/i18n/client';
+import { drawDayCard } from './card';
+import { LOCALE_TAG, TEXT, useText } from './i18n';
+import { fmt, useLocale } from '@/i18n/client';
 import { meta } from './meta';
 import s from './style.module.css';
 
 /* label tombol "Nggak" & godaannya ada di i18n.ts; yang terakhir menyerah dan ikut bilang mau */
 const LAST = TEXT.id.noLabels.length - 1;
-const BPM = [82, 96, 111, 127];
+const MAX_BEATS = 6;
+/** lama satu tarikan + hembusan napas (ms); tombol lanjut baru aktif setelahnya */
+const BREATH_MS = 3400;
 
 const BG = '/art/bg-mau.webp';
 const ART = [BG, 'mau-sudut-atas', 'mau-sudut-bawah'];
@@ -26,8 +29,13 @@ export default function Mau(props: TemplateProps) {
 }
 
 function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void }) {
-  const notes = data.notes.map((t) => t.trim()).filter(Boolean).slice(0, 3);
-  const qStep = notes.length + 1;
+  const locale = useLocale();
+  const notes = data.notes.map((t) => t.trim()).filter(Boolean).slice(0, MAX_BEATS);
+  const photos = data.photos.filter(Boolean);
+  const n = notes.length;
+  /** 0 = pembuka · 1..n = detak · n+1 = tarik napas · n+2 = pertanyaan */
+  const breathStep = n + 1;
+  const qStep = n + 2;
   const ready = useArtReady(ART);
   const [step, setStep] = useState(0);
   const [typed, setTyped] = useState(false);
@@ -35,6 +43,9 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const [tries, setTries] = useState(0);
   const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
   const [yes, setYes] = useState(false);
+  const [yesAt, setYesAt] = useState<Date | null>(null);
+  const [day, setDay] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [finale, setFinale] = useState(false);
   const [burst, setBurst] = useState(0);
   const wrap = useRef<HTMLDivElement>(null);
@@ -47,20 +58,39 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const later = useTimers();
   const t = useText();
 
+  const story = step < qStep;
+  const breathing = step === breathStep;
   const asking = step >= qStep && !yes;
   const question = data.title.trim() || t.defaultQuestion;
-  const bpm = yes ? 76 : asking ? 138 + tries * 9 : BPM[Math.min(step, BPM.length - 1)];
+  // jantung makin cepat tiap detak, sempat tenang saat tarik napas, lalu berdegup kencang di pertanyaan
+  const bpm = yes
+    ? 76
+    : asking
+      ? 138 + tries * 9
+      : breathing
+        ? 94
+        : step === 0
+          ? 78
+          : Math.round(82 + (step / Math.max(1, n)) * 44);
+
+  // jeda napas: lanjut baru bisa setelah satu tarikan & hembusan
+  useEffect(() => {
+    if (!breathing) return;
+    const id = setTimeout(() => setTyped(true), BREATH_MS);
+    return () => clearTimeout(id);
+  }, [breathing]);
 
   const advance = () => {
     if (step >= qStep) return;
+    if (breathing && !typed) return;
     if (!typed && !skip) {
       setSkip(true);
       sfx.tap();
       return;
     }
-    haptic(8);
-    if (step + 1 >= qStep) sfx.chime();
-    else sfx.tap();
+    haptic(step + 1 >= breathStep ? 14 : 8);
+    if (step + 1 === qStep) sfx.chime();
+    else sfx.note(step);
     setStep(step + 1);
     setTyped(false);
     setSkip(false);
@@ -136,14 +166,48 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const sayYes = () => {
     if (yes) return;
     setYes(true);
+    setYesAt(new Date());
     setBurst((b) => b + 1);
     sfx.success();
     haptic(40);
     later(() => setBurst((b) => b + 1), 900);
   };
 
-  const story = step < qStep;
+  const tag = LOCALE_TAG[locale];
+  const when = yesAt ?? new Date();
+  const dateLabel = new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'long', year: 'numeric' }).format(when);
+  const weekday = new Intl.DateTimeFormat(tag, { weekday: 'long' }).format(when);
+  const timeLabel = new Intl.DateTimeFormat(tag, { hour: 'numeric', minute: '2-digit' }).format(when);
+  const pair = `${data.to || t.pairYou} & ${data.from || t.pairMe}`;
+
+  const saveCard = async () => {
+    if (saving) return;
+    setSaving(true);
+    sfx.tap();
+    try {
+      const url = await drawDayCard({
+        eyebrow: t.dayEyebrow,
+        date: dateLabel,
+        weekday,
+        pair,
+        at: fmt(t.dayAt, { time: timeLabel }),
+        note: t.dayNote,
+      });
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${t.dayFile}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch {
+      /* kanvas tidak tersedia: lewati saja */
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const text = step === 0 ? (data.from ? t.introFrom : t.introAnon) : notes[step - 1];
+  const photo = step >= 1 && step <= n ? photos[step - 1] : undefined;
 
   return (
     <div
@@ -169,9 +233,9 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       <Sprite name="mau-sudut-atas" className={s.cornerTop} />
       <Sprite name="mau-sudut-bawah" className={s.cornerBottom} />
 
-      <div className={s.monitor}>
+      <div className={cx(s.monitor, day && s.monitorQuiet)} aria-hidden={day || undefined}>
         <div className={s.pill}>
-          <HeartIcon className={s.pillHeart} />
+          <HeartIcon key={`h${step}`} className={cx(s.pillHeart, step > 0 && story && s.thumpHeart)} />
           <span>{data.from ? fmt(t.heartbeatOf, { name: data.from }) : t.heartbeat}</span>
           <b key={bpm}>{yes ? t.relieved : `${bpm} bpm`}</b>
         </div>
@@ -179,22 +243,69 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       </div>
 
       {story ? (
-        <div className={s.body} key={step}>
-          {step === 0 ? (
-            <>
-              <div className={s.eyebrow}>{data.from ? fmt(t.fromName, { name: data.from }) : t.wait}</div>
-              <div className={cx(s.hai, (data.to || '').length > 10 && s.haiSmall)}>{fmt(t.hi, { name: data.to || t.you })}</div>
-              <div className={s.lineSub}>
-                {skip ? text : <Typewriter text={text} speed={34} onDone={() => setTyped(true)} />}
-              </div>
-            </>
-          ) : (
-            <div className={cx(s.note, step % 2 ? s.noteL : s.noteR)}>
-              <span className={s.tape} />
-              <span className={s.noteNo}>{t.words[step - 1] ?? step}</span>
-              {skip ? text : <Typewriter text={text} speed={30} onDone={() => setTyped(true)} />}
+        step === 0 ? (
+          <div className={s.body} key="intro">
+            <div className={s.eyebrow}>{data.from ? fmt(t.fromName, { name: data.from }) : t.wait}</div>
+            <div className={cx(s.hai, (data.to || '').length > 10 && s.haiSmall)}>{fmt(t.hi, { name: data.to || t.you })}</div>
+            <div className={s.lineSub}>{skip ? text : <Typewriter text={text} speed={34} onDone={() => setTyped(true)} />}</div>
+          </div>
+        ) : breathing ? (
+          <div className={s.body} key="breath">
+            <div className={s.eyebrow}>{t.breathEyebrow}</div>
+            <div className={s.breathLine}>{t.breath}</div>
+            <div className={s.breathSub}>{t.breathSub}</div>
+            <div className={s.breathe} aria-hidden>
+              <span className={s.breatheRing} />
+              <span className={s.breatheCore}>
+                <HeartIcon className={s.breatheHeart} />
+              </span>
+              <span className={cx(s.breatheWord, s.wordIn)}>{t.breathIn}</span>
+              <span className={cx(s.breatheWord, s.wordOut)}>{t.breathOut}</span>
             </div>
-          )}
+          </div>
+        ) : (
+          <div className={cx(s.body, s.beatBody)} key={`b${step}`}>
+            <div className={s.beatHead}>
+              <span className={s.beatNo}>{fmt(t.beatOf, { i: step, n })}</span>
+              <span className={s.dots} aria-hidden>
+                {notes.map((_, i) => (
+                  <i key={i} className={cx(i < step && s.dotOn, i === step - 1 && s.dotNow)} />
+                ))}
+              </span>
+            </div>
+            {photo ? (
+              <div className={cx(s.snap, step % 2 ? s.snapR : s.snapL)}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={photo} alt="" draggable={false} />
+              </div>
+            ) : null}
+            <div className={cx(s.note, step % 2 ? s.noteL : s.noteR, photo && s.noteWithPhoto, text.length > 52 && s.noteLong)}>
+              <span className={s.tape} />
+              {skip ? text : <Typewriter text={text} speed={32} onDone={() => setTyped(true)} />}
+            </div>
+          </div>
+        )
+      ) : day ? (
+        <div className={cx(s.body, s.dayBody)} key="day">
+          <div className={s.dayCard}>
+            <span className={s.tape} />
+            <Sprite name="mau-hati-besar" className={s.dayHeart} />
+            <div className={s.dayEyebrow}>{t.dayEyebrow}</div>
+            <div className={s.dayDate}>{dateLabel}</div>
+            <div className={s.dayWeek}>{weekday}</div>
+            <div className={s.dayRule} aria-hidden>
+              <HeartIcon className={s.dayRuleHeart} />
+            </div>
+            <div className={cx(s.dayPair, pair.length > 24 && s.dayPairLong)}>{pair}</div>
+            <div className={s.dayAt}>
+              {t.dayAt.split('{time}')[0]}
+              <span className={s.nowrap}>
+                {timeLabel}
+                {t.dayAt.split('{time}')[1]}
+              </span>
+            </div>
+            <div className={s.dayNote}>{t.dayNote}</div>
+          </div>
         </div>
       ) : yes ? (
         <div className={s.body} key="yes">
@@ -223,7 +334,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         </div>
       )}
 
-      <div className={s.foot}>
+      <div className={cx(s.foot, story && s.footShort, day && s.footDay)}>
         {asking ? (
           <div className={s.choices}>
             <button
@@ -243,16 +354,33 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               {t.noLabels[0]}
             </span>
           </div>
+        ) : day ? (
+          <div className={s.dayActions}>
+            <button
+              type="button"
+              className={s.cta}
+              onClick={() => {
+                sfx.chime();
+                setFinale(true);
+              }}
+            >
+              {t.read}
+            </button>
+            <button type="button" className={s.ghost} onClick={saveCard} disabled={saving}>
+              {t.dayKeep}
+            </button>
+          </div>
         ) : yes ? (
           <button
             type="button"
             className={s.cta}
             onClick={() => {
-              sfx.chime();
-              setFinale(true);
+              sfx.pop();
+              haptic(12);
+              setDay(true);
             }}
           >
-            {t.read}
+            {t.oneMore}
           </button>
         ) : null}
       </div>
@@ -287,7 +415,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         </div>
       ) : null}
 
-      {story ? <Hint>{t.tapNext}</Hint> : null}
+      {story && !breathing ? <Hint key={`hint${step}`}>{t.tapNext}</Hint> : null}
+      {breathing && typed ? <Hint key="ready">{t.ready}</Hint> : null}
 
       <Confetti
         burst={burst}

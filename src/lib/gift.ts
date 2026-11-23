@@ -38,6 +38,9 @@ export type Gift = {
   passShape: string | null;
 };
 
+/** panjang maksimal kalimat pembuka */
+export const INTRO_MAX = 200;
+
 export const EMPTY_DATA: GiftData = { to: '', from: '', title: '', message: '', notes: [], photos: [], music: null };
 
 /** Membuang karakter kontrol dan karakter tak terlihat yang bisa dipakai untuk mengelabui tampilan. */
@@ -108,6 +111,8 @@ export function sanitizeData(meta: TemplateMeta, input: unknown, allowPhoto: (ur
     }
   }
   out.music = cleanMusic(src.music, (s, max) => clean(s, max));
+  const intro = clean(src.intro, INTRO_MAX, true);
+  if (intro) out.intro = intro;
   return out;
 }
 

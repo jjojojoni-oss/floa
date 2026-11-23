@@ -224,6 +224,11 @@ export const en: Dict = {
     expiredSub: 'This link has expired. If this gift is for you, let the sender know.',
     makeOwn: 'Make your own gift',
   },
+  intro: {
+    label: 'Opening line',
+    hint: 'Appears slowly, one sentence per screen, before the gift opens.',
+    placeholder: 'I found this while clearing out the closet. Open it slowly.',
+  },
   music: {
     label: 'Music',
     optional: '(optional)',

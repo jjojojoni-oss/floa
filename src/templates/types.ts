@@ -16,6 +16,8 @@ export type GiftData = {
   photos: string[];
   /** lagu latar dari Spotify (opsional, berlaku untuk semua template) */
   music?: GiftMusic | null;
+  /** kalimat pembuka yang tampil pelan-pelan sebelum template dimulai (opsional, semua template) */
+  intro?: string;
   /** tanggal penting, format YYYY-MM-DD (mis. tanggal jadian). Hanya untuk template yang punya kolom 'date'. */
   date?: string;
 };

@@ -277,6 +277,7 @@
 }
 .letter {
   position: relative;
+  display: flow-root;
   width: 100%;
   margin-top: 2.6em;
   padding: 1.7em 1.4em 1.5em;
@@ -289,8 +290,23 @@
   box-shadow:
     0 0.05em 0 rgba(255, 255, 255, 0.7) inset,
     0 0.1em 0.15em rgba(60, 30, 20, 0.12),
-    0 1.8em 3em -1.6em rgba(40, 20, 10, 0.55);
+      0 1.8em 3em -1.6em rgba(40, 20, 10, 0.55);
   transform: rotate(-0.6deg);
+  transform-origin: 50% 0;
+  animation: unfold 0.9s 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes unfold {
+  from {
+    opacity: 0;
+    transform: perspective(40em) rotateX(-62deg) rotate(-0.6deg);
+  }
+  to {
+    opacity: 1;
+    transform: rotate(-0.6deg);
+  }
+}
+.letter.reading {
+  cursor: pointer;
 }
 /* selotip kertas di sudut */
 .letter::before {
@@ -320,6 +336,15 @@
 .decoLeaf { width: 46%; left: -4%; top: 34%; transform: rotate(-64deg); }
 .decoLeaf2 { width: 40%; left: 52%; top: 44%; transform: rotate(118deg); }
 .decoFlower { width: 78%; left: 12%; top: 8%; }
+/* Mengapung di kanan atas mengikuti garis bawah daun (polygon, dalam em surat), jadi nama panjang
+   di sapaan turun ke baris berikutnya alih-alih masuk ke bawah bunga. */
+.decoSpace {
+  float: right;
+  width: 7.6em;
+  height: 3em;
+  shape-outside: polygon(0.9em 0, 100% 0, 100% 100%, 6.8em 2.9em, 4.9em 2.4em, 3.5em 1.8em, 0.9em 0.5em);
+  shape-margin: 0.3em;
+}
 @keyframes decoIn {
   from { opacity: 0; transform: scale(0.4) rotate(-50deg); }
   to { opacity: 1; transform: none; }
@@ -329,6 +354,7 @@
   font-size: 1.75em;
   line-height: 1.2;
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 .pesan {
   margin-top: 0.55em;
@@ -337,47 +363,132 @@
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+.para + .para {
+  margin-top: 0.95em;
+}
+.para {
+  animation: paraIn 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes paraIn {
+  from {
+    opacity: 0;
+    transform: translateY(0.45em);
+    filter: blur(0.06em);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+.showAll {
+  display: block;
+  clear: both;
+  margin: 1.1em 0 0 auto;
+  font-size: 0.76em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: inherit;
+  opacity: 0.5;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
 .ttd {
+  clear: both;
   margin-top: 1.4em;
   text-align: right;
+  overflow-wrap: anywhere;
   font-family: var(--font-hand, cursive);
   font-size: 1.35em;
   line-height: 1.15;
+  animation: paraIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 .ttd b {
+  display: inline-block;
+  max-width: 100%;
   font-weight: 700;
   font-size: 1.45em;
+  clip-path: inset(0 100% 0 0);
+  animation: write 1.3s 0.45s cubic-bezier(0.45, 0.05, 0.4, 1) forwards;
 }
-.photos {
+@keyframes write {
+  to {
+    clip-path: inset(0 -0.2em 0 0);
+  }
+}
+/* ── setelah surat selesai: tambahan template, kenangan foto, tombol ── */
+.after {
   width: 100%;
-  margin-top: 2em;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1em 0.7em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: paraIn 0.9s 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
-.photo {
-  padding: 0.45em 0.45em 1.5em;
+.memories {
+  width: 100%;
+  margin-top: 2.4em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.memLabel {
+  font-family: var(--font-hand, cursive);
+  font-size: 1.6em;
+  font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
+  opacity: 0.9;
+}
+.memLabel + .strip,
+.memLabel + .special {
+  margin-top: 0.55em;
+}
+.strip + .memLabel {
+  margin-top: 1.4em;
+}
+.strip {
+  width: calc(100% + 3em);
+  margin: 0 -1.5em;
+  padding: 0.7em 1.5em 1.5em;
+  display: flex;
+  gap: 1em;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  touch-action: pan-x pan-y;
+  justify-content: safe center;
+}
+.strip::-webkit-scrollbar {
+  display: none;
+}
+.snap,
+.special {
+  flex: none;
+  display: block;
+  padding: 0.45em 0.45em 1.45em;
   background: #fff;
   border-radius: 0.2em;
   box-shadow: 0 0.1em 0 rgba(0, 0, 0, 0.05), 0 1em 1.8em -1.2em rgba(0, 0, 0, 0.5);
   cursor: zoom-in;
-  transition: transform 0.25s ease;
+  scroll-snap-align: center;
 }
-.photo:nth-child(4n + 1) { transform: rotate(-2.2deg); }
-.photo:nth-child(4n + 2) { transform: rotate(1.8deg) translateY(0.5em); }
-.photo:nth-child(4n + 3) { transform: rotate(1.4deg); }
-.photo:nth-child(4n + 4) { transform: rotate(-1.6deg) translateY(0.4em); }
-.photo:only-child {
-  grid-column: 1 / -1;
-  width: 72%;
-  justify-self: center;
+.snap {
+  width: 10.4em;
 }
-.photo:last-child:nth-child(odd):not(:only-child) {
-  grid-column: 1 / -1;
-  width: calc(50% - 0.35em);
-  justify-self: center;
+.snap:nth-child(odd) {
+  transform: rotate(-2deg);
 }
-.photo img {
+.snap:nth-child(even) {
+  transform: rotate(1.8deg) translateY(0.35em);
+}
+.special {
+  width: 15.5em;
+  padding: 0.6em 0.6em 2.1em;
+  transform: rotate(-1.2deg);
+}
+.snap img,
+.special img {
   display: block;
   width: 100%;
   aspect-ratio: 1;
@@ -386,23 +497,59 @@
   background: #eee;
 }
 .fActions {
-  margin-top: 2.4em;
+  width: 100%;
+  margin-top: 2.6em;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.9em;
+  gap: 0.75em;
+}
+.solidBtn,
+.ghostBtn {
+  width: min(100%, 18em);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55em;
+  padding: 0.9em 1.2em;
+  border-radius: 99em;
+  font-size: 0.92em;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+}
+.solidBtn svg,
+.ghostBtn svg {
+  width: 1.2em;
+  height: 1.2em;
+  flex: none;
+}
+.solidBtn {
+  color: var(--f-paper-ink, #2a2622);
+  background: var(--f-paper, #fffdf8);
+  box-shadow: 0 0.05em 0 rgba(255, 255, 255, 0.7) inset, 0 0.8em 1.6em -0.9em rgba(40, 20, 10, 0.55);
+  transition: opacity 0.2s ease;
+}
+.solidBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.ghostBtn {
+  color: inherit;
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, currentColor 38%, transparent);
 }
 .replay {
   display: inline-flex;
   align-items: center;
   gap: 0.5em;
-  padding: 0.75em 1.25em;
+  margin-top: 0.4em;
+  padding: 0.5em 1em;
   border-radius: 99em;
-  font-size: 0.9em;
+  font-size: 0.86em;
   font-weight: 700;
   cursor: pointer;
   color: inherit;
-  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, currentColor 35%, transparent);
+  opacity: 0.8;
 }
 .made {
   display: inline-flex;
@@ -441,6 +588,97 @@
   to { opacity: 1; }
 }
 
+/* ───────── Pembuka: kalimat pembuka sebelum template dimulai ───────── */
+.opening {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3em 2em 5em;
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+}
+.opening.leaving {
+  animation: openOut 0.6s ease forwards;
+}
+@keyframes openOut {
+  to {
+    opacity: 0;
+    transform: scale(1.02);
+  }
+}
+.openFor {
+  font-size: 0.74em;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--ink) 62%, transparent);
+  animation: paraIn 0.8s 0.2s ease both;
+}
+.openLine {
+  margin-top: 0.9em;
+  max-width: 17em;
+  min-height: 5.2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-serif, Georgia, serif);
+  font-variation-settings: 'SOFT' 100;
+  font-size: 1.7em;
+  line-height: 1.32;
+  font-weight: 500;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  animation: paraIn 0.7s ease both;
+}
+.openDots {
+  margin-top: 1.4em;
+  display: flex;
+  gap: 0.5em;
+}
+.openDots span {
+  width: 0.38em;
+  height: 0.38em;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--ink) 22%, transparent);
+  transition: background 0.3s ease;
+}
+.openDots span.on {
+  background: var(--accent);
+}
+.openNext {
+  position: absolute;
+  left: 50%;
+  bottom: 2.6em;
+  transform: translateX(-50%);
+  font-size: 0.8em;
+  font-weight: 700;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--ink) 55%, transparent);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+.openNext.on {
+  opacity: 1;
+  animation: hintBob 2.2s 0.5s ease-in-out infinite;
+}
+.openSkip {
+  position: absolute;
+  right: 1.2em;
+  bottom: 2.4em;
+  padding: 0.4em 0.7em;
+  font-size: 0.78em;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--ink) 50%, transparent);
+  cursor: pointer;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .hint, .hintDot, .finale { animation: none; }
+  .hint, .hintDot, .finale, .letter, .para, .after, .openLine, .openFor { animation: none; }
+  .ttd b { clip-path: none; }
 }

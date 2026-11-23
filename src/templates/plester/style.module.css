@@ -63,6 +63,8 @@
 }
 .board {
   position: relative;
+  /* lapis plester seukuran papan digeser dengan transform; jangan sampai memperluas area gulir stage */
+  overflow: clip;
   width: min(100cqw, calc(100cqh * 0.75));
   aspect-ratio: 3 / 4;
   flex: none;
@@ -277,4 +279,322 @@
 
 @media (prefers-reduced-motion: reduce) {
   .beat, .tear { animation: none; }
+}
+
+/* ───────── alur baru: pembuka → pengakuan → "tanpa tapi" → janji → pertanyaan ───────── */
+
+/* nampan & plester janji baru muncul saat waktunya menambal */
+.tray {
+  opacity: 0;
+  transform: translateY(8%) scale(0.97);
+  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+.trayOn .tray {
+  opacity: 1;
+  transform: none;
+}
+.healed .tray {
+  opacity: 0;
+  transform: translateY(6%) scale(0.96);
+  transition: opacity 0.9s 0.3s ease, transform 0.9s 0.3s ease;
+}
+.pl.inTray {
+  opacity: 0;
+  transition: transform 0.75s cubic-bezier(0.34, 1.3, 0.64, 1), opacity 0.5s ease;
+}
+.mendOn .pl.inTray {
+  opacity: 1;
+  transition-delay: 0s, 0.25s;
+}
+
+/* hati bergetar kecil setiap satu pengakuan dibaca */
+.shiver {
+  animation: shiver 0.5s ease;
+}
+@keyframes shiver {
+  0%, 100% { translate: 0 0; }
+  20% { translate: -0.7% 0; }
+  45% { translate: 0.6% 0; }
+  70% { translate: -0.3% 0; }
+}
+
+/* titik retakan yang bisa disentuh */
+.crack {
+  position: absolute;
+  width: 18%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 3;
+  outline: none;
+}
+.crack::before {
+  content: '';
+  position: absolute;
+  inset: 14%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fffdf6 0 17%, rgba(255, 236, 205, 0.95) 24%, rgba(255, 196, 160, 0.55) 46%, rgba(255, 196, 160, 0) 70%);
+  opacity: 0.55;
+  transform: scale(0.55);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.crack::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 0.16em rgba(255, 250, 240, 0.95), 0 0 0.8em 0.1em rgba(255, 220, 190, 0.6);
+  opacity: 0;
+}
+.crackNow::before {
+  opacity: 1;
+  transform: scale(1);
+  animation: glint 1.8s ease-in-out infinite;
+}
+.crackNow::after {
+  animation: ring 1.8s ease-out infinite;
+}
+.crackSeen::before {
+  opacity: 0.25;
+  transform: scale(0.35);
+  animation: none;
+}
+.crack:disabled {
+  cursor: default;
+}
+.crack:focus-visible::after {
+  opacity: 1;
+  animation: none;
+  box-shadow: 0 0 0 0.16em var(--accent);
+}
+@keyframes glint {
+  0%, 100% { transform: scale(0.88); opacity: 0.85; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+@keyframes ring {
+  0% { transform: scale(0.55); opacity: 0.7; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+
+/* plester "tapi…": mencoba menempel, lalu terkelupas dan jatuh */
+.tapi {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  transform: translate(50%, 86.5%);
+  transition: transform 0.75s cubic-bezier(0.3, 0.9, 0.35, 1.15);
+  animation: tapiIn 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+@keyframes tapiIn {
+  from { opacity: 0; translate: 0 4%; }
+  to { opacity: 1; translate: 0 0; }
+}
+.tapiTry {
+  transform: translate(50%, 36%);
+}
+.tapiFall {
+  transform: translate(56%, 118%);
+  transition: transform 1s cubic-bezier(0.55, 0, 0.8, 0.4);
+}
+.tapiInner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 33.33%;
+  transform: translate(-50%, -50%) rotate(-3deg) scale(1);
+  transition: transform 0.75s cubic-bezier(0.3, 0.9, 0.35, 1.15), opacity 0.4s 0.6s ease;
+}
+.tapiTry .tapiInner {
+  transform: translate(-50%, -50%) rotate(-12deg) scale(0.86);
+  animation: peel 0.5s 0.5s ease-in-out;
+}
+.tapiFall .tapiInner {
+  transform: translate(-50%, -50%) rotate(150deg) scale(0.8);
+  opacity: 0;
+  transition: transform 1s ease-in, opacity 0.35s 0.65s ease;
+}
+@keyframes peel {
+  0%, 100% { rotate: 0deg; }
+  30% { rotate: -9deg; }
+  60% { rotate: 6deg; }
+}
+.tapiImg {
+  display: block;
+  width: 100%;
+}
+.tapiWord {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -52%);
+  font-family: var(--font-hand, cursive);
+  font-weight: 700;
+  font-size: 1.5em;
+  line-height: 1;
+  color: #6a4630;
+  white-space: nowrap;
+}
+.hitBut {
+  top: 86.5%;
+}
+
+/* pembuka: dua kalimat tenang + tombol */
+.open {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 0.4em;
+}
+.openLine {
+  font-family: var(--font-hand, cursive);
+  font-weight: 600;
+  font-size: 1.62em;
+  line-height: 1.12;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  animation: up 0.8s 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.openLine2 {
+  margin-top: 0.15em;
+  animation-delay: 1.6s;
+}
+.ghost {
+  margin-top: 0.9em;
+  padding: 0.75em 1.5em;
+  border-radius: 99em;
+  font-weight: 800;
+  font-size: 0.95em;
+  color: var(--ink);
+  background: rgba(255, 252, 246, 0.86);
+  box-shadow: inset 0 0 0 0.08em rgba(47, 59, 70, 0.14), 0 0.6em 1.2em -0.7em rgba(47, 59, 70, 0.5);
+  cursor: pointer;
+  animation: up 0.6s 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.open .ghost {
+  animation-delay: 2.5s;
+}
+.ghost:active {
+  transform: translateY(0.08em);
+}
+.ghost:focus-visible,
+.choice:focus-visible,
+.cta:focus-visible {
+  outline: 0.14em solid var(--ink);
+  outline-offset: 0.18em;
+}
+
+/* kartu: label kecil + kalimat tulisan tangan */
+.tag {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12em;
+}
+.tagLabel {
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-size: 0.44em;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+.tagText {
+  display: block;
+}
+.tag.long {
+  font-size: 1.38em;
+}
+.reply {
+  padding-left: 1.1em;
+  text-align: center;
+}
+.reply::before {
+  display: none;
+}
+.sign {
+  font-size: 0.78em;
+  opacity: 0.7;
+  text-align: right;
+}
+
+/* pertanyaan lembut */
+.ask {
+  width: 100%;
+  max-width: 21em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  animation: up 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.askEyebrow {
+  font-size: 0.68em;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.55;
+}
+.askQ {
+  margin-top: 0.2em;
+  font-family: var(--font-hand, cursive);
+  font-weight: 600;
+  font-size: 1.55em;
+  line-height: 1.12;
+  text-wrap: balance;
+}
+.choices {
+  margin-top: 0.8em;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6em;
+}
+.choice {
+  padding: 0.85em 0.6em;
+  border-radius: 99em;
+  font-weight: 800;
+  font-size: 0.92em;
+  color: #fff;
+  background: linear-gradient(180deg, #f4687c, #dc3f5c);
+  box-shadow: inset 0 0.08em 0 rgba(255, 255, 255, 0.4), 0 0.18em 0 #a92742;
+  cursor: pointer;
+}
+.choiceSoft {
+  color: var(--ink);
+  background: rgba(255, 252, 246, 0.9);
+  box-shadow: inset 0 0 0 0.08em rgba(47, 59, 70, 0.16), 0 0.18em 0 rgba(47, 59, 70, 0.16);
+}
+.choice:active {
+  transform: translateY(0.08em);
+}
+
+/* jawaban: dimaafkan = hangat bercahaya; butuh waktu = tenang */
+.glow {
+  position: absolute;
+  left: 8%;
+  top: -4%;
+  width: 84%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 214, 205, 0.85), rgba(255, 214, 205, 0));
+  opacity: 0;
+  transition: opacity 1.2s ease;
+  pointer-events: none;
+}
+.forgiven .glow {
+  opacity: 1;
+}
+.waiting .beat {
+  animation-duration: 2.4s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crackNow::before,
+  .crackNow::after,
+  .shiver,
+  .tapiTry .tapiInner {
+    animation: none;
+  }
 }

@@ -5,6 +5,7 @@ import {
   type ReactNode,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -13,14 +14,96 @@ import type { GiftData, TemplateMode } from '../types';
 import s from './kit.module.css';
 import { haptic, isMuted, setMuted, sfx, subscribeMuted } from './sfx';
 import { useLocale } from '@/i18n/client';
+import { fmt } from '@/i18n/fmt';
+import { drawKeepsake } from '@/lib/keepsake';
 import type { Locale } from '@/i18n/config';
 
-/** Teks bersama kit dalam tiga bahasa. */
-const KIT: Record<Locale, { soundOn: string; soundOff: string; letterFor: string; to: string; from: string; replay: string; madeWith: string; makeYours: string; zoom: string; zoomed: string }> = {
-  id: { soundOn: 'Nyalakan suara', soundOff: 'Matikan suara', letterFor: 'Surat untukmu', to: 'Untuk', from: 'dari,', replay: 'Putar ulang', madeWith: 'Dibuat dengan', makeYours: 'bikin punyamu', zoom: 'Perbesar foto', zoomed: 'Foto diperbesar' },
-  ms: { soundOn: 'Hidupkan bunyi', soundOff: 'Matikan bunyi', letterFor: 'Surat untukmu', to: 'Untuk', from: 'daripada,', replay: 'Main semula', madeWith: 'Dibuat dengan', makeYours: 'buat milikmu', zoom: 'Besarkan foto', zoomed: 'Foto dibesarkan' },
-  en: { soundOn: 'Turn sound on', soundOff: 'Turn sound off', letterFor: 'A letter for you', to: 'Dear', from: 'love,', replay: 'Play again', madeWith: 'Made with', makeYours: 'make your own', zoom: 'Enlarge photo', zoomed: 'Enlarged photo' },
+/** Teks bersama kit dalam tiga bahasa. {from}/{to} diisi lewat fmt(). */
+const KIT_ID = {
+  soundOn: 'Nyalakan suara',
+  soundOff: 'Matikan suara',
+  letterFor: 'Surat untukmu',
+  to: 'Untuk',
+  from: 'dari,',
+  replay: 'Putar ulang',
+  madeWith: 'Dibuat dengan',
+  makeYours: 'bikin punyamu',
+  zoom: 'Perbesar foto',
+  zoomed: 'Foto diperbesar',
+  you: 'kamu',
+  showAll: 'Tampilkan semua',
+  memories: 'Kenangan',
+  special: 'Satu lagi, yang paling spesial',
+  keepsake: 'Simpan kenang-kenangan',
+  keepsakeMaking: 'Menyiapkan…',
+  keepsakeEyebrow: 'Sepucuk kado untuk',
+  fromName: 'dari {from}',
+  reply: 'Balas lewat WhatsApp',
+  replyText: 'Kadonya udah aku buka. Makasih ya, {from}.',
+  replyTextAnon: 'Kadonya udah aku buka. Makasih ya.',
+  introFor: 'untuk {to}',
+  introNext: 'ketuk untuk lanjut',
+  introSkip: 'Lewati',
 };
+type KitText = typeof KIT_ID;
+
+const KIT: Record<Locale, KitText> = {
+  id: KIT_ID,
+  ms: {
+    soundOn: 'Hidupkan bunyi',
+    soundOff: 'Matikan bunyi',
+    letterFor: 'Surat untukmu',
+    to: 'Untuk',
+    from: 'daripada,',
+    replay: 'Main semula',
+    madeWith: 'Dibuat dengan',
+    makeYours: 'buat milikmu',
+    zoom: 'Besarkan foto',
+    zoomed: 'Foto dibesarkan',
+    you: 'awak',
+    showAll: 'Tunjuk semua',
+    memories: 'Kenangan',
+    special: 'Satu lagi, yang paling istimewa',
+    keepsake: 'Simpan kenangan',
+    keepsakeMaking: 'Menyediakan…',
+    keepsakeEyebrow: 'Sepucuk hadiah untuk',
+    fromName: 'daripada {from}',
+    reply: 'Balas melalui WhatsApp',
+    replyText: 'Hadiahnya dah aku buka. Terima kasih ya, {from}.',
+    replyTextAnon: 'Hadiahnya dah aku buka. Terima kasih ya.',
+    introFor: 'untuk {to}',
+    introNext: 'ketik untuk teruskan',
+    introSkip: 'Langkau',
+  },
+  en: {
+    soundOn: 'Turn sound on',
+    soundOff: 'Turn sound off',
+    letterFor: 'A letter for you',
+    to: 'Dear',
+    from: 'love,',
+    replay: 'Play again',
+    madeWith: 'Made with',
+    makeYours: 'make your own',
+    zoom: 'Enlarge photo',
+    zoomed: 'Enlarged photo',
+    you: 'you',
+    showAll: 'Show all',
+    memories: 'Memories',
+    special: 'One more, the most special one',
+    keepsake: 'Save a keepsake',
+    keepsakeMaking: 'Preparing…',
+    keepsakeEyebrow: 'A little gift for',
+    fromName: 'from {from}',
+    reply: 'Reply on WhatsApp',
+    replyText: 'I just opened your gift. Thank you, {from}.',
+    replyTextAnon: 'I just opened your gift. Thank you.',
+    introFor: 'for {to}',
+    introNext: 'tap to continue',
+    introSkip: 'Skip',
+  },
+};
+
+const DATE_TAG: Record<Locale, string> = { id: 'id-ID', ms: 'ms-MY', en: 'en-US' };
 
 export function useKitText() {
   return KIT[useLocale()];
@@ -421,9 +504,24 @@ export type FinaleTheme = {
   paperInk?: string;
 };
 
+/** Paragraf surat dipisah oleh baris kosong. */
+function paragraphs(msg: string) {
+  return msg
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean);
+}
+
+function useReducedMotion() {
+  const [r, setR] = useState(false);
+  useEffect(() => setR(window.matchMedia('(prefers-reduced-motion: reduce)').matches), []);
+  return r;
+}
+
 /**
- * Layar penutup yang dipakai semua template: judul, surat, foto, tanda tangan,
- * tombol putar ulang. Cukup panggil saat interaksi template selesai.
+ * Layar penutup yang dipakai semua template. Surat terbuka pelan dan paragrafnya muncul
+ * satu per satu (ketuk untuk mempercepat), lalu tanda tangan, kenangan foto, kartu
+ * kenang-kenangan yang bisa disimpan, dan (di kado sungguhan) tombol balas.
  */
 export function Finale({
   data,
@@ -441,13 +539,39 @@ export function Finale({
   /** bunga lukisan yang terselip di sudut surat (nama sprite), atau null untuk tanpa hiasan */
   flower?: string | null;
   onReplay?: () => void;
-  /** tambahan opsional di antara surat dan foto */
+  /** tambahan opsional di antara surat dan foto (muncul setelah surat selesai dibaca) */
   children?: ReactNode;
 }) {
   const [zoom, setZoom] = useState<string | null>(null);
   const k = useKitText();
   eyebrow = eyebrow ?? k.letterFor;
   const photos = data.photos.filter(Boolean);
+  const paras = useMemo(() => paragraphs(data.message), [data.message]);
+  const reduce = useReducedMotion();
+  const [shown, setShown] = useState(0);
+  const done = reduce || shown >= paras.length;
+  const rootRef = useRef<HTMLDivElement>(null);
+  const lastRef = useRef<HTMLParagraphElement>(null);
+
+  // paragraf muncul satu per satu; jedanya mengikuti panjang paragraf sebelumnya (kecepatan baca santai)
+  useEffect(() => {
+    if (done) return;
+    const wait = shown === 0 ? 1600 : Math.min(5200, Math.max(1400, paras[shown - 1].length * 40));
+    const t = setTimeout(() => setShown((n) => n + 1), wait);
+    return () => clearTimeout(t);
+  }, [shown, done, paras]);
+
+  // paragraf baru ikut digulir ke pandangan
+  useEffect(() => {
+    if (shown > 1) lastRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, [shown]);
+
+  const visible = done ? paras.length : shown;
+  const strip = photos.length > 1 ? photos.slice(0, -1) : [];
+  const special = photos.length ? photos[photos.length - 1] : null;
+  const from = data.from.trim();
+  const replyText = from ? fmt(k.replyText, { from }) : k.replyTextAnon;
+
   const vars = {
     '--f-bg': theme?.bg,
     '--f-ink': theme?.ink,
@@ -456,69 +580,120 @@ export function Finale({
     ...(theme?.backdrop ? { backgroundImage: `url(${backdropUrl(theme.backdrop)})` } : null),
   } as CSSProperties;
 
+  const photoBtn = (src: string, i: number, className: string) => (
+    <button
+      type="button"
+      key={src + i}
+      className={className}
+      onClick={() => {
+        sfx.tap();
+        setZoom(src);
+      }}
+      aria-label={`${k.zoom} ${i + 1}`}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt="" loading="lazy" draggable={false} />
+    </button>
+  );
+
   return (
     <>
-      <div className={s.finale} style={vars} data-finale>
+      <div className={s.finale} style={vars} data-finale ref={rootRef}>
         <div className={s.finaleBody}>
           <div className={s.eyebrow}>{eyebrow}</div>
           {data.title ? <h1 className={s.fTitle}>{data.title}</h1> : null}
-          <div className={s.letter}>
+          <div className={cx(s.letter, !done && s.reading)} onClick={() => !done && setShown((n) => Math.min(paras.length, n + 1))}>
             {flower ? (
-              <div className={s.deco} aria-hidden>
-                <Sprite name="daun-2" className={s.decoLeaf} />
-                <Sprite name="daun-4" className={s.decoLeaf2} />
-                <Sprite name={flower} className={s.decoFlower} />
-              </div>
+              <>
+                <div className={s.deco} aria-hidden>
+                  <Sprite name="daun-2" className={s.decoLeaf} />
+                  <Sprite name="daun-4" className={s.decoLeaf2} />
+                  <Sprite name={flower} className={s.decoFlower} />
+                </div>
+                {/* ruang yang mengikuti tepi bawah hiasan: sapaan & paragraf pertama mengalir di sekitarnya, tidak tertutup */}
+                <span className={s.decoSpace} aria-hidden />
+              </>
             ) : null}
             {data.to ? <div className={s.salam}>{k.to} {data.to},</div> : null}
-            <div className={s.pesan}>{data.message}</div>
-            {data.from ? (
+            {paras.length ? (
+              <div className={s.pesan} aria-live="polite">
+                {paras.slice(0, visible).map((p, i) => (
+                  <p key={i} ref={i === visible - 1 ? lastRef : undefined} className={s.para}>
+                    {p}
+                  </p>
+                ))}
+              </div>
+            ) : null}
+            {!done ? (
+              <button
+                type="button"
+                className={s.showAll}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShown(paras.length);
+                }}
+              >
+                {k.showAll}
+              </button>
+            ) : null}
+            {from && done ? (
               <div className={s.ttd}>
                 {k.from}
                 <br />
-                <b>{data.from}</b>
+                <b>{from}</b>
               </div>
             ) : null}
           </div>
-          {children}
-          {photos.length ? (
-            <div className={s.photos}>
-              {photos.map((src, i) => (
-                <button
-                  type="button"
-                  key={src + i}
-                  className={s.photo}
-                  onClick={() => {
-                    sfx.tap();
-                    setZoom(src);
-                  }}
-                  aria-label={`${k.zoom} ${i + 1}`}
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={src} alt="" loading="lazy" draggable={false} />
-                </button>
-              ))}
+
+          {done ? (
+            <div className={s.after}>
+              {children}
+              {photos.length ? (
+                <section className={s.memories}>
+                  {strip.length ? (
+                    <>
+                      <div className={s.memLabel}>{k.memories}</div>
+                      <div className={cx(s.strip, strip.length === 1 && s.stripOne)}>{strip.map((src, i) => photoBtn(src, i, s.snap))}</div>
+                    </>
+                  ) : null}
+                  {special ? (
+                    <>
+                      <div className={s.memLabel}>{photos.length > 1 ? k.special : k.memories}</div>
+                      {photoBtn(special, photos.length - 1, s.special)}
+                    </>
+                  ) : null}
+                </section>
+              ) : null}
+              <div className={s.fActions}>
+                <KeepsakeButton data={data} rootRef={rootRef} theme={theme} photo={special} />
+                {mode === 'live' ? (
+                  <a className={s.ghostBtn} href={`https://wa.me/?text=${encodeURIComponent(replyText)}`} target="_blank" rel="noopener">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.5-4A8 8 0 1 1 20 11.5z" />
+                    </svg>
+                    {k.reply}
+                  </a>
+                ) : null}
+                {onReplay ? (
+                  <button
+                    type="button"
+                    className={s.replay}
+                    onClick={() => {
+                      sfx.tap();
+                      onReplay();
+                    }}
+                  >
+                    ↺ {k.replay}
+                  </button>
+                ) : null}
+                {mode === 'live' ? (
+                  <a className={s.made} href="/?ref=kado" target="_blank" rel="noopener">
+                    {k.madeWith} <b>floa</b> · {k.makeYours} →
+                  </a>
+                ) : null}
+              </div>
             </div>
           ) : null}
-          <div className={s.fActions}>
-            {onReplay ? (
-              <button
-                type="button"
-                className={s.replay}
-                onClick={() => {
-                  sfx.tap();
-                  onReplay();
-                }}
-              >
-                ↺ {k.replay}
-              </button>
-            ) : null}
-            {mode === 'live' ? (
-              <a className={s.made} href="/?ref=kado" target="_blank" rel="noopener">
-                {k.madeWith} <b>floa</b> · {k.makeYours} →
-              </a>
-            ) : null}
-          </div>
         </div>
       </div>
       {zoom ? (
@@ -528,6 +703,82 @@ export function Finale({
         </div>
       ) : null}
     </>
+  );
+}
+
+/**
+ * Tombol kartu kenang-kenangan. Gambarnya disiapkan lebih dulu (begitu tombol muncul),
+ * supaya saat diketuk lembar bagikan HP bisa langsung terbuka.
+ */
+function KeepsakeButton({
+  data,
+  rootRef,
+  theme,
+  photo,
+}: {
+  data: GiftData;
+  rootRef: React.RefObject<HTMLDivElement | null>;
+  theme?: FinaleTheme;
+  photo: string | null;
+}) {
+  const k = useKitText();
+  const locale = useLocale();
+  const [card, setCard] = useState<string | null>(null);
+  const to = data.to.trim();
+  const from = data.from.trim();
+  const title = data.title.trim();
+
+  useEffect(() => {
+    let alive = true;
+    const cs = rootRef.current ? getComputedStyle(rootRef.current) : null;
+    const accent = cs?.getPropertyValue('--accent').trim() || '#c8553d';
+    drawKeepsake({
+      eyebrow: k.keepsakeEyebrow,
+      name: to || k.you,
+      title,
+      from: from ? fmt(k.fromName, { from }) : null,
+      date: new Intl.DateTimeFormat(DATE_TAG[locale], { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date()),
+      photo,
+      palette: { paper: theme?.paper || '#fffaf0', ink: theme?.paperInk || '#3b2a22', accent },
+    })
+      .then((u) => alive && setCard(u))
+      .catch((e) => console.error('[floa] keepsake', e));
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [to, from, title, photo, locale]);
+
+  const fileName = `floa-${(to || 'kado').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'kado'}.jpg`;
+
+  const save = async () => {
+    if (!card) return;
+    sfx.tap();
+    try {
+      const blob = await (await fetch(card)).blob();
+      const file = new File([blob], fileName, { type: 'image/jpeg' });
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file] });
+        return;
+      }
+    } catch (e) {
+      if ((e as Error)?.name === 'AbortError') return;
+    }
+    const a = document.createElement('a');
+    a.href = card;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  };
+
+  return (
+    <button type="button" className={s.solidBtn} onClick={save} disabled={!card} aria-busy={!card}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M12 4v11m0 0l-4-4m4 4l4-4M5 19h14" />
+      </svg>
+      {card ? k.keepsake : k.keepsakeMaking}
+    </button>
   );
 }
 

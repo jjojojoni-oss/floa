@@ -222,6 +222,11 @@ export const id = {
     expiredSub: 'Masa aktif link-nya sudah habis. Kalau kado ini untukmu, kabari pengirimnya ya.',
     makeOwn: 'Bikin kado sendiri',
   },
+  intro: {
+    label: 'Kalimat pembuka',
+    hint: 'Muncul pelan-pelan, satu kalimat per layar, sebelum kadonya dibuka.',
+    placeholder: 'Aku nemu ini waktu beresin lemari. Bukanya pelan-pelan ya.',
+  },
   music: {
     label: 'Musik',
     optional: '(opsional)',

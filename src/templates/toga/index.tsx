@@ -1,6 +1,6 @@
 'use client';
 
-import { type CSSProperties, type PointerEvent, useRef, useState } from 'react';
+import { type CSSProperties, type PointerEvent, useEffect, useRef, useState } from 'react';
 import { Confetti, Finale, Hint, Sprite, Stage, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { useText } from './i18n';
@@ -8,10 +8,16 @@ import { meta } from './meta';
 import { fmt } from '@/i18n/client';
 import s from './style.module.css';
 
-type Phase = 'ready' | 'thrown' | 'scroll' | 'open';
+/**
+ * intro   = pembuka sebelum langkah pertama (hanya kalau ada catatan perjalanan)
+ * journey = menelusuri langkah demi langkah
+ * ready   = toga menunggu dilempar
+ */
+type Phase = 'intro' | 'journey' | 'ready' | 'thrown' | 'scroll' | 'open';
 
 const GOLD = ['#f2c14e', '#ffe08a', '#fff7dd', '#d99f2b', '#7fa4f0', '#ffffff'];
-const ART = ['bg-toga', 'toga-topi', 'toga-rumbai', 'toga-topi-kecil', 'toga-gulungan', 'toga-pita', 'toga-batang', 'toga-segel', 'toga-bintang'];
+const ART = ['bg-toga', 'toga-topi', 'toga-rumbai', 'toga-topi-kecil', 'toga-gulungan', 'toga-pita', 'toga-batang', 'toga-segel', 'toga-bintang', 'polaroid-selotip-2'];
+const MAX_STEPS = 5;
 
 /** Bintang lukisan yang berkelip: [kiri, atas, ukuran]. */
 const STARS: [string, string, string][] = [
@@ -30,6 +36,9 @@ const FLYERS: [string, string, string, string, string, string, string][] = [
   ['58%', '5.2em', '0.62s', '2.3s', '-33em', '440deg', '-2em'],
 ];
 
+/** kemiringan kartu langkah bergantian, supaya terasa seperti lembar-lembar kenangan */
+const TILT = [-1.6, 1.3, -0.9, 1.7, -1.2];
+
 export default function Toga(props: TemplateProps) {
   const [run, setRun] = useState(0);
   return (
@@ -41,18 +50,60 @@ export default function Toga(props: TemplateProps) {
 }
 
 function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void }) {
-  const notes = data.notes.map((n) => n.trim()).filter(Boolean).slice(0, 3);
+  const steps = data.notes.map((n) => n.trim()).filter(Boolean).slice(0, MAX_STEPS);
+  const photos = data.photos.filter(Boolean);
+  const n = steps.length;
   const ready = useArtReady(ART);
-  const [phase, setPhase] = useState<Phase>('ready');
-  const [shown, setShown] = useState(0);
+  const [phase, setPhase] = useState<Phase>(n ? 'intro' : 'ready');
+  const [step, setStep] = useState(0);
+  /** kartu yang sedang pergi (animasi keluar), dan arahnya */
+  const [leaving, setLeaving] = useState<{ i: number; dir: 1 | -1 } | null>(null);
+  const [ribbon, setRibbon] = useState(false);
   const [finale, setFinale] = useState(false);
   const [burst, setBurst] = useState(0);
   const cap = useRef<HTMLButtonElement>(null);
+  const card = useRef<HTMLButtonElement>(null);
   const drag = useRef<{ y: number; dy: number } | null>(null);
   const thrown = useRef(false);
   const skipClick = useRef(false);
+  const busy = useRef(false);
   const later = useTimers();
   const t = useText();
+
+  // fokus mengikuti langkah, supaya pengguna keyboard tidak tersesat
+  // (tidak di pratinjau editor: jangan merebut kursor dari kolom isian)
+  const intro = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (mode === 'preview') return;
+    if (phase === 'intro') intro.current?.focus({ preventScroll: true });
+    if (phase === 'journey') card.current?.focus({ preventScroll: true });
+    if (phase === 'ready' && n) cap.current?.focus({ preventScroll: true });
+  }, [phase, step, n, mode]);
+
+  const begin = () => {
+    if (phase !== 'intro') return;
+    sfx.note(1);
+    haptic(10);
+    setPhase('journey');
+  };
+
+  const go = (dir: 1 | -1) => {
+    if (phase !== 'journey' || busy.current) return;
+    if (dir === -1 && step === 0) return;
+    busy.current = true;
+    later(() => (busy.current = false), 420);
+    setLeaving({ i: step, dir });
+    later(() => setLeaving(null), 520);
+    haptic(10);
+    if (dir === 1 && step === n - 1) {
+      // langkah terakhir: jalannya selesai, toga sudah menunggu
+      sfx.chime();
+      later(() => setPhase('ready'), 380);
+      return;
+    }
+    sfx.note(step + (dir === 1 ? 2 : 0));
+    setStep((v) => v + dir);
+  };
 
   const throwCap = (fromPx = 0) => {
     if (thrown.current) return;
@@ -67,19 +118,11 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     sfx.whoosh();
     haptic(25);
     later(() => sfx.success(), 600);
-    notes.forEach((_, k) =>
-      later(() => {
-        setShown(k + 1);
-        sfx.note(k + 2);
-      }, 950 + k * 1000),
-    );
-    later(
-      () => {
-        setPhase('scroll');
-        sfx.pop();
-      },
-      notes.length ? 950 + notes.length * 1000 + 300 : 1500,
-    );
+    later(() => setRibbon(true), 1000);
+    later(() => {
+      setPhase('scroll');
+      sfx.pop();
+    }, 2500);
   };
 
   const onDown = (e: PointerEvent<HTMLButtonElement>) => {
@@ -127,19 +170,44 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     }, 900);
   };
 
-  const after = phase !== 'ready';
+  const walking = phase === 'intro' || phase === 'journey';
+  const after = phase === 'thrown' || phase === 'scroll' || phase === 'open';
   const title = data.title || t.titleFallback;
+  const eyebrow = after ? t.eyebrowAfter : walking ? t.eyebrowJourney : n ? t.eyebrowArrive : t.eyebrowBefore;
+  /** jumlah langkah yang sudah dilalui (untuk jalur bintang) */
+  const passed = phase === 'intro' ? 0 : phase === 'journey' ? step : n;
+
+  const renderCard = (i: number) => {
+    const photo = photos[i];
+    return (
+      <>
+        <span className={s.cardLabel}>{fmt(t.step, { i: i + 1, n })}</span>
+        {photo ? (
+          <span className={s.snap}>
+            <Sprite name="polaroid-selotip-2" className={s.tape} />
+            <span className={s.snapPic}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={photo} alt="" draggable={false} />
+            </span>
+          </span>
+        ) : (
+          <Sprite name="toga-bintang" className={s.cardStar} />
+        )}
+        <span className={cx(s.cardText, !photo && s.big, steps[i].length > 62 && s.long)}>{steps[i]}</span>
+      </>
+    );
+  };
 
   return (
-    <div className={cx(s.wrap, ready && s.ready, after && s.thrown)}>
+    <div className={cx(s.wrap, ready && s.ready, after && s.thrown, walking && s.walking)}>
       {STARS.map(([left, top, size], i) => (
         <Sprite key={i} name="toga-bintang" className={s.star} style={{ left, top, width: size, '--i': i } as CSSProperties} />
       ))}
 
       {after ? (
         <div className={s.sky} aria-hidden>
-          {FLYERS.map(([x, w, d, t, peak, rot, dx], i) => (
-            <span key={i} className={s.flyer} style={{ '--x': x, '--w': w, '--d': d, '--t': t, '--peak': peak, '--rot': rot, '--dx': dx } as CSSProperties}>
+          {FLYERS.map(([x, w, d, dur, peak, rot, dx], i) => (
+            <span key={i} className={s.flyer} style={{ '--x': x, '--w': w, '--d': d, '--t': dur, '--peak': peak, '--rot': rot, '--dx': dx } as CSSProperties}>
               <Sprite name="toga-topi-kecil" />
             </span>
           ))}
@@ -147,19 +215,79 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       ) : null}
 
       <div className={s.head}>
-        <div className={s.eyebrow}>{after ? t.eyebrowAfter : t.eyebrowBefore}</div>
+        <div key={eyebrow} className={s.eyebrow}>
+          {eyebrow}
+        </div>
         <div className={cx(s.name, data.to.length > 11 && s.small)}>{data.to || t.nameFallback}</div>
         {data.from ? <div className={s.from}>{fmt(t.fromName, { name: data.from })}</div> : null}
       </div>
 
-      <div className={cx(s.mid, !notes.length && phase === 'scroll' && s.center)}>
-        {notes.length ? (
-          <div className={cx(s.ribbons, phase === 'open' && s.hide)} aria-live="polite">
-            {notes.slice(0, shown).map((t, i) => (
-              <div key={i} className={s.ribbon}>
-                {t}
-              </div>
+      <div className={cx(s.mid, phase === 'scroll' && s.center)}>
+        {/* rasi bintang perjalanan: tiap langkah yang dilalui menyala, toga menunggu di ujung */}
+        {n && (walking || (phase === 'ready' && leaving)) ? (
+          <div className={s.path} style={{ '--n': n } as CSSProperties} aria-hidden>
+            {steps.map((_, i) => (
+              <span key={i} className={cx(s.seg, i < passed && s.segOn)} />
             ))}
+            {steps.map((_, i) => (
+              <span
+                key={`d${i}`}
+                className={cx(s.dot, i < passed && s.dotOn, phase === 'journey' && i === step && s.dotNow)}
+                style={{ '--k': i } as CSSProperties}
+              >
+                <Sprite name="toga-bintang" />
+              </span>
+            ))}
+            <span className={cx(s.goal, passed >= n && s.goalOn)}>
+              <Sprite name="toga-topi-kecil" />
+            </span>
+          </div>
+        ) : null}
+        {/* ── pembuka perjalanan ── */}
+        {phase === 'intro' ? (
+          <div className={s.intro}>
+            <p className={s.introLine}>{t.introLine}</p>
+            <p className={s.introCount}>{fmt(t.introCount, { n })}</p>
+            <button ref={intro} type="button" className={s.cta} onClick={begin}>
+              {t.start} <span aria-hidden>→</span>
+            </button>
+          </div>
+        ) : null}
+
+        {/* ── langkah demi langkah ── */}
+        {phase === 'journey' || (phase === 'ready' && leaving) ? (
+          <div className={s.deck}>
+            {leaving ? (
+              <div
+                key={`out-${leaving.i}-${leaving.dir}`}
+                className={cx(s.card, s.out, leaving.dir === -1 && s.back)}
+                style={{ '--tilt': `${TILT[leaving.i % TILT.length]}deg` } as CSSProperties}
+                aria-hidden
+              >
+                {renderCard(leaving.i)}
+              </div>
+            ) : null}
+            {/* di langkah terakhir kartu yang sedang pergi tidak digandakan */}
+            {phase === 'journey' && leaving?.i !== step ? (
+              <button
+                ref={card}
+                key={`in-${step}`}
+                type="button"
+                className={cx(s.card, s.in, leaving?.dir === -1 && s.back)}
+                style={{ '--tilt': `${TILT[step % TILT.length]}deg` } as CSSProperties}
+                onClick={() => go(1)}
+                aria-label={fmt(t.stepAria, { i: step + 1, n, text: steps[step] })}
+              >
+                {renderCard(step)}
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+
+        {/* ── setelah dilempar: satu pita, lalu gulungan ── */}
+        {ribbon ? (
+          <div className={cx(s.ribbons, phase === 'open' && s.hide)} aria-live="polite">
+            <div className={s.ribbon}>{t.ribbonAfter}</div>
           </div>
         ) : null}
 
@@ -247,10 +375,21 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       </div>
 
       <div className={s.foot}>
+        {phase === 'journey' ? (
+          <div className={s.nav}>
+            <button type="button" className={cx(s.round, step === 0 && s.hidden)} onClick={() => go(-1)} aria-label={t.prev} tabIndex={step === 0 ? -1 : 0}>
+              <span aria-hidden>←</span>
+            </button>
+            <button type="button" className={s.cta} onClick={() => go(1)}>
+              {step === n - 1 ? t.arrive : t.next} <span aria-hidden>→</span>
+            </button>
+          </div>
+        ) : null}
+
         {phase === 'open' ? (
           <button
             type="button"
-            className={s.cta}
+            className={cx(s.cta, s.ctaRead)}
             onClick={() => {
               sfx.chime();
               setFinale(true);
@@ -261,10 +400,10 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         ) : null}
       </div>
 
-      {phase === 'ready' ? <Hint>{t.hintSwipe}</Hint> : null}
+      {phase === 'ready' && !leaving ? <Hint>{t.hintSwipe}</Hint> : null}
       {phase === 'scroll' ? <Hint>{t.hintTap}</Hint> : null}
 
-      <Confetti burst={burst} colors={GOLD} origin={{ x: 0.5, y: 0.7 }} count={140} />
+      <Confetti burst={burst} colors={GOLD} origin={{ x: 0.5, y: 0.7 }} count={110} />
 
       {finale ? (
         <Finale
