@@ -779,10 +779,10 @@
 }
 .clip {
   position: absolute;
-  left: 1.1em;
-  top: -1.4em;
-  width: 2.2em;
-  transform: rotate(-8deg);
+  right: 1.6em;
+  top: -2.6em;
+  width: 1.8em;
+  transform: rotate(8deg);
 }
 
 /* tombol "selipan berikutnya": lebih tenang dari tombol surat */
