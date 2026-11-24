@@ -114,6 +114,11 @@ const DEMO: Record<string, DemoExtra> = {
     password: '0512',
     hint: { id: 'Tanggal ulang tahun Bunda (DDMM)', ms: 'Tarikh hari jadi Umi (DDMM)', en: 'Mum’s birthday (DDMM)' },
   },
+  pintu: {
+    song: { id: '1i9iliTpiPLizleapSg37I', title: 'Untitled', artist: "MALIQ & D'Essentials" },
+    password: '165',
+    hint: { id: 'Tinggiku sekarang (cm)', ms: 'Tinggiku sekarang (cm)', en: 'How tall I am now (cm)' },
+  },
 };
 
 export type DemoLock = { password: string; hint: string; shape: string | null };

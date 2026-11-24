@@ -17,6 +17,7 @@ import Botol from './botol/Cover';
 import Gacha from './gacha/Cover';
 import Photobox from './photobox/Cover';
 import KotakMusik from './kotakmusik/Cover';
+import Pintu from './pintu/Cover';
 import Toples from './toples/Cover';
 import Vinyl from './vinyl/Cover';
 
@@ -42,4 +43,5 @@ export const COVERS: Record<string, ComponentType> = {
   botol: Botol,
   photobox: Photobox,
   kotakmusik: KotakMusik,
+  pintu: Pintu,
 };
