@@ -359,6 +359,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         <span className={s.sheen} />
       </div>
       {playing ? <button type="button" className={s.discHit} onClick={next} tabIndex={-1} aria-hidden /> : null}
+      {/* jarum belum turun: mengetuk piringannya pun menurunkan jarum (tidak harus tepat di lengannya) */}
+      {phase === 'deck' ? <button type="button" className={s.discHit} onClick={drop} tabIndex={-1} aria-hidden /> : null}
 
       {/* not balok melayang dari piringan selama lagunya diputar */}
       {!finale && (playing || phase === 'sideB') ? (

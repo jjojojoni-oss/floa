@@ -12,6 +12,7 @@ import Plester from './plester/Cover';
 import Polaroid from './polaroid/Cover';
 import Scrapbook from './scrapbook/Cover';
 import Toga from './toga/Cover';
+import Vinyl from './vinyl/Cover';
 
 /** Ilustrasi kartu katalog per template. Mengisi penuh kotak induknya. */
 export const COVERS: Record<string, ComponentType> = {
@@ -27,5 +28,6 @@ export const COVERS: Record<string, ComponentType> = {
   mau: Mau,
   plester: Plester,
   toga: Toga,
+  vinyl: Vinyl,
   bioskop: Bioskop,
 };

@@ -34,7 +34,7 @@ export const meta: TemplateMeta = {
   ],
   sample: {
     to: 'Kinan',
-    from: 'Bagas',
+    from: 'Gilang',
     title: 'Lagu-lagu Tentang Kita',
     notes: [
       'Keliling Kota Naik Motor Pinjaman',
@@ -65,7 +65,7 @@ export const meta: TemplateMeta = {
         message: { label: 'Catatan sarung', hint: 'Surat di sisi B, dibaca paling akhir.' },
       },
       sample: {
-        to: 'Alya',
+        to: 'Sofea',
         from: 'Izzat',
         title: 'Lagu-lagu Tentang Kita',
         notes: [
@@ -97,7 +97,7 @@ export const meta: TemplateMeta = {
         message: { label: 'Liner notes', hint: 'The letter on side B, read last.' },
       },
       sample: {
-        to: 'Olivia',
+        to: 'Hazel',
         from: 'Theo',
         title: 'Songs About Us',
         notes: [

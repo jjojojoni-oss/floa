@@ -74,6 +74,11 @@ const DEMO: Record<string, DemoExtra> = {
     password: '140223',
     hint: { id: 'Tanggal jadian kita (DDMMYY)', ms: 'Tarikh kita mula bersama (DDMMYY)', en: 'The day it all started (DDMMYY)' },
   },
+  vinyl: {
+    song: { id: '2pb1TmG342aDAPgJFRyfIW', title: 'I Remember', artist: 'Mocca' },
+    password: '2208',
+    hint: { id: 'Tanggal kita jadian (DDMM)', ms: 'Tarikh kita mula bersama (DDMM)', en: 'The day we got together (DDMM)' },
+  },
   bioskop: {
     song: { id: '2BCYKFDWnZi9PMkZiemQh1', title: 'Film Favorit', artist: 'Sheila On 7' },
     password: '1915',
