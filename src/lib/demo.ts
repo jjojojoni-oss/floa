@@ -129,6 +129,11 @@ const DEMO: Record<string, DemoExtra> = {
     password: { id: 'harta', ms: 'harta', en: 'treasure' },
     hint: { id: 'Yang dicari di ujung peta', ms: 'Yang dicari di hujung peta', en: 'What waits at the end of the map' },
   },
+  bolakaca: {
+    song: { id: '6WsG550j67Aj29z0iel7lo', title: 'Waking Up Together With You', artist: 'Ardhito Pramono' },
+    password: '1900',
+    hint: { id: 'Jam lampu jendelanya nyala (JJMM)', ms: 'Waktu lampu tingkap menyala (JJMM)', en: 'When the window light comes on (HHMM)' },
+  },
 };
 
 export type DemoLock = { password: string; hint: string; shape: string | null };

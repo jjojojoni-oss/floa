@@ -42,6 +42,7 @@ const PLAYERS: Record<string, ComponentType<TemplateProps>> = {
   pintu: dynamic(() => import('./pintu'), { ssr: false, loading: Loading }),
   mesintik: dynamic(() => import('./mesintik'), { ssr: false, loading: Loading }),
   petaharta: dynamic(() => import('./petaharta'), { ssr: false, loading: Loading }),
+  bolakaca: dynamic(() => import('./bolakaca'), { ssr: false, loading: Loading }),
 };
 
 /** Pemuat kode tiap template, untuk dipanaskan selagi kalimat pembuka tampil. */
@@ -69,6 +70,7 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
   pintu: () => import('./pintu'),
   mesintik: () => import('./mesintik'),
   petaharta: () => import('./petaharta'),
+  bolakaca: () => import('./bolakaca'),
 };
 
 /**

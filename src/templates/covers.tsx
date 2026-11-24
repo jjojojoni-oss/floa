@@ -13,6 +13,7 @@ import Polaroid from './polaroid/Cover';
 import Scrapbook from './scrapbook/Cover';
 import Toga from './toga/Cover';
 import Paspor from './paspor/Cover';
+import Bolakaca from './bolakaca/Cover';
 import Botol from './botol/Cover';
 import Gacha from './gacha/Cover';
 import Photobox from './photobox/Cover';
@@ -48,4 +49,5 @@ export const COVERS: Record<string, ComponentType> = {
   pintu: Pintu,
   mesintik: Mesintik,
   petaharta: Petaharta,
+  bolakaca: Bolakaca,
 };
