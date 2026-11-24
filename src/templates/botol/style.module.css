@@ -1,0 +1,1061 @@
+/* Surat dalam Botol: pantai senja. Latar lukisan (langit, laut, pasir) dipasang Stage; di atasnya ada "dunia"
+   yang menempel persis pada lukisan itu: 1em di dalam .world = 32 satuan lukisan (780 × 1500 satuan),
+   cakrawala di 17em, tepi air 28.2em, pasir kering mulai ±31em. */
+.wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* dunia lukisan lebih lebar dari layar jangkung: dipotong tanpa menjadikan adegan ini bisa digulir ke samping */
+  overflow: clip;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  color: #fff6e6;
+  /* satu satuan lukisan, mengikuti cara latar Stage menutup layar (cover, menempel di bawah) */
+  --u: max(calc(100cqw / 780), calc(100cqh / 1500));
+  /* selubung mini-game & warna cadangan surat: ungu senja, bukan peach pasir */
+  --bg: #4b3871;
+}
+.wrap.ready {
+  opacity: 1;
+}
+.world {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 24.375em;
+  height: 46.875em;
+  margin-left: -12.1875em;
+  font-size: calc(var(--u) * 32);
+}
+/* surat sudah terbuka menutupi semuanya: pantai di baliknya disembunyikan supaya animasinya tidak terus berjalan */
+.over .world {
+  visibility: hidden;
+  transition: visibility 0s 0.9s;
+}
+
+/* ── laut ── */
+.glint {
+  position: absolute;
+  z-index: 1;
+  margin: -0.3em 0 0 -0.3em;
+  background: radial-gradient(closest-side, #fffbe6, rgba(255, 226, 150, 0.7) 45%, transparent);
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  opacity: 0;
+  animation: twinkle 2.6s ease-in-out infinite;
+  animation-delay: calc(var(--i) * -0.83s);
+  pointer-events: none;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.4) rotate(0deg); }
+  45% { opacity: 1; transform: scale(1.5) rotate(40deg); }
+  70% { opacity: 0.2; transform: scale(0.8) rotate(60deg); }
+}
+.swell {
+  position: absolute;
+  left: -1.9em;
+  width: 28.125em;
+  height: 2.625em;
+  z-index: 1;
+  transform-origin: 50% 50%;
+}
+.swellA {
+  top: 18.3em;
+  scale: 1 0.42;
+  opacity: 0.55;
+  animation: drift 11s ease-in-out infinite alternate;
+}
+.swellB {
+  top: 21.2em;
+  scale: -1 0.7;
+  opacity: 0.6;
+  animation: drift 8.6s -3s ease-in-out infinite alternate;
+}
+.swellC {
+  top: 24.6em;
+  opacity: 0.7;
+  animation: drift 7.2s -1.4s ease-in-out infinite alternate;
+}
+@keyframes drift {
+  from { transform: translate(-1.5em, -0.12em); opacity: 0.35; }
+  to { transform: translate(1.5em, 0.2em); }
+}
+.birds {
+  position: absolute;
+  left: 0;
+  top: 11.4em;
+  width: 2.3em;
+  height: auto;
+  z-index: 1;
+  fill: none;
+  stroke: #3a2a5c;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.8;
+  animation: fly 44s linear infinite;
+}
+@keyframes fly {
+  from { transform: translate(-4em, 1.6em); }
+  50% { transform: translate(11em, 0); }
+  to { transform: translate(27em, 1.2em); }
+}
+
+/* ── ombak di pasir ── */
+.wave {
+  position: absolute;
+  left: -1.25em;
+  top: 17.7em;
+  width: 26.875em;
+  height: 13.125em;
+  z-index: 4;
+}
+.waveA {
+  animation: swash 6.4s infinite;
+}
+.waveB {
+  opacity: 0.5;
+  scale: -1 1;
+  animation: swashB 7.4s -3.1s infinite;
+}
+@keyframes swash {
+  0% { transform: translate(0, 0); animation-timing-function: cubic-bezier(0.25, 0.7, 0.3, 1); }
+  30% { transform: translate(0.5em, 2.6em); animation-timing-function: ease-out; }
+  40% { transform: translate(0.6em, 2.75em); animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); }
+  88% { transform: translate(-0.2em, -0.3em); animation-timing-function: ease-in-out; }
+  100% { transform: translate(0, 0); }
+}
+@keyframes swashB {
+  0% { transform: translate(0, 0.1em); animation-timing-function: cubic-bezier(0.25, 0.7, 0.3, 1); }
+  34% { transform: translate(0.8em, 1.7em); animation-timing-function: cubic-bezier(0.5, 0, 0.5, 1); }
+  90% { transform: translate(-0.3em, -0.2em); animation-timing-function: ease-in-out; }
+  100% { transform: translate(0, 0.1em); }
+}
+/* ombak yang mengantar botol sampai ke pasir */
+.wave_land {
+  animation: swashLand 3.3s both;
+}
+@keyframes swashLand {
+  0% { transform: translate(0, 0); animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1); }
+  36% { transform: translate(0.4em, 8.5em); animation-timing-function: ease-out; }
+  46% { transform: translate(0.5em, 8.7em); animation-timing-function: cubic-bezier(0.5, 0, 0.4, 1); }
+  100% { transform: translate(0, 0); }
+}
+/* ombak besar yang berhenti tepat sebelum tulisan di pasir */
+.wave_rush {
+  animation: swashRush 4.4s both;
+}
+@keyframes swashRush {
+  0% { transform: translate(0, 0); animation-timing-function: cubic-bezier(0.15, 0.8, 0.25, 1); }
+  29% { transform: translate(0.3em, 5.3em); animation-timing-function: ease-out; }
+  35% { transform: translate(0.4em, 5.55em); animation-timing-function: ease-in-out; }
+  46% { transform: translate(0.3em, 5.35em); animation-timing-function: ease-in-out; }
+  62% { transform: translate(0.4em, 5.45em); animation-timing-function: cubic-bezier(0.5, 0, 0.4, 1); }
+  100% { transform: translate(0, 0); }
+}
+/* jejak basah: hanya terlihat di bawah garis pantai lukisan */
+.wetBox {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 28.5em;
+  bottom: 0;
+  z-index: 2;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 1.4em);
+  mask-image: linear-gradient(180deg, transparent, #000 1.4em);
+  pointer-events: none;
+}
+.wet {
+  position: absolute;
+  left: -1.25em;
+  top: -8.05em;
+  width: 26.875em;
+  height: 13.125em;
+  opacity: 0.2;
+  animation: wetCycle 6.4s infinite;
+}
+@keyframes wetCycle {
+  0%, 28% { opacity: 0.2; }
+  40% { opacity: 1; }
+  100% { opacity: 0.2; }
+}
+.wet_land {
+  top: -2.2em;
+  opacity: 0;
+  animation: wetOnce 7s both;
+}
+.wet_rush {
+  top: -5.3em;
+  opacity: 0;
+  animation: wetOnce 8.5s both;
+}
+@keyframes wetOnce {
+  0%, 12% { opacity: 0; }
+  22% { opacity: 1; }
+  48% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
+/* kerang: satu untuk tiap gulungan yang sudah dibaca, di tepi ombak */
+.shell {
+  position: absolute;
+  width: 2.9em;
+  height: auto;
+  margin: -1.16em 0 0 -1.45em;
+  z-index: 3;
+  rotate: var(--r, 0deg);
+  animation: shellIn 0.7s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+.shellAlt {
+  filter: hue-rotate(-24deg) saturate(1.1);
+}
+@keyframes shellIn {
+  from { opacity: 0; transform: translateY(-1.2em) scale(0.3); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ── botol ── */
+.bottle {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 14.6875em;
+  height: 5.3125em;
+  margin: -2.65625em 0 0 -7.34375em;
+  z-index: 3;
+  pointer-events: none;
+  transform: translate(calc(var(--bx) * 1em), calc(var(--by) * 1em)) rotate(calc(var(--br) * 1deg)) scale(var(--bs));
+  transition: transform 1.8s cubic-bezier(0.45, 0.05, 0.3, 1);
+}
+.afloat {
+  z-index: 5;
+}
+.landing {
+  transition: transform 1.25s cubic-bezier(0.25, 0.7, 0.3, 1);
+}
+.ashore {
+  z-index: 6;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.3, 1);
+}
+.ashore.up {
+  transition: transform 1s cubic-bezier(0.34, 1.3, 0.5, 1);
+}
+.dragging {
+  transition: none;
+}
+.bob {
+  position: absolute;
+  inset: 0;
+}
+.afloat .bob {
+  animation: bob 2.7s ease-in-out infinite;
+}
+/* riak di sekeliling botol yang masih terapung */
+.afloat .bob::before {
+  content: '';
+  position: absolute;
+  left: -9%;
+  top: 30%;
+  width: 118%;
+  height: 96%;
+  background: radial-gradient(closest-side, transparent 58%, rgba(255, 253, 244, 0.6) 68%, rgba(255, 253, 244, 0.25) 78%, transparent 90%);
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(-0.5em) rotate(-7deg); }
+  50% { transform: translateY(0.7em) rotate(8deg); }
+}
+.glass {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.bShadow {
+  position: absolute;
+  left: 2%;
+  top: 52%;
+  width: 98%;
+  height: 78%;
+  background: radial-gradient(closest-side, rgba(92, 44, 30, 0.5), rgba(92, 44, 30, 0.22) 55%, transparent);
+  opacity: 0;
+  transition: opacity 0.8s ease 0.6s;
+}
+.sandy .bShadow {
+  opacity: 1;
+}
+.up .bShadow {
+  opacity: 0;
+  transition-delay: 0s;
+}
+/* bayangan botol yang berdiri */
+.standShadow {
+  position: absolute;
+  left: 2.6em;
+  top: 40.9em;
+  width: 7em;
+  height: 2.4em;
+  z-index: 5;
+  background: radial-gradient(closest-side, rgba(80, 36, 30, 0.55), rgba(80, 36, 30, 0.2) 60%, transparent);
+  animation: fadeIn 0.8s 0.5s both;
+}
+/* isi botol: di balik kaca. --lx/--ly = pusat gulungan dalam em dari sudut kiri-atas kotak botol */
+.inScroll {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 4.6875em;
+  height: 2em;
+  margin: -1em 0 0 -2.34375em;
+  transform: translate(calc(var(--lx) * 1em), calc(var(--ly) * 1em)) rotate(calc(var(--lr) * 1deg)) scale(0.62);
+}
+/* gulungan terakhir, yang paling besar */
+.bigScroll {
+  transform: translate(4.7em, 2.72em) rotate(-3deg) scale(1);
+  transition: transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.up .bigScroll {
+  transform: translate(4.3em, 2.66em) rotate(0deg) scale(0.96);
+}
+/* mengintip dari mulut botol: mengecil sedikit supaya muat di leher */
+.up .bigScroll.peek {
+  transform: translate(calc(14.7em + var(--tug, 0) * 1.3em), 2.66em) rotate(0deg) scale(0.66);
+  transition: transform 0.9s cubic-bezier(0.34, 1.4, 0.5, 1);
+  animation: beckon 1.6s 1s ease-in-out infinite;
+}
+@keyframes beckon {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(255, 236, 170, 0)); }
+  50% { filter: drop-shadow(0 0 0.5em rgba(255, 236, 170, 0.95)); }
+}
+.up .bigScroll.pulled {
+  animation: pullOut 1.7s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes pullOut {
+  0% { transform: translate(14.7em, 2.66em) rotate(0deg) scale(0.66); }
+  30% { transform: translate(17.4em, 2.66em) rotate(0deg) scale(0.66); }
+  100% { transform: translate(24.4em, 11.9em) rotate(90deg) scale(2.1); }
+}
+.cork {
+  position: absolute;
+  left: 12.5625em;
+  top: 1.65625em;
+  width: 2.625em;
+  height: 2em;
+  transform: translateX(calc(var(--pull, 0) * 1.5em));
+}
+.wiggle {
+  animation: wiggle 0.43s ease-in-out both;
+}
+@keyframes wiggle {
+  0% { transform: translateX(0) rotate(0deg); }
+  30% { transform: translateX(0.3em) rotate(-5deg); }
+  60% { transform: translateX(0.7em) rotate(5deg); }
+  100% { transform: translateX(1.4em) rotate(-3deg); }
+}
+/* kilau kaca setelah bersih */
+.sparkles i {
+  position: absolute;
+  width: 1.3em;
+  height: 1.3em;
+  margin: -0.65em 0 0 -0.65em;
+  background: radial-gradient(closest-side, #fff, rgba(255, 244, 200, 0.75) 45%, transparent);
+  clip-path: polygon(50% 0, 59% 41%, 100% 50%, 59% 59%, 50% 100%, 41% 59%, 0 50%, 41% 41%);
+  opacity: 0;
+}
+.sparkles i:nth-child(1) { left: 2.9em; top: 1.3em; }
+.sparkles i:nth-child(2) { left: 8.3em; top: 1.25em; animation-delay: 0.5s; }
+.sparkles i:nth-child(3) { left: 12.9em; top: 2.2em; animation-delay: 0.9s; scale: 0.7; }
+.clean .sparkles i {
+  animation: twinkle 2.2s ease-in-out infinite;
+}
+.clean .sparkles i:nth-child(2) { animation-delay: 0.6s; }
+.clean .sparkles i:nth-child(3) { animation-delay: 1.2s; }
+/* gumpal pasir di atas kaca: muncul saat ombak yang mengantar botol surut, tersapu ke arah usapan */
+.clump {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 6.5625em;
+  height: 4.6875em;
+  margin: -2.34375em 0 0 -3.28125em;
+  opacity: 0;
+  transform: translate(calc(var(--lx) * 1em), calc(var(--ly) * 1em)) rotate(calc(var(--lr) * 1deg)) scale(var(--ls));
+  transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.3, 1), opacity 0.5s ease;
+}
+.sandy .clump {
+  opacity: 1;
+  transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.3, 1), opacity 0.5s ease 1s;
+}
+.sandy .clump.off {
+  opacity: 0;
+  transform: translate(calc(var(--lx) * 1em + var(--fx) * 1em), calc(var(--ly) * 1em + var(--fy) * 1em)) rotate(calc(var(--lr) * 1deg + 30deg)) scale(calc(var(--ls) * 0.55));
+  transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.3, 1), opacity 0.45s ease;
+}
+.puff {
+  position: absolute;
+  width: 0;
+  height: 0;
+  z-index: 7;
+  pointer-events: none;
+}
+.puff i {
+  position: absolute;
+  left: -0.14em;
+  top: -0.14em;
+  width: 0.28em;
+  height: 0.28em;
+  border-radius: 50%;
+  background: #c79a70;
+  box-shadow: 0.3em 0.2em 0 -0.04em #f0d2a4, -0.2em 0.3em 0 -0.06em #9c6c4c;
+  animation: grain 0.7s cubic-bezier(0.2, 0.7, 0.4, 1) both;
+}
+@keyframes grain {
+  from { transform: rotate(var(--a)) translateX(0.2em); opacity: 1; }
+  to { transform: rotate(var(--a)) translateX(var(--d)) translateY(0.9em); opacity: 0; }
+}
+/* label bergantung di leher botol; titik gantungnya = ujung tali di sudut kiri-atas lukisan label */
+.tag {
+  position: absolute;
+  left: 15.16em;
+  top: 4.01em;
+  width: 6.47em;
+  height: 3.375em;
+  font-size: 0.8em;
+  transform-origin: 2.6% 3.3%;
+  transform: rotate(52deg) scale(0);
+  transition: transform 0.7s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+.tagged .tag {
+  transform: rotate(52deg) scale(1);
+}
+.tagged.tip .tag {
+  transform: rotate(24deg) scale(1);
+}
+.tagged.up .tag {
+  transform: rotate(146deg) scale(1);
+}
+.tagArt {
+  width: 100%;
+  height: 100%;
+}
+.tagText {
+  position: absolute;
+  left: 24.5%;
+  top: 23%;
+  width: 66%;
+  height: 59%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 0.92;
+  color: #3b2318;
+  font-family: var(--font-hand, cursive);
+}
+.tagText span {
+  font-size: 0.72em;
+  font-weight: 600;
+  opacity: 0.75;
+}
+.tagText b {
+  max-width: 100%;
+  font-size: 1.26em;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.tagText b.long {
+  font-size: 0.9em;
+}
+.tagText b.xl {
+  font-size: 0.74em;
+}
+
+/* gabus yang terlempar: melayang dari mulut botol lalu jatuh di pasir dekat tepi ombak */
+.corkOut {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2.3em;
+  height: auto;
+  margin: -0.9em 0 0 -1.15em;
+  z-index: 3;
+  transform: translate(20.9em, 33.5em) rotate(372deg);
+  animation: corkFly 0.98s both;
+}
+@keyframes corkFly {
+  0% { transform: translate(17.1em, 34.4em) rotate(-18deg); animation-timing-function: cubic-bezier(0.2, 0.7, 0.5, 1); }
+  42% { transform: translate(19.5em, 28.8em) rotate(150deg); animation-timing-function: cubic-bezier(0.5, 0, 0.9, 0.6); }
+  78% { transform: translate(20.8em, 33.6em) rotate(330deg); animation-timing-function: ease-out; }
+  89% { transform: translate(20.9em, 32.9em) rotate(356deg); animation-timing-function: ease-in; }
+  100% { transform: translate(20.9em, 33.5em) rotate(372deg); }
+}
+.corkBack {
+  z-index: 5;
+  transform: translate(12.75em, 34.25em) rotate(24deg);
+  animation: none;
+}
+.popRing {
+  position: absolute;
+  left: 16.9em;
+  top: 34.4em;
+  width: 0;
+  height: 0;
+  z-index: 7;
+}
+.popRing i {
+  position: absolute;
+  left: -0.25em;
+  top: -0.25em;
+  width: 0.5em;
+  height: 0.5em;
+  background: radial-gradient(closest-side, #fff, rgba(255, 236, 180, 0.8) 50%, transparent);
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  animation: popSpark 0.9s ease-out both;
+}
+.popRing i:nth-child(1) { --a: -70deg; --d: 3.2em; }
+.popRing i:nth-child(2) { --a: -30deg; --d: 4em; animation-delay: 0.04s; }
+.popRing i:nth-child(3) { --a: 0deg; --d: 3em; animation-delay: 0.08s; }
+.popRing i:nth-child(4) { --a: -105deg; --d: 2.6em; animation-delay: 0.06s; }
+.popRing i:nth-child(5) { --a: 28deg; --d: 2.4em; animation-delay: 0.1s; }
+@keyframes popSpark {
+  from { transform: rotate(var(--a)) translateX(0.3em) scale(0.6); opacity: 1; }
+  to { transform: rotate(var(--a)) translateX(var(--d)) scale(2.2); opacity: 0; }
+}
+
+/* gulungan yang keluar dari botol: meluncur lewat leher (di balik kaca), lalu rebah di pasir */
+.scroll {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 4.6875em;
+  height: 2em;
+  margin: -1em 0 0 -2.34375em;
+  z-index: 5;
+  transform: translate(19.4em, 40.8em) rotate(-6deg) scale(1.1);
+  -webkit-tap-highlight-color: transparent;
+}
+.scrollArt {
+  width: 100%;
+  height: 100%;
+}
+.slide {
+  animation: slide 1s both;
+}
+@keyframes slide {
+  0% { transform: translate(calc(var(--x0) * 1em), calc(var(--y0) * 1em)) rotate(calc(var(--r0) * 1deg)) scale(0.62); animation-timing-function: ease-in; }
+  30% { transform: translate(calc(var(--x1) * 1em), calc(var(--y1) * 1em)) rotate(20deg) scale(0.62); animation-timing-function: linear; }
+  56% { transform: translate(calc(var(--x2) * 1em), calc(var(--y2) * 1em)) rotate(20deg) scale(0.64); animation-timing-function: cubic-bezier(0.3, 0.4, 0.4, 1); }
+  86% { transform: translate(19.7em, 40.9em) rotate(-10deg) scale(1.12); animation-timing-function: ease-in-out; }
+  100% { transform: translate(19.4em, 40.8em) rotate(-6deg) scale(1.1); }
+}
+.wait {
+  cursor: pointer;
+  z-index: 7;
+}
+/* area sentuh lebih besar dari gambarnya */
+.wait::before {
+  content: '';
+  position: absolute;
+  inset: -0.9em -0.3em;
+}
+.wait .scrollArt {
+  animation: nudge 1.6s ease-in-out infinite;
+  filter: drop-shadow(0 0 0.5em rgba(255, 236, 170, 0.75));
+}
+@keyframes nudge {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(3deg) translateY(-0.14em); }
+}
+
+/* ── tulisan di pasir ── */
+.sandText {
+  position: absolute;
+  left: 7.5em;
+  top: 35.1em;
+  width: 15em;
+  height: 5.6em;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.sandIn {
+  position: relative;
+  max-width: 100%;
+  text-align: center;
+  font-family: var(--font-hand, cursive);
+  font-size: 2.5em;
+  font-weight: 700;
+  line-height: 0.98;
+  color: rgba(104, 60, 42, 0.88);
+  text-shadow:
+    0.04em 0.05em 0 rgba(255, 240, 208, 0.9),
+    -0.02em -0.03em 0.05em rgba(70, 36, 24, 0.4);
+  rotate: -3deg;
+  text-wrap: balance;
+  transition: color 1.2s ease;
+}
+.sandIn.short {
+  font-size: 3.1em;
+}
+.sandIn.long {
+  font-size: 2.05em;
+}
+.word {
+  display: inline-block;
+  white-space: nowrap;
+}
+.word.breakable {
+  display: inline;
+  white-space: normal;
+}
+.sandIn i {
+  display: inline-block;
+  font-style: normal;
+  white-space: pre;
+  opacity: 0;
+  transform: translateY(0.1em) scale(0.86);
+  transition: opacity 0.16s ease, transform 0.22s ease;
+}
+.sandIn i.on {
+  opacity: 1;
+  transform: none;
+}
+.pen {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  transition: transform 0.1s linear, opacity 0.6s ease 0.3s;
+}
+.penDone {
+  opacity: 0;
+}
+.stick {
+  position: absolute;
+  left: -0.07em;
+  top: -0.55em;
+  width: 2.4em;
+  height: 0.672em;
+  transform-origin: 3% 82%;
+  rotate: -54deg;
+  animation: scribble 0.21s ease-in-out infinite alternate;
+}
+@keyframes scribble {
+  from { transform: rotate(-5deg) translateY(-0.03em); }
+  to { transform: rotate(6deg) translateY(0.02em); }
+}
+
+/* ── kepiting di adegan utama ── */
+.crabSpot {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: -2.3em 0 0 -2.7em;
+  z-index: 7;
+  transform: translate(calc(var(--x) * 1em), calc(var(--y) * 1em));
+  filter: drop-shadow(0 0.4em 0.4em rgba(70, 30, 20, 0.3));
+  pointer-events: none;
+}
+.crab_peek {
+  animation: crabPeek 0.7s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+@keyframes crabPeek {
+  from { opacity: 0; transform: translate(calc(var(--x) * 1em), calc(var(--y) * 1em - 1.4em)) scale(0.5); }
+}
+.crab_bye {
+  animation: crabBye 2.4s ease-in both;
+}
+@keyframes crabBye {
+  0%, 22% { transform: translate(calc(var(--x) * 1em), calc(var(--y) * 1em)) rotate(0deg); }
+  8% { transform: translate(calc(var(--x) * 1em), calc(var(--y) * 1em - 0.4em)) rotate(-7deg); }
+  15% { transform: translate(calc(var(--x) * 1em), calc(var(--y) * 1em - 0.4em)) rotate(7deg); }
+  100% { transform: translate(calc(var(--x) * 1em + 13em), calc(var(--y) * 1em - 0.6em)); }
+}
+
+/* ── nyiur & senja yang makin dalam ── */
+.palm {
+  position: absolute;
+  left: -0.6em;
+  top: -0.3em;
+  width: 13.75em;
+  height: 15.625em;
+  z-index: 8;
+  transform-origin: 0 0;
+  animation: sway 7s ease-in-out infinite alternate;
+}
+.palmR {
+  left: auto;
+  right: -1.6em;
+  top: -4.2em;
+  scale: -0.74 0.74;
+  transform-origin: 50% 0;
+  animation-duration: 8.6s;
+  animation-delay: -3s;
+}
+@keyframes sway {
+  from { transform: rotate(-1.6deg); }
+  to { transform: rotate(2.2deg); }
+}
+.dusk {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(26, 20, 66, 0.72), rgba(92, 38, 96, 0.34) 38%, rgba(74, 30, 62, 0.28) 66%, rgba(40, 20, 52, 0.4));
+  opacity: var(--dusk, 0);
+  transition: opacity 2.6s ease;
+}
+
+/* ── bidang sentuh ── */
+.hit {
+  position: absolute;
+  z-index: 12;
+  border-radius: 1.2em;
+  cursor: pointer;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.hit:focus-visible {
+  outline: 0.14em dashed rgba(255, 246, 230, 0.9);
+  outline-offset: -0.3em;
+}
+.hitSea {
+  left: 0;
+  right: 0;
+  top: 17em;
+  height: 16em;
+  cursor: grab;
+}
+.hitRub {
+  left: 2.4em;
+  top: 31.6em;
+  width: 16.8em;
+  height: 10.2em;
+}
+.hitCork {
+  left: 13.3em;
+  top: 31.2em;
+  width: 7em;
+  height: 6.6em;
+  cursor: grab;
+}
+.hitTip {
+  left: 2.8em;
+  top: 32.2em;
+  width: 15em;
+  height: 9em;
+}
+.hitWrite {
+  left: 0;
+  right: 0;
+  top: 30em;
+  bottom: 0;
+  cursor: default;
+}
+.hitLetter {
+  left: 1.7em;
+  top: 27.6em;
+  width: 6.4em;
+  height: 10em;
+  cursor: grab;
+}
+
+/* ── keterangan di langit (ukuran em Stage, menempel di atas layar) ── */
+.head {
+  position: absolute;
+  left: 50%;
+  top: 2.8em;
+  width: 18.4em;
+  translate: -50% 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3em;
+  text-align: center;
+  pointer-events: none;
+  text-shadow: 0 0.06em 0.5em rgba(36, 18, 58, 0.8), 0 0 0.12em rgba(36, 18, 58, 0.6);
+  animation: headIn 0.55s ease both;
+}
+.head::before {
+  content: '';
+  position: absolute;
+  inset: -1.6em -3em -2em;
+  z-index: -1;
+  background: radial-gradient(closest-side, rgba(40, 22, 70, 0.5), rgba(40, 22, 70, 0.22) 60%, transparent);
+}
+@keyframes headIn {
+  from { opacity: 0; transform: translateY(0.5em); }
+  to { opacity: 1; transform: none; }
+}
+.eyebrow {
+  font-size: 0.68em;
+  font-weight: 800;
+  max-width: 21em;
+  letter-spacing: 0.2em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  text-wrap: balance;
+  color: #ffdca0;
+}
+.cap {
+  max-width: 8.8em;
+  font-family: var(--font-hand, cursive);
+  font-size: 2.05em;
+  font-weight: 700;
+  line-height: 1;
+  text-wrap: balance;
+}
+.capLong {
+  font-size: 1.82em;
+  max-width: 9.8em;
+}
+
+/* ── gulungan yang dibuka: kertas panjang dengan dua batang gulung ── */
+.noteLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 24;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 4.4em;
+  animation: fadeIn 0.35s ease both;
+}
+.noteLayer.closing {
+  animation: fadeOut 0.4s 0.05s ease both;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fadeOut {
+  to { opacity: 0; transform: translateY(1.2em) scale(0.92); }
+}
+.noteScrim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 70% at 50% 32%, rgba(34, 18, 56, 0.56), rgba(34, 18, 56, 0.24));
+  cursor: pointer;
+}
+.note {
+  position: relative;
+  width: 19.2em;
+  rotate: -1deg;
+  filter: drop-shadow(0 1.1em 1.3em rgba(26, 10, 30, 0.5));
+}
+.roll {
+  position: relative;
+  z-index: 1;
+  display: block;
+  height: 1.5em;
+  margin: 0 -0.55em;
+  border-radius: 0.75em;
+  background: linear-gradient(180deg, #fffdf5, #f3e2bd 42%, #d3b382 84%, #b28c5c);
+  box-shadow: inset 0 0 0 0.06em rgba(122, 84, 48, 0.45);
+}
+.roll::before,
+.roll::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 0.95em;
+  height: 100%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, #b28c5c 18%, #f3e2bd 22% 42%, #b28c5c 46% 52%, #f6e8c8 56% 80%, #a8855a 84%);
+}
+.roll::before {
+  left: -0.2em;
+}
+.roll::after {
+  right: -0.2em;
+}
+.noteGrow {
+  display: grid;
+  grid-template-rows: 0fr;
+  margin: -0.55em 0;
+  animation: unroll 0.7s 0.12s cubic-bezier(0.3, 0.9, 0.3, 1) forwards;
+}
+.closing .noteGrow {
+  grid-template-rows: 1fr;
+  animation: reroll 0.4s ease-in forwards;
+}
+@keyframes unroll {
+  to { grid-template-rows: 1fr; }
+}
+@keyframes reroll {
+  to { grid-template-rows: 0fr; }
+}
+.noteClip {
+  min-height: 0;
+  overflow: hidden;
+}
+.noteBody {
+  composes: paper from '../kit/kit.module.css';
+  --paper: #fffaf0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5em 1.3em 1.45em;
+  color: #3b2318;
+  cursor: pointer;
+}
+.noteNo {
+  font-size: 0.66em;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #1f8a8a;
+}
+.postcard {
+  position: relative;
+  width: 14.4em;
+  margin: 1.15em 0 0.2em;
+  padding: 0.45em;
+  background: #fffdf7;
+  box-shadow: 0 0.08em 0.2em rgba(60, 30, 20, 0.22), 0 0.8em 1.3em -0.8em rgba(60, 30, 20, 0.65);
+  rotate: 1.8deg;
+}
+.photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 2.85;
+  object-fit: cover;
+  filter: saturate(1.04) contrast(1.02);
+}
+.stamp {
+  position: absolute;
+  right: -0.75em;
+  top: -1em;
+  width: 2.9em;
+  height: auto;
+  rotate: 7deg;
+}
+.postmark {
+  position: absolute;
+  right: 1.5em;
+  top: -0.55em;
+  width: 4.4em;
+  height: auto;
+  fill: none;
+  stroke: #3b2318;
+  stroke-width: 1.6;
+  opacity: 0.5;
+  rotate: -8deg;
+}
+.noteDeco {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  margin: 0.7em 0 0.1em;
+}
+.noteDeco i {
+  width: 3.2em;
+  height: 0.1em;
+  background: linear-gradient(90deg, transparent, #1f8a8a);
+  opacity: 0.6;
+}
+.noteDeco i:last-child {
+  scale: -1 1;
+}
+.noteShell {
+  width: 3.2em;
+  height: auto;
+}
+.noteText {
+  margin-top: 0.42em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.72em;
+  font-weight: 600;
+  line-height: 1.08;
+  text-align: center;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.noteText.long {
+  font-size: 1.52em;
+}
+.noteText.big {
+  font-size: 2.2em;
+}
+.noteText.big.long {
+  font-size: 1.86em;
+}
+.noteBtn {
+  min-height: 2.9em;
+  margin-top: 1em;
+  padding: 0.55em 1.35em 0.6em;
+  border-radius: 99em;
+  font-size: 0.88em;
+  font-weight: 800;
+  color: #fffaf2;
+  background: linear-gradient(180deg, #2aa39b, #1f8a8a 60%, #17726f);
+  box-shadow: inset 0 0.07em 0 rgba(255, 255, 255, 0.35), 0 0.16em 0 #0f5a60, 0 0.9em 1.4em -0.8em rgba(15, 60, 70, 0.9);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+.noteBtn:active {
+  transform: translateY(0.08em) scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glint,
+  .swell,
+  .birds,
+  .wave,
+  .wet,
+  .afloat .bob,
+  .palm,
+  .stick,
+  .wait .scrollArt,
+  .clean .sparkles i,
+  .slide,
+  .corkOut,
+  .wiggle,
+  .shell,
+  .crab_peek,
+  .crab_bye,
+  .up .bigScroll.pulled,
+  .up .bigScroll.peek,
+  .noteLayer,
+  .noteLayer.closing {
+    animation: none;
+  }
+  .glint {
+    opacity: 0.7;
+  }
+  .wet_land,
+  .wet_rush,
+  .popRing,
+  .puff {
+    display: none;
+  }
+  .bottle,
+  .ashore.up,
+  .landing,
+  .bigScroll,
+  .up .bigScroll.peek,
+  .clump,
+  .sandy .clump,
+  .sandy .clump.off,
+  .tag,
+  .dusk,
+  .sandIn i,
+  .pen {
+    transition-duration: 0.01s;
+    transition-delay: 0s;
+  }
+  /* gulungan langsung terbuka penuh */
+  .noteGrow,
+  .closing .noteGrow {
+    grid-template-rows: 1fr;
+    animation: none;
+  }
+  .crab_bye {
+    opacity: 0;
+  }
+}

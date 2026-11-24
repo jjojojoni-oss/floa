@@ -1,0 +1,159 @@
+/* Mini-game "Kejar kepitingnya!": arena transparan di atas pantai; kepiting berlari di pasir yang sama.
+   .world meniru dunia lukisan di style.module.css (1em = 32 satuan lukisan), jadi posisinya persis sama. */
+.field {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.world {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 24.375em;
+  height: 46.875em;
+  margin-left: -12.1875em;
+  font-size: calc(var(--u) * 32);
+  pointer-events: none;
+}
+
+/* kepitingnya: lukisan + wajah + gabus di capit kanan */
+.crab {
+  position: relative;
+  display: block;
+  width: 5.4em;
+  height: 4.32em;
+}
+.crabArt {
+  width: 100%;
+  height: 100%;
+}
+.face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.pupil {
+  animation: peek 3.2s ease-in-out infinite;
+}
+@keyframes peek {
+  0%, 62%, 100% { transform: none; }
+  70%, 88% { transform: translateX(-4px); }
+}
+.crabCork {
+  position: absolute;
+  left: 3.5em;
+  top: -0.86em;
+  width: 1.85em;
+  height: auto;
+  rotate: -64deg;
+}
+
+.runner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: -2.3em 0 0 -2.7em;
+  pointer-events: auto;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transform: translate(calc(var(--x) * 1em), calc(var(--y) * 1em));
+  transition: transform 0.76s cubic-bezier(0.45, 0, 0.3, 1);
+  filter: drop-shadow(0 0.4em 0.4em rgba(70, 30, 20, 0.3));
+  animation: crabIn 0.4s ease both;
+}
+@keyframes crabIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+/* area sentuh lebih besar dari gambarnya */
+.runner::before {
+  content: '';
+  position: absolute;
+  inset: -0.9em;
+}
+.runner .crab {
+  animation: idle 1.5s ease-in-out infinite;
+  transform-origin: 50% 90%;
+}
+.scuttle .crab {
+  animation: scuttle 0.19s ease-in-out infinite;
+}
+@keyframes idle {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-0.16em) rotate(2deg); }
+}
+@keyframes scuttle {
+  0%, 100% { transform: translateY(0) rotate(-6deg); }
+  50% { transform: translateY(-0.22em) rotate(6deg); }
+}
+
+/* gabus yang dikembalikan: jatuh di sebelah kepiting */
+.dropCork {
+  position: absolute;
+  left: 11.6em;
+  top: 33.2em;
+  width: 2.3em;
+  height: auto;
+  rotate: 24deg;
+  filter: drop-shadow(0 0.25em 0.25em rgba(70, 30, 20, 0.35));
+  animation: corkDrop 0.6s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+@keyframes corkDrop {
+  from { transform: translate(4.6em, -2.6em) rotate(-120deg); }
+  to { transform: none; }
+}
+
+/* celetukan kepiting: balon kata di atas laut, tidak menutupi pasir tempat ia berlari */
+.bubble {
+  position: absolute;
+  left: 50%;
+  top: 16.4em;
+  width: max-content;
+  max-width: 13.2em;
+  translate: -50% 0;
+  padding: 0.5em 0.95em 0.56em;
+  border-radius: 1em;
+  text-align: center;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.3em;
+  font-weight: 700;
+  line-height: 1.1;
+  text-wrap: balance;
+  color: #3b2318;
+  background: #fffaf0;
+  box-shadow: 0 0.5em 1.1em -0.4em rgba(40, 16, 40, 0.6);
+  animation: bubbleIn 0.4s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+.bubble::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 0.9em;
+  height: 0.9em;
+  margin: -0.5em 0 0 -0.45em;
+  border-radius: 0.14em;
+  background: #fffaf0;
+  transform: rotate(45deg);
+}
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(0.6em) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .runner {
+    transition-duration: 0.01s;
+  }
+  .runner .crab,
+  .scuttle .crab,
+  .pupil,
+  .dropCork {
+    animation: none;
+  }
+}
