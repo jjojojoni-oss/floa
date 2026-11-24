@@ -18,6 +18,7 @@ import Gacha from './gacha/Cover';
 import Photobox from './photobox/Cover';
 import KotakMusik from './kotakmusik/Cover';
 import Pintu from './pintu/Cover';
+import Mesintik from './mesintik/Cover';
 import Toples from './toples/Cover';
 import Vinyl from './vinyl/Cover';
 
@@ -44,4 +45,5 @@ export const COVERS: Record<string, ComponentType> = {
   photobox: Photobox,
   kotakmusik: KotakMusik,
   pintu: Pintu,
+  mesintik: Mesintik,
 };

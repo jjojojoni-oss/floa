@@ -40,6 +40,7 @@ const PLAYERS: Record<string, ComponentType<TemplateProps>> = {
   photobox: dynamic(() => import('./photobox'), { ssr: false, loading: Loading }),
   kotakmusik: dynamic(() => import('./kotakmusik'), { ssr: false, loading: Loading }),
   pintu: dynamic(() => import('./pintu'), { ssr: false, loading: Loading }),
+  mesintik: dynamic(() => import('./mesintik'), { ssr: false, loading: Loading }),
 };
 
 /** Pemuat kode tiap template, untuk dipanaskan selagi kalimat pembuka tampil. */
@@ -65,6 +66,7 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
   photobox: () => import('./photobox'),
   kotakmusik: () => import('./kotakmusik'),
   pintu: () => import('./pintu'),
+  mesintik: () => import('./mesintik'),
 };
 
 /**

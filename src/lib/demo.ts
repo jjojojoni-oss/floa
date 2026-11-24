@@ -119,6 +119,11 @@ const DEMO: Record<string, DemoExtra> = {
     password: '165',
     hint: { id: 'Tinggiku sekarang (cm)', ms: 'Tinggiku sekarang (cm)', en: 'How tall I am now (cm)' },
   },
+  mesintik: {
+    song: { id: '5l1PTlqOxFjZaNC9BW9hkA', title: 'Terus Terang', artist: "MALIQ & D'Essentials" },
+    password: '0214',
+    hint: { id: 'Jam waktu aku mulai ngetik (JJMM)', ms: 'Waktu aku mula menaip (JJMM)', en: 'When I started typing (HHMM)' },
+  },
 };
 
 export type DemoLock = { password: string; hint: string; shape: string | null };
