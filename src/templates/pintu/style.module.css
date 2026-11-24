@@ -1,0 +1,722 @@
+/* Setinggi Ini: sudut pintu rumah. Satu lukisan besar ("dunia") digeser & diperbesar dengan satu transform
+   (dihitung di index.tsx): dari jauh terlihat seluruh kusen, dari dekat kamera memanjat garis demi garis.
+   Di dalam .world, 1em = lebar dunia / 24.4, jadi semua yang menempel di dinding ikut membesar bersama lukisannya. */
+.wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* dunia & daun latar depan melebihi tepi: dipotong tanpa menjadikan adegan ini bisa digulir */
+  overflow: clip;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  color: #2f3327;
+  background: #cfdcc0;
+}
+.wrap.ready {
+  opacity: 1;
+}
+
+/* ── dunia ── */
+.world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+  transition: transform 1.05s cubic-bezier(0.45, 0, 0.2, 1);
+}
+.world.slow {
+  transition-duration: 1.7s;
+}
+/* layar sedang digeser: dunia menempel di jari */
+.world.live {
+  transition: none;
+}
+/* surat sudah terbuka menutupi semuanya */
+.over .world,
+.over .fg {
+  visibility: hidden;
+  transition: visibility 0s 0.9s;
+}
+.bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── papan nama gantung ── */
+.sign {
+  position: absolute;
+  left: 64.6%;
+  top: 10.87%;
+  width: 25.6%;
+  height: 9.4%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.3em 0.35em;
+  text-align: center;
+  color: #4a3324;
+  font-family: var(--font-hand, cursive);
+  line-height: 1;
+}
+.signFor {
+  font-size: 0.74em;
+  font-weight: 700;
+  color: #a8532f;
+}
+.signName {
+  max-width: 100%;
+  font-size: 1.7em;
+  font-weight: 700;
+  line-height: 0.92;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.signName.long {
+  font-size: 1.16em;
+  line-height: 0.95;
+}
+.signName.xl {
+  font-size: 0.8em;
+  line-height: 1;
+}
+.signFrom {
+  max-width: 82%;
+  margin-top: 0.2em;
+  font-size: 0.68em;
+  font-weight: 700;
+  opacity: 0.82;
+  overflow-wrap: anywhere;
+}
+.signFrom.long {
+  /* nama pengirim yang panjang digeser ke kiri, menjauhi kamboja di sudut kanan-bawah papan */
+  max-width: 64%;
+  margin-right: 14%;
+  font-size: 0.56em;
+}
+
+/* ── garis tinggi badan ── */
+.mark {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 0;
+}
+.line {
+  position: absolute;
+  left: 42.308%;
+  top: 0;
+  width: 10.769%;
+  display: block;
+  overflow: visible;
+  translate: 0 -50%;
+}
+/* garis lama yang sudah pudar */
+.ghost {
+  fill: none;
+  stroke: rgba(74, 64, 48, 0.3);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-dasharray: 3 3.4;
+}
+.stroke {
+  fill: none;
+  stroke: #33322e;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+}
+.strokeAuto {
+  transition: stroke-dashoffset 0.56s cubic-bezier(0.4, 0, 0.6, 1);
+}
+.lastMark .stroke {
+  stroke-width: 3.2;
+}
+.lastMark.drawn .line {
+  filter: drop-shadow(0 0 0.1em rgba(255, 196, 96, 0.95));
+}
+.lastMark .stroke2 {
+  stroke: #c2532c;
+  stroke-width: 2;
+}
+.drawHit {
+  position: absolute;
+  left: 37.2%;
+  top: 0;
+  width: 21.8%;
+  height: 3em;
+  z-index: 6;
+  translate: 0 -50%;
+  border-radius: 0.4em;
+  cursor: pointer;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* kenangan: tulisan tangan di dinding, di kanan meteran */
+.note {
+  position: absolute;
+  left: 57.95%;
+  top: -0.42em;
+  width: 21.3%;
+  transition: opacity 0.6s ease;
+  animation: noteIn 0.45s ease backwards;
+}
+.far .note,
+.far .side {
+  opacity: 0;
+}
+@keyframes noteIn {
+  from { opacity: 0; transform: translateX(-0.2em); }
+}
+.tick {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  font-family: var(--font-hand, cursive);
+  font-size: 0.53em;
+  font-weight: 700;
+  line-height: 1.15;
+  white-space: nowrap;
+  color: #b04a26;
+}
+.tick::before {
+  content: '';
+  flex: none;
+  width: 0.8em;
+  height: 0.1em;
+  border-radius: 1em;
+  background: currentColor;
+  opacity: 0.75;
+}
+.noteText {
+  margin: 0.06em 0 0;
+  font-family: var(--font-hand, cursive);
+  font-size: 0.68em;
+  font-weight: 600;
+  line-height: 1.07;
+  color: #33322d;
+  overflow-wrap: break-word;
+}
+.noteLong .noteText {
+  font-size: 0.615em;
+}
+.lastMark .tick {
+  font-size: 0.74em;
+  color: #c2532c;
+}
+/* kamera sedikit mundur di garis "sekarang": tulisannya dibuat lebih besar & lebar supaya tetap terbaca */
+.lastMark .note {
+  width: 26%;
+}
+.lastMark .noteText {
+  font-size: 0.72em;
+}
+.lastMark .noteLong .noteText {
+  font-size: 0.68em;
+}
+.tickHeart {
+  width: 0.8em;
+  height: 0.74em;
+  fill: #d9643a;
+  animation: beat 1.3s ease-in-out infinite;
+}
+@keyframes beat {
+  0%, 100% { transform: scale(1); }
+  30% { transform: scale(1.22); }
+}
+
+/* foto ditempel selotip di daun pintu; garis tanpa foto dapat gambar kapur */
+.side {
+  position: absolute;
+  left: 29.75%;
+  top: 0;
+  width: 11.2%;
+  translate: 0 -50%;
+  transition: opacity 0.6s ease;
+}
+.sideA {
+  rotate: -4deg;
+}
+.sideB {
+  rotate: 3.5deg;
+}
+.snap {
+  position: relative;
+  display: block;
+  padding: 6% 6% 9%;
+  border-radius: 0.04em;
+  background: #fffaf0;
+  box-shadow:
+    0 0.05em 0.12em rgba(40, 18, 8, 0.45),
+    0 0.3em 0.5em -0.22em rgba(40, 18, 8, 0.55);
+  animation: stick 0.55s 0.3s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+.snap img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  filter: saturate(0.92) contrast(1.02);
+}
+@keyframes stick {
+  from { opacity: 0; transform: translateY(-0.5em) scale(1.25) rotate(8deg); }
+  to { opacity: 1; transform: none; }
+}
+.washi {
+  position: absolute;
+  left: 50%;
+  top: -0.2em;
+  width: 1.25em;
+  height: 0.44em;
+  translate: -50% 0;
+  rotate: -5deg;
+  background: repeating-linear-gradient(90deg, rgba(238, 142, 98, 0.86) 0 0.11em, rgba(255, 205, 176, 0.86) 0.11em 0.22em);
+  box-shadow: 0 0.03em 0.06em rgba(40, 18, 8, 0.3);
+}
+.doodle {
+  display: block;
+  overflow: visible;
+}
+.doodle path {
+  fill: none;
+  stroke: #fff3d6;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1 2;
+  stroke-dashoffset: 1;
+  opacity: 0.9;
+  animation: scribble 0.7s calc(0.3s + var(--i) * 0.32s) ease-out forwards;
+}
+@keyframes scribble {
+  to { stroke-dashoffset: 0; }
+}
+.doodleBig {
+  width: 78%;
+  margin: 0 auto;
+  filter: drop-shadow(0 0.02em 0.02em rgba(60, 30, 10, 0.35));
+}
+.sideB .doodleBig path {
+  stroke: #ffd98a;
+}
+.doodleSmall {
+  flex: none;
+  width: 1.5em;
+  height: 1.5em;
+  margin: -0.4em 0 -0.3em 0.1em;
+}
+.doodleSmall path {
+  stroke: #b04a26;
+  stroke-width: 3.2;
+}
+
+/* saat kamera mundur, garis berdenting satu per satu dari bawah */
+.ping .line {
+  animation: ping 0.7s ease-out;
+}
+.ping .tick {
+  animation: tickPing 0.7s ease-out;
+}
+@keyframes ping {
+  0% { scale: 1; filter: none; }
+  30% { scale: 1.3 1.8; filter: drop-shadow(0 0 0.3em rgba(255, 196, 96, 1)); }
+  100% { scale: 1; filter: none; }
+}
+@keyframes tickPing {
+  30% { transform: scale(1.18); color: #e2733f; }
+}
+
+/* ── pensil ── */
+.pen {
+  position: absolute;
+  width: 4.74%;
+  aspect-ratio: 80 / 344;
+  z-index: 7;
+  translate: -47.5% -96.5%;
+  pointer-events: none;
+  transition:
+    left 0.95s cubic-bezier(0.45, 0, 0.2, 1),
+    top 0.95s cubic-bezier(0.45, 0, 0.2, 1);
+}
+.penLive {
+  transition: none;
+}
+.penAuto {
+  transition:
+    left 0.56s cubic-bezier(0.4, 0, 0.6, 1),
+    top 0.56s cubic-bezier(0.4, 0, 0.6, 1);
+}
+/* berayun pada pakunya */
+.penSwing {
+  position: absolute;
+  inset: 0;
+  transform-origin: 47.5% -92.2%;
+}
+.hang .penSwing {
+  animation: sway 3.4s ease-in-out infinite;
+}
+@keyframes sway {
+  0%, 100% { transform: rotate(-2.6deg); }
+  50% { transform: rotate(2.6deg); }
+}
+.penString {
+  position: absolute;
+  left: 47.5%;
+  bottom: 97%;
+  width: 0.05em;
+  min-width: 1px;
+  height: 95.2%;
+  translate: -50% 0;
+  background: linear-gradient(#b08a55, #7a5a30);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.hang .penString {
+  opacity: 1;
+}
+.penTilt {
+  position: absolute;
+  inset: 0;
+  transform-origin: 47.5% 96.5%;
+  transform: rotate(var(--rot));
+  transition: transform 0.7s cubic-bezier(0.3, 1.2, 0.5, 1);
+}
+.waiting .penSwing {
+  animation: nudge 1.5s ease-in-out infinite;
+}
+@keyframes nudge {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0.16em -0.12em; }
+}
+.penArt {
+  width: 100%;
+  height: 100%;
+}
+.takeHit {
+  position: absolute;
+  width: 11.5%;
+  height: 22%;
+  z-index: 8;
+  translate: -50% -3%;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── surat terselip di balik tepi kusen, menyembul ke arah dinding ── */
+.slot {
+  position: absolute;
+  left: 53.08%;
+  width: 28.85%;
+  height: 6.2em;
+  z-index: 4;
+  translate: 0 -50%;
+  overflow: hidden;
+  pointer-events: none;
+}
+.slot.pulled {
+  overflow: visible;
+  z-index: 9;
+}
+.letter {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 78%;
+  margin-top: -25%;
+  transform: translateX(-110%) rotate(4deg);
+  transition: transform 0.3s cubic-bezier(0.3, 1.2, 0.5, 1);
+  pointer-events: auto;
+  cursor: grab;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.peek .letter {
+  transform: translateX(calc(-46% + var(--slip) * 60%)) rotate(4deg);
+}
+.pulled .letter {
+  transform: translate(-50%, -165%) rotate(-3deg) scale(1.75);
+  transition: transform 0.95s cubic-bezier(0.3, 0.9, 0.3, 1);
+}
+.letterArt {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.peek:not(.pulled) .letterArt {
+  animation: wiggle 2.4s 0.6s ease-in-out infinite;
+}
+@keyframes wiggle {
+  0%, 70%, 100% { transform: none; }
+  78% { transform: translateX(4%) rotate(2deg); }
+  86% { transform: translateX(-1%) rotate(-1.5deg); }
+  93% { transform: translateX(2%) rotate(1deg); }
+}
+
+/* ── daun di latar depan ── */
+.fg {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 1.05s cubic-bezier(0.45, 0, 0.2, 1),
+    opacity 0.9s ease;
+}
+.close .fg {
+  opacity: 1;
+}
+.world.live ~ .fg {
+  transition: none;
+}
+.fgLeaf {
+  position: absolute;
+  width: 6.4em;
+  height: auto;
+  filter: blur(0.13em) brightness(0.8) saturate(0.9);
+}
+.fgA {
+  left: -3em;
+  bottom: -5.6em;
+  rotate: 24deg;
+}
+.fgB {
+  /* cukup rendah supaya tidak menutupi ujung tulisan kenangan di kanan */
+  right: -3.6em;
+  bottom: -6.6em;
+  width: 7em;
+  rotate: -32deg;
+}
+.fgC {
+  left: -4.4em;
+  bottom: -8.4em;
+  width: 7.4em;
+  rotate: 54deg;
+}
+
+.swipe {
+  position: absolute;
+  inset: 0;
+  z-index: 9;
+  touch-action: none;
+  cursor: ns-resize;
+}
+
+/* ── tulisan di atas adegan ── */
+.introLine {
+  position: absolute;
+  left: 50%;
+  bottom: 5.4em;
+  z-index: 10;
+  width: max-content;
+  max-width: 17.4em;
+  margin: 0;
+  padding: 0.5em 1em 0.56em;
+  translate: -50% 0;
+  border-radius: 1em;
+  text-align: center;
+  text-wrap: balance;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.24em;
+  font-weight: 600;
+  line-height: 1.12;
+  color: #3b2a22;
+  background: rgba(255, 250, 240, 0.9);
+  box-shadow: 0 0.5em 1.1em -0.5em rgba(40, 18, 8, 0.6);
+  pointer-events: none;
+  animation: rise 0.6s 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.chip {
+  position: absolute;
+  left: 50%;
+  top: 1.25em;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 0.5em 1em;
+  translate: -50% 0;
+  border-radius: 99em;
+  font-size: 0.72em;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: #3f4435;
+  background: rgba(255, 250, 240, 0.86);
+  box-shadow: 0 0.5em 1em -0.5em rgba(40, 18, 8, 0.5);
+  animation: rise 0.5s 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.chipDots {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.34em;
+}
+.chipDots i {
+  width: 0.56em;
+  height: 0.56em;
+  border-radius: 50%;
+  background: rgba(47, 51, 39, 0.2);
+  transition: background 0.3s ease;
+}
+.chipDots i.on {
+  background: #d9643a;
+}
+.chipDots i.cur {
+  box-shadow: 0 0 0 0.16em rgba(217, 100, 58, 0.34);
+}
+
+/* ucapan utama: kertas yang ditempel selotip di bawah adegan */
+.titleCard {
+  composes: paper from '../kit/kit.module.css';
+  --paper: #fffaf0;
+  position: absolute;
+  left: 50%;
+  bottom: 3.2em;
+  z-index: 11;
+  width: 21.6em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3em;
+  /* tombol lanjut menumpang di tepi bawah kertas ini */
+  padding: 0.95em 1em 1.75em;
+  translate: -50% 0;
+  rotate: -1.4deg;
+  border-radius: 0.25em;
+  text-align: center;
+  color: #3b2a22;
+  animation: cardIn 0.7s cubic-bezier(0.3, 1.3, 0.5, 1) both;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(1.6em) rotate(4deg) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+.titleCard .washi {
+  top: -0.5em;
+  width: 3.4em;
+  height: 1.05em;
+  background: repeating-linear-gradient(90deg, rgba(238, 142, 98, 0.84) 0 0.28em, rgba(255, 205, 176, 0.84) 0.28em 0.56em);
+}
+.titleCard .washiL {
+  left: 13%;
+  rotate: -9deg;
+}
+.titleCard .washiR {
+  left: 87%;
+  rotate: 8deg;
+}
+.titleText {
+  font-family: var(--font-serif, Georgia, serif);
+  font-variation-settings: 'SOFT' 100;
+  font-size: 1.4em;
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+.titleText.long {
+  font-size: 1.2em;
+}
+.titleSub {
+  font-family: var(--font-hand, cursive);
+  font-size: 1.16em;
+  font-weight: 600;
+  line-height: 1.1;
+  color: #a8532f;
+  text-wrap: balance;
+}
+.petalsBox {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.foot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1.7em;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45em;
+  padding: 0 1.4em;
+  pointer-events: none;
+}
+.foot > * {
+  pointer-events: auto;
+}
+.footWide {
+  bottom: 1.1em;
+}
+.cta {
+  min-height: 3.1em;
+  padding: 0.85em 1.7em 0.9em;
+  border-radius: 99em;
+  font-size: 1em;
+  font-weight: 800;
+  color: #fffaf0;
+  background: linear-gradient(180deg, #ee8e62 0%, #d9643a 52%, #bf4f28 100%);
+  box-shadow:
+    inset 0 0.07em 0 rgba(255, 255, 255, 0.45),
+    inset 0 -0.12em 0 rgba(110, 40, 15, 0.3),
+    0 0.16em 0 #8f3a1c,
+    0 1em 1.8em -0.8em rgba(40, 18, 8, 0.8);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+  animation: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.cta:active {
+  transform: translateY(0.08em) scale(0.98);
+}
+.orSwipe {
+  padding: 0.24em 0.9em;
+  border-radius: 99em;
+  font-size: 0.72em;
+  font-weight: 700;
+  color: #3f4435;
+  background: rgba(255, 250, 240, 0.78);
+  pointer-events: none;
+  animation: rise 0.5s 0.15s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(0.7em); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .world,
+  .fg,
+  .pen,
+  .penTilt,
+  .strokeAuto,
+  .letter,
+  .pulled .letter {
+    transition-duration: 0.01s;
+  }
+  .hang .penSwing,
+  .waiting .penSwing,
+  .tickHeart,
+  .ping .line,
+  .ping .tick,
+  .peek:not(.pulled) .letterArt,
+  .note,
+  .snap,
+  .titleCard,
+  .introLine,
+  .chip,
+  .cta,
+  .orSwipe {
+    animation: none;
+  }
+  .doodle path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}

@@ -1,0 +1,178 @@
+/* Mini-game "Tangkap bola bekelnya!": bola karet memantul di lantai tegel, biji bekel berserakan di depannya.
+   Arena transparan: sudut pintu (dari jauh) tetap terlihat di belakangnya. */
+.field {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.jacks {
+  position: absolute;
+  left: 50%;
+  bottom: 1.5em;
+  width: 9.4em;
+  translate: -50% 0;
+  animation: jacksIn 0.6s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+.jacksArt {
+  width: 100%;
+  height: auto;
+}
+@keyframes jacksIn {
+  from { opacity: 0; transform: translateY(2em) rotate(-8deg); }
+  to { opacity: 1; transform: none; }
+}
+
+/* bola: berdiri di lantai pada --x, memantul setinggi --h */
+.ball {
+  position: absolute;
+  left: var(--x);
+  bottom: 5.4em;
+  width: 5.6em;
+  height: 5.6em;
+  margin-left: -2.8em;
+  z-index: 2;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+/* area sentuh lebih besar dari gambarnya, dan mencakup seluruh lintasan pantulan */
+.ball::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--h) * -1) -1.2em -1.2em;
+}
+.hop,
+.squash {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+.squash {
+  transform-origin: 50% 100%;
+  filter: drop-shadow(0 0.3em 0.4em rgba(40, 18, 8, 0.35));
+}
+.ballArt {
+  width: 100%;
+  height: 100%;
+}
+.face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.shade {
+  position: absolute;
+  left: 50%;
+  bottom: -0.5em;
+  width: 74%;
+  height: 0.9em;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: rgba(58, 20, 8, 0.42);
+  filter: blur(0.14em);
+}
+.in .hop {
+  animation: dropIn 0.64s cubic-bezier(0.5, 0, 0.9, 0.55) both;
+}
+.wait .hop {
+  animation: hop var(--ms) cubic-bezier(0.2, 0.7, 0.4, 1) infinite alternate;
+}
+.wait .squash {
+  animation: squash calc(var(--ms) * 2) linear infinite;
+}
+.wait .shade {
+  animation: shade var(--ms) cubic-bezier(0.2, 0.7, 0.4, 1) infinite alternate;
+}
+/* tertangkap: pantulannya berhenti di tempat, lalu bolanya menyusut ke tumpukan biji bekel */
+.got .hop,
+.got .squash,
+.got .shade {
+  animation-play-state: paused;
+}
+.ball.got {
+  animation: caught 0.76s cubic-bezier(0.5, 0, 0.8, 0.4) both;
+}
+@keyframes dropIn {
+  from { transform: translateY(-46em); }
+  to { transform: none; }
+}
+@keyframes hop {
+  from { transform: translateY(0); }
+  to { transform: translateY(calc(var(--h) * -1)); }
+}
+@keyframes squash {
+  0%, 100% { transform: scale(1.16, 0.82); }
+  10% { transform: scale(0.94, 1.07); }
+  28%, 86% { transform: none; }
+}
+@keyframes shade {
+  from { transform: none; opacity: 1; }
+  to { transform: scale(0.5); opacity: 0.35; }
+}
+@keyframes caught {
+  0% { transform: none; }
+  30% { transform: scale(1.2); }
+  100% { left: 50%; transform: translateY(2.4em) scale(0.2); opacity: 0.15; }
+}
+.excuse {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  margin-bottom: 0.25em;
+  translate: -50% 0;
+  padding: 0.3em 0.7em;
+  border-radius: 99em;
+  white-space: nowrap;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.15em;
+  font-weight: 600;
+  line-height: 1.1;
+  color: #fff3da;
+  background: rgba(58, 29, 18, 0.78);
+  animation: fadeUp 0.4s 0.3s both;
+}
+
+/* celetukan setelah tiap tangkapan */
+.bubble {
+  position: absolute;
+  left: 50%;
+  top: 4.5em;
+  z-index: 1;
+  width: max-content;
+  max-width: 15em;
+  translate: -50% 0;
+  padding: 0.55em 1em 0.6em;
+  border-radius: 1em;
+  text-align: center;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.36em;
+  font-weight: 600;
+  line-height: 1.12;
+  text-wrap: balance;
+  color: #3b2a22;
+  background: #fffaf0;
+  box-shadow: 0 0.5em 1.1em -0.4em rgba(40, 18, 8, 0.6);
+  animation: fadeUp 0.4s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(0.6em) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .in .hop,
+  .wait .hop,
+  .wait .squash,
+  .wait .shade,
+  .jacks {
+    animation: none;
+  }
+  .wait .hop {
+    transform: translateY(calc(var(--h) * -0.5));
+  }
+}
