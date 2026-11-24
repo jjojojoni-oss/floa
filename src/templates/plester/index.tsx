@@ -3,6 +3,7 @@
 import { type CSSProperties, type PointerEvent as RPointerEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { Confetti, Finale, Hint, Sprite, Stage, TapCue, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
+import { AwanGame } from './Game';
 import { useText } from './i18n';
 import { meta } from './meta';
 import { fmt } from '@/i18n/client';
@@ -76,6 +77,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const [shiver, setShiver] = useState(0);
   const [finale, setFinale] = useState(false);
   const [burst, setBurst] = useState(0);
+  /** mini-game awan mendung: setelah semua pengakuan dibaca, sebelum plester "tapi…" */
+  const [game, setGame] = useState<'off' | 'on' | 'done'>('off');
 
   const board = useRef<HTMLDivElement>(null);
   const crackRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -385,8 +388,18 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           </div>
         ) : null}
 
-        {phase === 'admit' && seen >= n ? (
-          <button ref={nextRef} type="button" className={s.ghost} onClick={() => go('but')} autoFocus>
+        {phase === 'admit' && seen >= n && game !== 'on' ? (
+          <button
+            ref={nextRef}
+            type="button"
+            className={s.ghost}
+            onClick={() => {
+              if (game === 'done') return go('but');
+              sfx.tap();
+              setGame('on');
+            }}
+            autoFocus
+          >
             {t.next}
           </button>
         ) : null}
@@ -447,7 +460,17 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       {/* penunjuk sentuh kalau penerima diam, satu per tahap */}
       <TapCue target={startRef} show={phase === 'intro'} delay={4200} />
       <TapCue target={crackCue} show={phase === 'admit' && seen < n} />
-      <TapCue target={nextRef} show={(phase === 'admit' && seen >= n) || (phase === 'but' && but === 'gone')} delay={3600} />
+      <TapCue target={nextRef} show={(phase === 'admit' && seen >= n && game !== 'on') || (phase === 'but' && but === 'gone')} delay={3600} />
+
+      {game === 'on' ? (
+        <AwanGame
+          t={t.game}
+          onDone={() => {
+            setGame('done');
+            go('but');
+          }}
+        />
+      ) : null}
       <TapCue target={butRef} show={phase === 'but' && but === 'idle'} />
       <TapCue target={trayCue} show={phase === 'mend' && nextPl >= 0} kind="drag" dir={{ x: 0, y: -6 }} />
       <TapCue target={readRef} show={phase === 'answered' && !finale} delay={3600} />

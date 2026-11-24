@@ -13,6 +13,7 @@ import {
 import { Finale, Hint, Sprite, Stage, TapCue, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
+import { HeartHunt } from './Game';
 import { TEXT } from './i18n';
 import { meta } from './meta';
 import s from './style.module.css';
@@ -66,6 +67,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   /** jumlah lembar yang sudah dibalik: 0 = sampul tertutup, `leaves` = halaman kantong */
   const [pos, setPos] = useState(0);
   const [finale, setFinale] = useState(false);
+  /** mini-game cari hati sebelum surat di kantong: off → main → selesai */
+  const [game, setGame] = useState<'off' | 'on' | 'done'>('off');
   const posRef = useRef(0);
   const later = useTimers();
   const ready = useArtReady(ART);
@@ -167,7 +170,19 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   };
 
   const open = () => {
-    if (finale) return;
+    if (finale || game === 'on') return;
+    if (game === 'off') {
+      sfx.pop();
+      haptic(12);
+      setGame('on');
+      return;
+    }
+    sfx.chime();
+    haptic(15);
+    setFinale(true);
+  };
+  const gameDone = () => {
+    setGame('done');
     sfx.chime();
     haptic(15);
     setFinale(true);
@@ -404,14 +419,16 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
       {pos === 0 ? <Hint key="c">{t.hintCover}</Hint> : null}
       {pos >= 1 && !atPocket ? <Hint key="t">{t.hintTurn}</Hint> : null}
-      {atPocket && !finale ? <Hint key="l">{t.hintLetter}</Hint> : null}
-      {finale ? null : pos === 0 ? (
+      {atPocket && !finale && game !== 'on' ? <Hint key="l">{t.hintLetter}</Hint> : null}
+      {finale || game === 'on' ? null : pos === 0 ? (
         <TapCue key="cover" target={bookRef} at={{ x: 0.62, y: 0.5 }} />
       ) : atPocket ? (
         <TapCue key="pocket" target={pocketRef} />
       ) : (
         <TapCue key={`page${pos}`} target={bookRef} kind="drag" at={{ x: 0.82, y: 0.55 }} dir={{ x: -5, y: 0 }} />
       )}
+
+      {game === 'on' ? <HeartHunt t={t.game} onDone={gameDone} /> : null}
 
       {finale ? (
         <Finale

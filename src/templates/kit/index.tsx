@@ -71,6 +71,11 @@ const KIT_ID = {
   askReplyB: 'Nggak apa-apa. {from} nggak ke mana-mana, kok.',
   askReplyBAnon: 'Nggak apa-apa. Pelan-pelan aja.',
   askAnswer: 'Jawabanku: {a}',
+  gameEyebrow: 'main dulu, yuk',
+  gamePlay: 'Main!',
+  gameSkip: 'Lewati game',
+  gameNext: 'Lanjut →',
+  gameScore: '{n} dari {goal}',
 };
 type KitText = typeof KIT_ID;
 
@@ -128,6 +133,11 @@ const KIT: Record<Locale, KitText> = {
     askReplyB: 'Tak apa. {from} tak ke mana-mana pun.',
     askReplyBAnon: 'Tak apa. Perlahan-lahan saja.',
     askAnswer: 'Jawapan aku: {a}',
+    gameEyebrow: 'main dulu, jom',
+    gamePlay: 'Main!',
+    gameSkip: 'Langkau permainan',
+    gameNext: 'Teruskan →',
+    gameScore: '{n} daripada {goal}',
   },
   en: {
     soundOn: 'Turn sound on',
@@ -181,6 +191,11 @@ const KIT: Record<Locale, KitText> = {
     askReplyB: "That's okay. {from} isn't going anywhere.",
     askReplyBAnon: "That's okay. Take your time.",
     askAnswer: 'My answer: {a}',
+    gameEyebrow: 'quick game first',
+    gamePlay: 'Play!',
+    gameSkip: 'Skip the game',
+    gameNext: 'Continue →',
+    gameScore: '{n} of {goal}',
   },
 };
 
@@ -983,3 +998,4 @@ export function useTimers() {
   }, []);
 }
 export { TapCue } from './TapCue';
+export { MiniGame } from './Game';

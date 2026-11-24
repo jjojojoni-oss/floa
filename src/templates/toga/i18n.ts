@@ -1,5 +1,6 @@
 import { useLocale } from '@/i18n/client';
 import type { Locale } from '@/i18n/config';
+import type { IjazahText } from './Game';
 
 type TogaText = {
   eyebrowAfter: string;
@@ -35,6 +36,8 @@ type TogaText = {
   hintSwipe: string;
   hintTap: string;
   finaleEyebrow: string;
+  /** mini-game setelah toga dilempar */
+  game: IjazahText;
 };
 
 export const TEXT: Record<Locale, TogaText> = {
@@ -65,6 +68,19 @@ export const TEXT: Record<Locale, TogaText> = {
     hintSwipe: 'Ketuk atau geser toganya ke atas',
     hintTap: 'Ketuk gulungannya',
     finaleEyebrow: 'Isi gulungannya',
+    game: {
+      title: 'Kejar ijazahnya!',
+      how: 'Anginnya iseng, ijazahnya terbang. Ketuk ijazahnya buat nangkep.',
+      blow: 'Wusss! Ijazahnya terbang!',
+      spots: [
+        ['Eh, dibawa merpati!', 'Merpatinya cuma mau ikut foto wisuda.'],
+        ['Nyangkut di pohon. Klasik.', 'Untung nggak nyangkut di got.'],
+        ['Mendarat di kepala Ayah.', 'Ayah bangga. Pecinya juga.'],
+      ],
+      winTitle: 'Ijazah aman!',
+      winLine: 'Diikat pita, biar nggak kabur lagi.',
+      catchAria: 'Tangkap ijazahnya',
+    },
   },
   ms: {
     eyebrowAfter: 'sah bergraduasi!',
@@ -93,6 +109,19 @@ export const TEXT: Record<Locale, TogaText> = {
     hintSwipe: 'Ketuk atau leret topi ke atas',
     hintTap: 'Ketuk gulungan itu',
     finaleEyebrow: 'Isi gulungan',
+    game: {
+      title: 'Kejar skrolnya!',
+      how: 'Angin nakal, skrol terbang. Ketik skrolnya untuk tangkap.',
+      blow: 'Wusss! Skrolnya terbang!',
+      spots: [
+        ['Eh, dibawa merpati!', 'Merpati tu cuma nak bergambar konvo.'],
+        ['Tersangkut di pokok. Klasik.', 'Nasib baik tak masuk longkang.'],
+        ['Mendarat atas kepala Ayah.', 'Ayah bangga. Songkoknya pun.'],
+      ],
+      winTitle: 'Skrol selamat!',
+      winLine: 'Diikat reben, supaya tak lari lagi.',
+      catchAria: 'Tangkap skrol',
+    },
   },
   en: {
     eyebrowAfter: 'officially a grad!',
@@ -121,6 +150,19 @@ export const TEXT: Record<Locale, TogaText> = {
     hintSwipe: 'Tap or swipe the cap up',
     hintTap: 'Tap the scroll',
     finaleEyebrow: 'Inside the scroll',
+    game: {
+      title: 'Catch the diploma!',
+      how: 'A cheeky gust stole the diploma. Tap it to catch it.',
+      blow: 'Whoosh! There it goes!',
+      spots: [
+        ['A pigeon took it!', 'The pigeon just wanted a graduation photo.'],
+        ['Stuck in a tree. Classic.', 'Lucky it missed the gutter.'],
+        ['It landed on Dad’s head.', 'Dad’s proud. So is his hat.'],
+      ],
+      winTitle: 'Diploma secured!',
+      winLine: 'Tied with a ribbon, so it can’t run off again.',
+      catchAria: 'Catch the diploma',
+    },
   },
 };
 

@@ -5,6 +5,7 @@ import { Confetti, Finale, Hint, Sprite, Stage, TapCue, cx, haptic, sfx, useArtR
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
 import { type Milestone, addDays, dayDiff, elapsed, milestoneOn, milestones, parseDate, startOfDay } from './date';
+import { StopCalendar } from './Game';
 import { LOCALE_TAG, TEXT } from './i18n';
 import { meta } from './meta';
 import s from './style.module.css';
@@ -205,6 +206,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const [showCounter, setShowCounter] = useState(false);
   const [burst, setBurst] = useState(0);
   const [finale, setFinale] = useState(false);
+  /** mini-game kalender sebelum surat: off → main → selesai */
+  const [game, setGame] = useState<'off' | 'on' | 'done'>('off');
   const [now, setNow] = useState(() => new Date());
   const [dayShown, setDayShown] = useState(0);
   const drag = useRef<{ id: number; x0: number; y0: number; dy: number; el: HTMLElement } | null>(null);
@@ -390,7 +393,19 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const markText = (m: Milestone) => (m.kind === 'years' && m.n === 1 ? t.markYear : fmt(m.kind === 'years' ? t.markYears : t.markDays, { n: num(m.n) }));
 
   const openLetter = () => {
-    if (finale) return;
+    if (finale || game === 'on') return;
+    if (game === 'off') {
+      sfx.pop();
+      haptic(12);
+      setGame('on');
+      return;
+    }
+    sfx.chime();
+    haptic(15);
+    setFinale(true);
+  };
+  const gameDone = () => {
+    setGame('done');
     sfx.chime();
     haptic(15);
     setFinale(true);
@@ -598,7 +613,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         <Sprite name="anniversary-bilah" className={s.strip} />
       </div>
 
-      {showCounter ? (
+      {showCounter && game !== 'on' ? (
         <div className={cx(s.counter, !el && s.plain)}>
           {el ? (
             <>
@@ -641,11 +656,13 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
       {idx === 0 && canTear ? <Hint key="t0">{t.hintTear}</Hint> : null}
       {idx > 0 && canTear ? <Hint key="t1">{t.hintTearMore}</Hint> : null}
-      {finale ? null : canTear ? (
+      {finale || game === 'on' ? null : canTear ? (
         <TapCue key={`tear${idx}`} target={topCue} kind="drag" at={{ x: 0.5, y: 0.32 }} dir={{ x: 0, y: 3.2 }} />
       ) : showCounter ? (
         <TapCue key="open" target={openRef} delay={4500} />
       ) : null}
+
+      {game === 'on' ? <StopCalendar t={t.game} target={start ?? startOfDay(new Date())} hasDate={!!start} tag={tag} onDone={gameDone} /> : null}
 
       {finale ? (
         <Finale

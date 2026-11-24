@@ -4,8 +4,9 @@ import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { Confetti, Finale, Hint, HoldButton, Petals, Sprite, Stage, TapCue, Typewriter, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
+import { BeeGame } from './BeeGame';
 import { BouquetCard } from './Card';
-import { TEXT } from './i18n';
+import { GAME_TEXT, TEXT } from './i18n';
 import { meta } from './meta';
 import s from './style.module.css';
 
@@ -36,13 +37,14 @@ const LAYOUTS: Record<number, Head[]> = {
   ],
 };
 
-const ART = ['bg-pagi', 'buket-belakang', 'buket-daun', 'buket-depan', 'pita', 'buket-kupu', 'buket-label', 'buket-kartu', 'buket-gulungan', 'buket-gulungan-emas'];
+const ART = ['bg-pagi', 'game-kumbang', 'buket-belakang', 'buket-daun', 'buket-depan', 'pita', 'buket-kupu', 'buket-label', 'buket-kartu', 'buket-gulungan', 'buket-gulungan-emas'];
 
 /**
  * tag     → label kado dibalik
  * bloom   → kuncup mekar satu-satu mengikuti kupu-kupu; gulungan kertas di tengah bunga ditarik untuk dibaca
  * shy     → kuncup terakhir (paling malu) ditahan sampai berani mekar
  * tie     → pita diikat
+ * bee     → mini-game: usir kumbang rakus yang mau ngemil buketnya
  * smell   → hirup wanginya
  * card    → kartu kecil terselip → Finale
  */
@@ -53,7 +55,7 @@ const HEARTS: Array<[number, number, number, number]> = [
   [52, 1.15, 1.3, -10], [64, 1.3, 0.8, 9], [34, 1.45, 1, -5], [58, 1.6, 1.1, 11],
 ];
 
-type Phase = 'tag' | 'bloom' | 'shy' | 'tie' | 'smell' | 'hug' | 'card';
+type Phase = 'tag' | 'bloom' | 'shy' | 'tie' | 'bee' | 'smell' | 'hug' | 'card';
 
 export default function Buket(props: TemplateProps) {
   const [run, setRun] = useState(0);
@@ -65,7 +67,8 @@ export default function Buket(props: TemplateProps) {
 }
 
 function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void }) {
-  const t = TEXT[useLocale()];
+  const locale = useLocale();
+  const t = TEXT[locale];
   const notes = data.notes.map((n) => n.trim()).filter(Boolean).slice(0, 5);
   const n = Math.min(5, Math.max(3, notes.length));
   const heads = LAYOUTS[n];
@@ -94,6 +97,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const nextBtn = useRef<HTMLButtonElement>(null);
   /** benda yang sekarang harus disentuh (untuk penunjuk TapCue) */
   const cueEl = useRef<HTMLElement | null>(null);
+  const bqRef = useRef<HTMLDivElement>(null);
   const later = useTimers();
 
   const open = (i: number) => order.indexOf(i) < step;
@@ -178,7 +182,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     setBurst((b) => b + 1);
     sfx.success();
     haptic(40);
-    later(() => setPhase('smell'), 1500);
+    later(() => setPhase('bee'), 1600);
   };
 
   const sniff = () => {
@@ -207,7 +211,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
   /* kupu-kupu: hinggap di kuncup berikutnya; setelah pita terikat, hinggap di pita */
   const butterfly = (() => {
-    if (phase === 'tag' || phase === 'hug' || phase === 'card' || finale) return null;
+    if (phase === 'tag' || phase === 'bee' || phase === 'hug' || phase === 'card' || finale) return null;
     if (phase === 'smell' && sniffed) return { x: 520, y: -60, away: true };
     if (phase === 'tie' || phase === 'smell') return tied ? { x: 318, y: 548, away: false } : { x: 470, y: 520, away: false };
     if (card !== null || slip !== null || target === null) return { x: 520, y: 40, away: false };
@@ -238,6 +242,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                 : null
           : phase === 'tie'
             ? tied ? null : 'bow'
+            : phase === 'bee'
+              ? null
             : phase === 'smell'
               ? sniffed ? null : 'smell'
               : phase === 'hug'
@@ -280,7 +286,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       </div>
 
       <div className={cx(s.art, hug > 0 && s.hugging)} style={{ '--hug': hug } as CSSProperties}>
-        <div className={cx(s.bq, sniffed && s.inhale)} role="group" aria-label={t.bouquet}>
+        <div ref={bqRef} className={cx(s.bq, sniffed && s.inhale)} role="group" aria-label={t.bouquet}>
           <Sprite name="buket-belakang" className={s.layer} />
           <Sprite name="buket-daun" className={cx(s.layer, s.greens)} />
           {heads.map((h, i) => {
@@ -528,6 +534,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       />
 
       <Confetti burst={burst} colors={['#ee6a58', '#ffcb3d', '#ff9f1f', '#f47a8c', '#fffdf7', '#5a9f79']} origin={{ x: 0.5, y: 0.45 }} count={tied ? 110 : 60} />
+
+      {phase === 'bee' ? <BeeGame bq={bqRef} heads={heads} t={GAME_TEXT[locale]} onDone={() => setPhase('smell')} /> : null}
 
       {cardOpen && !finale ? (
         <BouquetCard

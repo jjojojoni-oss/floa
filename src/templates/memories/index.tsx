@@ -13,6 +13,8 @@ import {
 import { Finale, Hint, Sprite, Stage, TapCue, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
+import { DarkHunt } from './Game';
+import g from './game.module.css';
 import { TEXT } from './i18n';
 import { meta } from './meta';
 import s from './style.module.css';
@@ -127,6 +129,9 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const [shown, setShown] = useState(false);
   const [seen, setSeen] = useState<boolean[]>(() => Array(total).fill(false));
   const [finale, setFinale] = useState(false);
+  /** mini-game "mati lampu" sebelum surat: off → kedip → main → selesai */
+  const [game, setGame] = useState<'off' | 'flicker' | 'on' | 'done'>('off');
+  const [started, setStarted] = useState(false);
   const later = useTimers();
   const ready = useArtReady(ART);
   const cascade = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -234,11 +239,26 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   };
 
   const openLetter = () => {
-    if (!on || finale) return;
-    sfx.chime();
-    haptic(15);
+    if (!on || finale || game === 'flicker' || game === 'on') return;
     setShown(false);
     setView(null);
+    if (game === 'off') {
+      // sebelum suratnya terbaca: lampu berkedip lalu padam
+      setGame('flicker');
+      sfx.crack();
+      haptic(20);
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      later(() => setGame('on'), reduce ? 60 : 1500);
+      return;
+    }
+    sfx.chime();
+    haptic(15);
+    setFinale(true);
+  };
+  const gameDone = () => {
+    setGame('done');
+    sfx.chime();
+    haptic(15);
     setFinale(true);
   };
 
@@ -293,7 +313,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     [nextUnseen],
   );
   /** satu penunjuk sentuh untuk langkah yang sedang aktif */
-  const cue = finale
+  const playing = game === 'flicker' || game === 'on';
+  const cue = finale || playing
     ? null
     : !on
       ? { key: 'switch', target: switchEl }
@@ -468,7 +489,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       {!on ? <Hint key="h0">{t.hintSwitch}</Hint> : null}
       {on && view === null && !finale && seenCount === 0 && total > 0 ? <Hint key="h1">{photos.length ? t.hintPhoto : t.hintNote}</Hint> : null}
       {on && view === null && !finale && seenCount > 0 && !allSeen ? <Hint key="h3">{photos.length ? t.hintMore : t.hintMoreNote}</Hint> : null}
-      {on && view === null && !finale && allSeen ? <Hint key="h2">{t.hintLetter}</Hint> : null}
+      {on && view === null && !finale && !playing && allSeen ? <Hint key="h2">{t.hintLetter}</Hint> : null}
       {cue ? <TapCue key={cue.key} target={cue.target} /> : null}
 
       {view !== null && cur ? (
@@ -518,6 +539,18 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           </div>
         </div>
       ) : null}
+
+      {game === 'flicker' || (game === 'on' && !started) ? (
+        <>
+          <div className={g.blackout} aria-hidden />
+          {game === 'flicker' ? (
+            <p className={g.blackoutText} aria-hidden>
+              {t.game.huh}
+            </p>
+          ) : null}
+        </>
+      ) : null}
+      {game === 'on' ? <DarkHunt t={t.game} onStart={() => setStarted(true)} onDone={gameDone} /> : null}
 
       {finale ? (
         <Finale

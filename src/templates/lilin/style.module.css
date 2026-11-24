@@ -1216,3 +1216,9 @@
 
 /* layar pembuka: seluruh kotak (kalimat + saklar) bisa diketuk */
 .introBox { cursor: pointer; }
+
+/* balon hiasan memberi tempat untuk balon mini-game */
+.party .balloon.balloonAway {
+  opacity: 0 !important;
+  transition: opacity 0.6s ease;
+}

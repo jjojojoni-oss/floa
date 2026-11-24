@@ -180,3 +180,44 @@ export const TEXT: Record<Locale, typeof id> = {
     flowers: { aster: 'aster', kenikir: 'cosmos', dahlia: 'dahlia', kamboja: 'frangipani', sepatu: 'hibiscus' },
   },
 };
+
+/** Teks mini-game "Usir Kumbang Rakus" (lines: celetukan si kumbang setelah diusir ke-1…3). */
+export type GameText = {
+  title: string;
+  how: string;
+  winTitle: string;
+  winLine: string;
+  munch: string;
+  beeLabel: string;
+  lines: string[];
+};
+
+export const GAME_TEXT: Record<Locale, GameText> = {
+  id: {
+    title: 'Usir kumbang rakus!',
+    how: 'Ada kumbang gendut ngemil buketmu. Ketuk dia biar pergi.',
+    winTitle: 'Kumbangnya ngambek, terus pergi.',
+    winLine: 'Buketnya utuh lagi. Semua kelopaknya buat kamu.',
+    munch: 'nyam… nyam…',
+    beeLabel: 'Usir kumbangnya',
+    lines: ['Eh! Cuma nyicip dikit kok…', 'Pelit amat sih… satu kelopak aja, boleh?', 'Hmph! Aku cari buket lain aja!'],
+  },
+  ms: {
+    title: 'Halau kumbang gelojoh!',
+    how: 'Ada kumbang gemuk sedang mengunyah jambanganmu. Ketik dia supaya pergi.',
+    winTitle: 'Kumbang tu merajuk, lalu pergi.',
+    winLine: 'Jambangan masih utuh. Semua kelopak untuk awak.',
+    munch: 'nyam… nyam…',
+    beeLabel: 'Halau kumbang',
+    lines: ['Eh! Rasa sikit je…', 'Kedekutnya… satu kelopak je, boleh?', 'Hmph! Aku cari jambangan lain!'],
+  },
+  en: {
+    title: 'Shoo the greedy bee!',
+    how: 'A chubby bee is snacking on your bouquet. Tap it to shoo it away.',
+    winTitle: 'The bee got huffy and left.',
+    winLine: 'Your bouquet is whole again. Every petal is yours.',
+    munch: 'nom… nom…',
+    beeLabel: 'Shoo the bee',
+    lines: ['Hey! Just a tiny taste…', 'So stingy… one petal? Pretty please?', "Hmph! I'll find another bouquet!"],
+  },
+};

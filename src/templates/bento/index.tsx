@@ -12,6 +12,7 @@ import {
 import { Confetti, Finale, Hint, Sprite, Stage, TapCue, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
+import { HungryAnts } from './Game';
 import { TEXT } from './i18n';
 import { meta } from './meta';
 import s from './style.module.css';
@@ -216,6 +217,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const [active, setActive] = useState<number | null>(null);
   const [burst, setBurst] = useState(0);
   const [finale, setFinale] = useState(false);
+  /** mini-game semut setelah semua lauk habis, sebelum surat di balik tutup */
+  const [game, setGame] = useState(false);
   const drag = useRef<Drag | null>(null);
   const moved = useRef(false);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -311,14 +314,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     const c = next.filter(Boolean).length;
     sfx.note(c - 1);
     haptic(10);
-    if (c >= n) {
-      later(() => {
-        setPhase('done');
-        setBurst((b) => b + 1);
-        sfx.success();
-        haptic(30);
-      }, 800);
-    }
+    if (c >= n) later(() => setGame(true), 800);
   };
 
   useEffect(() => {
@@ -331,6 +327,14 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     return () => window.removeEventListener('keydown', onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active]);
+
+  const gameDone = () => {
+    setGame(false);
+    setPhase('done');
+    setBurst((b) => b + 1);
+    sfx.success();
+    haptic(30);
+  };
 
   const openLetter = () => {
     if (phase !== 'done' || finale) return;
@@ -349,7 +353,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     [nextBite],
   );
   /** satu penunjuk sentuh untuk langkah yang sedang aktif */
-  const cue = finale
+  const cue = finale || game
     ? null
     : phase === 'closed'
       ? { key: 'lid', target: lidRef }
@@ -519,6 +523,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       {phase === 'closed' ? <Hint>{t.hintOpen}</Hint> : null}
       {phase === 'open' && count === 0 && active === null ? <Hint key="e">{t.hintEat}</Hint> : null}
       {phase === 'open' && count > 0 && count < n && active === null ? <Hint key="m">{t.hintEatMore}</Hint> : null}
+      {game ? <HungryAnts t={t.game} to={to} onDone={gameDone} /> : null}
       {phase === 'done' && !finale ? <Hint key="l">{t.hintLetter}</Hint> : null}
 
       {act && actFood ? (

@@ -29,6 +29,19 @@ const id = {
   hintLetter: 'Ketuk suratnya',
   finale: 'Surat di balik tutup',
   fallback: ['Jangan lupa makan, ya.', 'Istirahat yang cukup.', 'Semangat untuk hari ini.'],
+  game: {
+    title: 'Semut lapar!',
+    how: 'Tiga semut kecil antre minta jatah. Ketuk satu-satu, kasih sebutir nasi.',
+    start: 'Ada tamu kecil. Ketuk semutnya, ya.',
+    ant: 'Semut lapar. Ketuk untuk memberi sebutir nasi.',
+    antGreedy: 'Semut yang membawa sosis. Ketuk untuk menukar sosisnya dengan sebutir nasi.',
+    thanks: ['Dapat sebutir. Langsung pulang, mau pamer ke ibunya.', 'Yang ini sopan banget, pakai bilang makasih.', 'Semua kebagian. Nggak ada yang ribut.'],
+    greedy: 'Eits, sosisnya buat {to}. Kamu sebutir nasi aja, ya.',
+    greedyBubble: 'yaudah deh…',
+    bubbles: ['makasih!', 'yaudah deh…', 'nyam!'],
+    winTitle: 'Semua kebagian!',
+    winLine: 'Semutnya kenyang, sosisnya tetap buat {to}.',
+  },
 };
 
 export const TEXT: Record<Locale, typeof id> = {
@@ -61,6 +74,19 @@ export const TEXT: Record<Locale, typeof id> = {
     hintLetter: 'Ketuk surat',
     finale: 'Surat di sebalik penutup',
     fallback: ['Jangan lupa makan, tau.', 'Rehat secukupnya.', 'Semangat untuk hari ni.'],
+    game: {
+      title: 'Semut lapar!',
+      how: 'Tiga semut kecil beratur minta bahagian. Ketuk satu-satu, beri sebutir nasi.',
+      start: 'Ada tetamu kecil. Ketuk semutnya, ya.',
+      ant: 'Semut lapar. Ketuk untuk beri sebutir nasi.',
+      antGreedy: 'Semut yang membawa sosej. Ketuk untuk tukar sosejnya dengan sebutir nasi.',
+      thanks: ['Dapat sebutir. Terus balik, nak tunjuk pada maknya.', 'Yang ni sopan sangat, siap ucap terima kasih.', 'Semua dapat. Tak ada yang bergaduh.'],
+      greedy: 'Eh, sosej tu untuk {to}. Awak sebutir nasi je, ya.',
+      greedyBubble: 'yalah…',
+      bubbles: ['terima kasih!', 'yalah…', 'nyam!'],
+      winTitle: 'Semua dapat!',
+      winLine: 'Semut kenyang, sosej tetap untuk {to}.',
+    },
   },
   en: {
     you: 'you',
@@ -90,5 +116,18 @@ export const TEXT: Record<Locale, typeof id> = {
     hintLetter: 'Tap the letter',
     finale: 'The letter under the lid',
     fallback: ["Don't forget to eat.", 'Get some rest.', 'You can do today.'],
+    game: {
+      title: 'Hungry ants!',
+      how: 'Three tiny ants are queuing for a share. Tap each one to give it a grain of rice.',
+      start: 'Little visitors! Tap the ants.',
+      ant: 'Hungry ant. Tap to give it a grain of rice.',
+      antGreedy: 'An ant carrying a sausage. Tap to swap the sausage for a grain of rice.',
+      thanks: ['One grain! Off home to show its mum.', 'Such a polite one. It even said thank you.', 'Everyone got a share. No squabbling.'],
+      greedy: 'Hey, that sausage is for {to}. One grain of rice for you, okay?',
+      greedyBubble: 'fine…',
+      bubbles: ['thank you!', 'fine…', 'yum!'],
+      winTitle: 'Everyone got some!',
+      winLine: 'Happy ants, and the sausage stays with {to}.',
+    },
   },
 };

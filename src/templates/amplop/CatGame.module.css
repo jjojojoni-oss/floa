@@ -1,0 +1,214 @@
+/* Pembungkus MiniGame. Penangkal sementara: kit memberi akar MiniGame kelas fase ('play'), yang
+   bertabrakan dengan gaya tombol .play di Game.module.css (latar aksen, sudut bulat, skala saat ditekan). */
+.host {
+  position: absolute;
+  inset: 0;
+  z-index: 35;
+}
+.host > div {
+  margin: 0 !important;
+  min-height: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  cursor: auto !important;
+  transform: none !important;
+  transition: none !important;
+}
+/* kartu menang kit selalu di atas isi arena */
+.host [class*='winWrap'] {
+  z-index: 20;
+}
+.field {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── kucing: (left, top) = tengah badannya ── */
+.cat {
+  position: absolute;
+  z-index: 2;
+  aspect-ratio: 340 / 230;
+  transform: translate(-50%, -50%);
+  transition:
+    left 0.95s cubic-bezier(0.45, 0, 0.3, 1),
+    top 0.95s cubic-bezier(0.45, -0.5, 0.3, 1.3);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  animation: plop 0.6s cubic-bezier(0.34, 1.5, 0.64, 1) both;
+}
+@keyframes plop {
+  from { transform: translate(-50%, -80%) scale(0.85); opacity: 0; }
+  to { transform: translate(-50%, -50%); opacity: 1; }
+}
+.cat::before {
+  content: '';
+  position: absolute;
+  inset: -18%;
+  border-radius: 40%;
+}
+.body {
+  position: absolute;
+  inset: 0;
+  display: block;
+  transform-origin: 50% 90%;
+}
+.art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transition: opacity 0.15s ease;
+}
+.hide {
+  opacity: 0;
+}
+/* napas tidur */
+.sleep .body {
+  animation: breathe 2.6s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(1, 1); }
+  50% { transform: scale(1.025, 1.04); }
+}
+/* bangun: meregang dulu */
+.wake .body {
+  animation: stretch 1s ease-in-out;
+}
+@keyframes stretch {
+  0% { transform: scale(1, 1); }
+  35% { transform: scale(1.12, 0.9); }
+  70% { transform: scale(0.96, 1.06); }
+  100% { transform: scale(1, 1); }
+}
+/* pergi: lompat melengkung keluar layar */
+.gone {
+  pointer-events: none;
+  transition: none;
+  animation: hop 1.1s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+@keyframes hop {
+  0% { transform: translate(-50%, -50%); }
+  25% { transform: translate(-30%, -110%) rotate(-6deg); }
+  60% { transform: translate(60%, -150%) rotate(8deg); }
+  100% { transform: translate(260%, -40%) rotate(14deg); opacity: 0; }
+}
+
+/* zzz */
+.zzz {
+  position: absolute;
+  left: 18%;
+  top: -18%;
+  pointer-events: none;
+}
+.zzz i {
+  position: absolute;
+  font-family: var(--font-hand, cursive);
+  font-style: normal;
+  font-weight: 700;
+  color: #5a3a8a;
+  text-shadow: 0 0 0.3em rgba(255, 252, 245, 0.95);
+  opacity: 0;
+  animation: zzz 2.4s ease-in infinite;
+}
+.zzz i:nth-child(1) { font-size: 1em; animation-delay: 0s; }
+.zzz i:nth-child(2) { font-size: 1.25em; animation-delay: 0.8s; }
+.zzz i:nth-child(3) { font-size: 1.55em; animation-delay: 1.6s; }
+@keyframes zzz {
+  0% { transform: translate(0, 0) rotate(-10deg); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translate(1.6em, -2.4em) rotate(10deg); opacity: 0; }
+}
+
+/* hati kecil saat dielus */
+.hearts {
+  position: absolute;
+  left: 22%;
+  top: 0;
+  pointer-events: none;
+}
+.hearts i {
+  position: absolute;
+  font-style: normal;
+  font-size: 1.3em;
+  color: #ee5b6a;
+  text-shadow: 0 0 0.25em rgba(255, 250, 242, 0.9);
+  animation: heart 1.2s ease-out both;
+}
+.hearts i:nth-child(1) { left: -1em; }
+.hearts i:nth-child(2) { left: 0.4em; animation-delay: 0.15s; font-size: 1.6em; }
+.hearts i:nth-child(3) { left: 1.8em; animation-delay: 0.3s; }
+@keyframes heart {
+  from { transform: translateY(0.6em) scale(0.4); opacity: 0; }
+  30% { opacity: 1; }
+  to { transform: translateY(-2.6em) scale(1); opacity: 0; }
+}
+
+/* cap kaki di amplop */
+.paw {
+  position: absolute;
+  right: 11%;
+  bottom: 15%;
+  z-index: 6;
+  width: 2.4em;
+  height: 2.4em;
+  fill: #8a4e2a;
+  opacity: 0.5;
+  transform: rotate(-16deg);
+  pointer-events: none;
+  animation: stamp 0.5s cubic-bezier(0.34, 1.6, 0.64, 1) both;
+}
+@keyframes stamp {
+  from { transform: rotate(-16deg) scale(1.6); opacity: 0; }
+  to { transform: rotate(-16deg) scale(1); opacity: 0.5; }
+}
+
+/* celetukan si kucing */
+.bubble {
+  position: absolute;
+  left: 50%;
+  top: 3.6em;
+  z-index: 4;
+  max-width: 86%;
+  padding: 0.7em 1.1em;
+  border-radius: 1.1em;
+  transform: translateX(-50%);
+  font-family: var(--font-hand, cursive);
+  font-size: 1.3em;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  color: #2c3122;
+  background: #fffaf0;
+  box-shadow: 0 0.5em 1.2em -0.5em rgba(40, 40, 20, 0.5);
+  animation: say 0.45s cubic-bezier(0.34, 1.6, 0.64, 1) both;
+  pointer-events: none;
+}
+@keyframes say {
+  from { opacity: 0; transform: translate(-50%, 0.6em) scale(0.85); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cat {
+    transition-duration: 0.15s;
+    animation: none;
+  }
+  .sleep .body,
+  .wake .body,
+  .zzz i {
+    animation: none;
+  }
+  .zzz i {
+    opacity: 0.8;
+  }
+  .gone {
+    animation-duration: 0.3s;
+  }
+}

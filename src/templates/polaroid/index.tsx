@@ -13,6 +13,7 @@ import {
 import { Finale, Hint, Sprite, Stage, TapCue, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
+import { CicakGame, type Spot, type Spots } from './Game';
 import { TEXT } from './i18n';
 import { meta } from './meta';
 import s from './style.module.css';
@@ -126,6 +127,9 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const [tugs, setTugs] = useState(0);
   const [tugging, setTugging] = useState(false);
   const [finale, setFinale] = useState(false);
+  /** mini-game cicak: muncul setelah semua foto tertata di meja, sebelum surat */
+  const [game, setGame] = useState<'off' | 'on' | 'done'>('off');
+  const rootRef = useRef<HTMLDivElement>(null);
   const drag = useRef<Drag | null>(null);
   const moved = useRef(false);
   const kbd = useRef(false);
@@ -252,8 +256,34 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     flipOrPlace();
   };
 
+  // semua foto sudah tertata: tunggu kolasenya diam, lalu cicak-cicak kos mulai mengintip
+  useEffect(() => {
+    if (!atLetter || total === 0 || game !== 'off') return;
+    const id = setTimeout(() => setGame('on'), 1300);
+    return () => clearTimeout(id);
+  }, [atLetter, total, game]);
+
+  /** tepi foto-foto di meja (px relatif ke layar template), tempat cicak mengintip */
+  const spots = (): Spots => {
+    const el0 = rootRef.current;
+    const root = el0?.getBoundingClientRect();
+    if (!el0 || !root) return { list: [], w: 0, h: 0, em: 16 };
+    const list = cards
+      .map((_, i) => {
+        const el = cardRefs.current[i];
+        if (!el) return null;
+        const r = el.getBoundingClientRect();
+        const cs = getComputedStyle(el);
+        const sc = parseFloat(cs.getPropertyValue('--s')) || 0.37;
+        const rot = parseFloat(cs.getPropertyValue('--r')) || 0;
+        return { x: r.left + r.width / 2 - root.left, y: r.top + r.height / 2 - root.top, w: el.offsetWidth * sc, h: el.offsetHeight * sc, rot };
+      })
+      .filter((v): v is Spot => !!v);
+    return { list, w: root.width, h: root.height, em: parseFloat(getComputedStyle(el0).fontSize) || 16 };
+  };
+
   const open = () => {
-    if (!atLetter || finale) return;
+    if (!atLetter || finale || game === 'on') return;
     sfx.chime();
     haptic(15);
     setFinale(true);
@@ -292,7 +322,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
   let hint: string | null = null;
   if (tied) hint = t.hintBand;
-  else if (atLetter) hint = finale ? null : t.hintLetter;
+  else if (atLetter) hint = finale || game !== 'done' ? null : t.hintLetter;
   else if (tugging || (idx === sticky && tugs === 1)) hint = t.stuck;
   else if (isSpecial) hint = revealed ? t.hintKeep : t.hintSpecial;
   else if (top?.src && hasStory && face === 'front') hint = t.hintFlip;
@@ -301,7 +331,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const countTpl = (withPhotos ? t.countPhoto : t.countNote).split('{i}');
 
   return (
-    <div className={cx(s.wrap, ready && s.ready)}>
+    <div ref={rootRef} className={cx(s.wrap, ready && s.ready)}>
       <div className={s.head}>{head}</div>
 
       <div className={s.pile}>
@@ -477,7 +507,9 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       {/* penunjuk sentuh kalau penerima diam: karet → foto teratas → surat */}
       <TapCue target={bandRef} show={tied} />
       <TapCue target={topRef} show={!tied && !atLetter && !tugging} delay={3600} at={{ x: 0.5, y: 0.45 }} />
-      <TapCue target={noteRef} show={atLetter && !finale && total > 0} />
+      <TapCue target={noteRef} show={atLetter && !finale && total > 0 && game === 'done'} />
+
+      {game === 'on' ? <CicakGame t={t.game} spots={spots} onDone={() => setGame('done')} /> : null}
 
       {finale ? (
         <Finale

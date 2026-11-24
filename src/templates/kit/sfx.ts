@@ -133,6 +133,31 @@ export const sfx = {
   pencil() {
     for (let i = 0; i < 4; i++) noise(0.08, { gain: 0.03, from: 2600 + i * 300, to: 4200, at: i * 0.085 });
   },
+  /** per kartun: boing! (untuk game) */
+  boing() {
+    tone(190, 0.32, { type: 'sine', gain: 0.08, to: 520 });
+    tone(520, 0.22, { type: 'sine', gain: 0.05, at: 0.12, to: 300 });
+  },
+  /** benturan kecil yang lucu: bonk */
+  bonk() {
+    tone(240, 0.12, { type: 'triangle', gain: 0.09, to: 120 });
+    noise(0.05, { gain: 0.05, from: 900, to: 400 });
+  },
+  /** cicit kecil (makhluk kecil kabur) */
+  squeak() {
+    tone(1400, 0.09, { type: 'sine', gain: 0.05, to: 2300 });
+    tone(2100, 0.07, { type: 'sine', gain: 0.04, at: 0.08, to: 1500 });
+  },
+  /** terompet sedih 'wah-wah' untuk meleset yang lucu */
+  wahwah() {
+    [392, 370, 349].forEach((f, i) => tone(f, 0.22, { type: 'sawtooth', gain: 0.025, at: i * 0.2, to: f - 12 }));
+    tone(330, 0.5, { type: 'sawtooth', gain: 0.025, at: 0.6, to: 300 });
+  },
+  /** poin didapat: nada naik sesuai skor */
+  score(n: number) {
+    const scale = [659, 784, 880, 988, 1175, 1319, 1568];
+    tone(scale[Math.min(scale.length - 1, Math.max(0, n))], 0.16, { type: 'triangle', gain: 0.06 });
+  },
   /** nada tunggal bebas, mis. untuk tangga nada per langkah */
   note(step: number) {
     const scale = [523, 587, 659, 784, 880, 1047, 1175, 1319];

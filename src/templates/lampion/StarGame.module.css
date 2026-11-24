@@ -1,0 +1,236 @@
+/* Pembungkus MiniGame. Penangkal sementara: kit memberi akar MiniGame kelas fase ('play'), yang
+   bertabrakan dengan gaya tombol .play di Game.module.css (latar aksen, sudut bulat, skala saat ditekan). */
+.host {
+  position: absolute;
+  inset: 0;
+  z-index: 35;
+}
+.host > div {
+  margin: 0 !important;
+  min-height: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  cursor: auto !important;
+  transform: none !important;
+  transition: none !important;
+}
+/* kartu menang kit selalu di atas isi arena (balon, toples, celetukan) */
+.host [class*='winWrap'] {
+  z-index: 20;
+}
+.field {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── bintang: (--x, --y) = titik berhenti dalam persen ── */
+.star {
+  position: absolute;
+  z-index: 3;
+  left: calc(var(--x) * 1%);
+  top: calc(var(--y) * 1%);
+  width: 6.4em;
+  height: 6.4em;
+  margin: -3.2em 0 0 -3.2em;
+  border-radius: 50%;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+/* area sentuh ekstra lega */
+.star::before {
+  content: '';
+  position: absolute;
+  inset: -1.2em;
+  border-radius: 50%;
+}
+.starArt {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.trail {
+  position: absolute;
+  left: 55%;
+  top: 50%;
+  width: 11em;
+  height: 0.5em;
+  margin-top: -0.25em;
+  border-radius: 1em;
+  transform-origin: 0 50%;
+  transform: rotate(-32deg);
+  background: linear-gradient(90deg, rgba(255, 236, 180, 0.9), rgba(255, 220, 150, 0));
+  filter: blur(1px);
+  opacity: 0;
+}
+/* meluncur pelan dari kanan atas, lalu berhenti */
+.in {
+  animation: glide 2.3s cubic-bezier(0.15, 0.6, 0.25, 1) both;
+}
+.in .trail {
+  opacity: 1;
+  transition: opacity 1.6s ease 0.6s;
+}
+@keyframes glide {
+  from { transform: translate(14em, -10em) scale(0.6); opacity: 0; }
+  15% { opacity: 1; }
+  to { transform: none; opacity: 1; }
+}
+.wait .starArt {
+  animation: twinkle 1.6s ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%, 100% { transform: scale(1) rotate(0deg); filter: brightness(1); }
+  50% { transform: scale(1.12) rotate(8deg); filter: brightness(1.18); }
+}
+/* tertangkap: mengecil dan terbang ke toples */
+.got {
+  pointer-events: none;
+  transition: transform 0.85s cubic-bezier(0.5, 0, 0.3, 1), opacity 0.85s ease;
+  transform: translate(calc((50 - var(--x)) * 1cqw), calc(100cqh - 6.4em - var(--y) * 1cqh)) scale(0.25);
+  opacity: 0.4;
+}
+
+/* ── pesawat yang lewat sekali ── */
+.plane {
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  top: 13%;
+  width: 7.5em;
+  height: 3.4em;
+  cursor: pointer;
+  animation: across 9s linear forwards;
+  -webkit-tap-highlight-color: transparent;
+}
+.plane::before {
+  content: '';
+  position: absolute;
+  inset: -1em;
+}
+@keyframes across {
+  from { transform: translateX(-9em); }
+  to { transform: translateX(calc(100cqw + 2em)); }
+}
+.planeArt {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: auto;
+}
+.planeTapped .planeArt {
+  animation: wiggle 0.6s ease-in-out;
+}
+@keyframes wiggle {
+  0%, 100% { rotate: 0deg; }
+  30% { rotate: -8deg; }
+  60% { rotate: 6deg; }
+}
+.blink {
+  position: absolute;
+  left: 46%;
+  top: 78%;
+  width: 0.4em;
+  height: 0.4em;
+  border-radius: 50%;
+  background: #ff5a4a;
+  box-shadow: 0 0 0.5em #ff5a4a;
+  animation: blink 0.9s steps(1) infinite;
+}
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+/* ── toples harapan ── */
+.jar {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  bottom: 3.2em;
+  width: 5.2em;
+  transform: translateX(-50%);
+  pointer-events: none;
+  filter: drop-shadow(0 0.3em 0.6em rgba(10, 6, 30, 0.5));
+}
+.lid {
+  display: block;
+  width: 64%;
+  height: 0.7em;
+  margin: 0 auto -0.1em;
+  border-radius: 0.25em 0.25em 0.1em 0.1em;
+  background: linear-gradient(#e7b56a, #b98140);
+  box-shadow: inset 0 -0.12em 0 rgba(90, 50, 20, 0.35);
+}
+.glass {
+  position: relative;
+  display: block;
+  height: 5.4em;
+  border-radius: 0.9em 0.9em 1.3em 1.3em;
+  background: linear-gradient(100deg, rgba(255, 255, 255, 0.42), rgba(210, 225, 255, 0.16) 40%, rgba(255, 255, 255, 0.3));
+  box-shadow: inset 0 0 0 0.16em rgba(240, 246, 255, 0.85), inset 0.5em 0 0.6em -0.4em rgba(255, 255, 255, 0.6), 0 0 0 rgba(255, 220, 140, 0);
+  overflow: hidden;
+  transition: box-shadow 0.6s ease;
+}
+.jarLit .glass {
+  box-shadow: inset 0 0 0 0.12em rgba(255, 240, 200, 0.7), 0 0 calc(var(--n) * 0.7em) rgba(255, 214, 120, 0.65);
+}
+.mote {
+  position: absolute;
+  left: calc(22% + var(--i) * 22%);
+  bottom: calc(14% + var(--i) * 17%);
+  width: 0.9em;
+  height: 0.9em;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fffbe6 0%, #ffd77a 55%, rgba(255, 200, 110, 0) 72%);
+  animation: float 2.4s ease-in-out infinite;
+  animation-delay: calc(var(--i) * -0.7s);
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); opacity: 0.85; }
+  50% { transform: translateY(-0.4em); opacity: 1; }
+}
+
+/* celetukan */
+.bubble {
+  position: absolute;
+  left: 50%;
+  top: 3.6em;
+  z-index: 4;
+  max-width: 86%;
+  padding: 0.7em 1.1em;
+  border-radius: 1.1em;
+  transform: translateX(-50%);
+  font-family: var(--font-hand, cursive);
+  font-size: 1.3em;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  color: #2b2440;
+  background: #fff6e2;
+  box-shadow: 0 0.5em 1.4em -0.5em rgba(10, 6, 30, 0.6);
+  animation: say 0.45s cubic-bezier(0.34, 1.6, 0.64, 1) both;
+  pointer-events: none;
+}
+@keyframes say {
+  from { opacity: 0; transform: translate(-50%, 0.6em) scale(0.85); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .in,
+  .wait .starArt,
+  .mote,
+  .blink {
+    animation: none;
+  }
+  .plane {
+    animation-duration: 14s;
+  }
+}
