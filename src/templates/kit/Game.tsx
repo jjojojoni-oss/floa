@@ -92,7 +92,7 @@ export function MiniGame({
   const field = typeof children === 'function' ? children(playing) : children;
 
   return (
-    <div className={cx(s.game, s[phase])} role="group" aria-label={title} onPointerDownCapture={() => !touched && setTouched(true)}>
+    <div className={s.game} data-phase={phase} role="group" aria-label={title} onPointerDownCapture={() => !touched && setTouched(true)}>
       <div className={s.field}>{field}</div>
 
       {phase === 'play' ? (
