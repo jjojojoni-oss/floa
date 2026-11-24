@@ -35,6 +35,7 @@ const PLAYERS: Record<string, ComponentType<TemplateProps>> = {
   paspor: dynamic(() => import('./paspor'), { ssr: false, loading: Loading }),
   bioskop: dynamic(() => import('./bioskop'), { ssr: false, loading: Loading }),
   toples: dynamic(() => import('./toples'), { ssr: false, loading: Loading }),
+  gacha: dynamic(() => import('./gacha'), { ssr: false, loading: Loading }),
 };
 
 /** Pemuat kode tiap template, untuk dipanaskan selagi kalimat pembuka tampil. */
@@ -55,6 +56,7 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
   paspor: () => import('./paspor'),
   bioskop: () => import('./bioskop'),
   toples: () => import('./toples'),
+  gacha: () => import('./gacha'),
 };
 
 /**

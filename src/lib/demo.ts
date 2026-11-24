@@ -94,6 +94,11 @@ const DEMO: Record<string, DemoExtra> = {
     password: '365',
     hint: { id: 'Jumlah hari dalam setahun', ms: 'Bilangan hari dalam setahun', en: 'Days in a year' },
   },
+  gacha: {
+    song: { id: '0Dr1tLTnNDbFDCXJfeqEAs', title: 'Malu Malu Tapi Nyaman', artist: 'Lyodra' },
+    password: '777',
+    hint: { id: 'Angka hoki, tiga kali', ms: 'Nombor bertuah, tiga kali', en: 'The lucky number, three times' },
+  },
 };
 
 export type DemoLock = { password: string; hint: string; shape: string | null };
