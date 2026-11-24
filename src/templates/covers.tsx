@@ -13,6 +13,7 @@ import Polaroid from './polaroid/Cover';
 import Scrapbook from './scrapbook/Cover';
 import Toga from './toga/Cover';
 import Paspor from './paspor/Cover';
+import Toples from './toples/Cover';
 import Vinyl from './vinyl/Cover';
 
 /** Ilustrasi kartu katalog per template. Mengisi penuh kotak induknya. */
@@ -32,4 +33,5 @@ export const COVERS: Record<string, ComponentType> = {
   vinyl: Vinyl,
   paspor: Paspor,
   bioskop: Bioskop,
+  toples: Toples,
 };

@@ -263,14 +263,12 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   };
   const onGoldHold = (p: number) => {
     starEl.current?.style.setProperty('--hold', String(p));
-    if (p > peak.current) peak.current = p;
-    if (p === 0 && peak.current > 0 && peak.current < 1) {
-      peak.current = 0;
-      // dilepas terlalu cepat (atau cuma diketuk): ketukan berikutnya langsung membukanya,
-      // jadi tanpa menahan pun dua ketukan selalu cukup (satu saja kalau petunjuk ketuknya sudah tampil)
-      if (again || alt) openStar();
-      else setAgain(true);
-    }
+  };
+  // dilepas terlalu cepat (atau cuma diketuk, secepat apa pun): ketukan berikutnya langsung membukanya,
+  // jadi tanpa menahan pun dua ketukan selalu cukup (satu saja kalau petunjuk ketuknya sudah tampil)
+  const onGoldTap = () => {
+    if (again || alt) openStar();
+    else setAgain(true);
   };
 
   /* ── 4. digantung di untaian lampu ── */
@@ -532,7 +530,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           />
         ) : null}
         {goldOut ? (
-          <span ref={goldEl} className={s.goldSpot}>
+          <span ref={goldEl} className={s.goldSpot} onClick={onGoldTap}>
             <HoldButton ms={1300} onComplete={openStar} onProgress={onGoldHold} label={t.goldLabel} className={s.goldHold}>
               <span />
             </HoldButton>

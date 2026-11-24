@@ -89,6 +89,11 @@ const DEMO: Record<string, DemoExtra> = {
     password: '1915',
     hint: { id: 'Jam film pertama kita (JJMM)', ms: 'Waktu wayang pertama kita (JJMM)', en: 'Showtime of our first movie (HHMM)' },
   },
+  toples: {
+    song: { id: '3AJwUDP919kvQ9QcozQPxg', title: 'Yellow', artist: 'Coldplay' },
+    password: '365',
+    hint: { id: 'Jumlah hari dalam setahun', ms: 'Bilangan hari dalam setahun', en: 'Days in a year' },
+  },
 };
 
 export type DemoLock = { password: string; hint: string; shape: string | null };

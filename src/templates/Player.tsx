@@ -34,6 +34,7 @@ const PLAYERS: Record<string, ComponentType<TemplateProps>> = {
   vinyl: dynamic(() => import('./vinyl'), { ssr: false, loading: Loading }),
   paspor: dynamic(() => import('./paspor'), { ssr: false, loading: Loading }),
   bioskop: dynamic(() => import('./bioskop'), { ssr: false, loading: Loading }),
+  toples: dynamic(() => import('./toples'), { ssr: false, loading: Loading }),
 };
 
 /** Pemuat kode tiap template, untuk dipanaskan selagi kalimat pembuka tampil. */
@@ -53,6 +54,7 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
   vinyl: () => import('./vinyl'),
   paspor: () => import('./paspor'),
   bioskop: () => import('./bioskop'),
+  toples: () => import('./toples'),
 };
 
 /**
