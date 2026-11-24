@@ -4,7 +4,8 @@ import { type CSSProperties, type PointerEvent as ReactPointerEvent, useEffect, 
 import { Confetti, Finale, Hint, HoldButton, Sprite, Stage, TapCue, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
-import { TEXT } from './i18n';
+import { BalloonGame } from './BalloonGame';
+import { GAME_TEXT, TEXT } from './i18n';
 import { meta } from './meta';
 import { canUseMic, listenForBlow } from './mic';
 import { clap, playSong, songTiming } from './song';
@@ -13,6 +14,7 @@ import s from './style.module.css';
 /**
  * Alur: matikan lampu lewat saklar → nyalakan lilin satu per satu (tiap lilin membawa satu doa, kadang dengan foto)
  * → pejamkan mata & bikin permohonan → tiup (ada satu lilin bandel) → lampu menyala, nyanyi bareng
+ * → mini-game: pecahkan balon (isinya konyol, yang terakhir voucher peluk)
  * → foto dulu sebelum dipotong → potong kue → potongan pertama buat dia (plus colekan krim) → kartu di bawah piring.
  */
 type Phase =
@@ -25,6 +27,7 @@ type Phase =
   | 'stubborn'
   | 'dark'
   | 'party'
+  | 'pop'
   | 'photo'
   | 'snap'
   | 'cut'
@@ -33,9 +36,9 @@ type Phase =
   | 'card';
 
 /** lampu ruangan menyala */
-const LIGHTS: Phase[] = ['intro', 'party', 'photo', 'snap', 'cut', 'slice', 'smeared', 'card'];
+const LIGHTS: Phase[] = ['intro', 'party', 'pop', 'photo', 'snap', 'cut', 'slice', 'smeared', 'card'];
 /** bendera, balon, dan warna pesta */
-const PARTY: Phase[] = ['party', 'photo', 'snap', 'cut', 'slice', 'smeared', 'card'];
+const PARTY: Phase[] = ['party', 'pop', 'photo', 'snap', 'cut', 'slice', 'smeared', 'card'];
 const FLAMES_ON: Phase[] = ['light', 'wish', 'wished', 'blow'];
 
 /** Dasar tiap lilin di kanvas kue 440×480 (sama dengan art/sprites/41-lilin.js). */
@@ -100,7 +103,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const later = useTimers();
   /** benda yang sekarang harus disentuh (untuk penunjuk TapCue) */
   const cueEl = useRef<HTMLElement | null>(null);
-  const t = TEXT[useLocale()];
+  const locale = useLocale();
+  const t = TEXT[locale];
   const to = data.to.trim() || t.you;
   const from = data.from.trim();
 
@@ -402,7 +406,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         <div className={s.title}>{phase === 'snap' ? t.snapTitle : t.photoTitle}</div>
       </div>
     );
-  } else if (phase === 'party') {
+  } else if (phase === 'party' || phase === 'pop') {
     head = (
       <div key="party">
         <div className={s.eyebrow}>{t.party}</div>
@@ -442,7 +446,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           <span className={cx(s.shade, s.table, s.tableShade)} style={mask('lilin-meja')} />
           <span className={s.glow} />
           {BALLOONS.map(([name, pos]) => (
-            <span key={name} className={s.balloon} style={pos}>
+            <span key={name} className={cx(s.balloon, phase === 'pop' && s.balloonAway)} style={pos}>
               <Sprite name={name} />
             </span>
           ))}
@@ -643,7 +647,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
               ))}
             </div>
             {line >= 4 ? (
-              <button ref={cue('toPhoto')} type="button" className={s.cta} onClick={() => setPhase('photo')}>
+              <button ref={cue('toPhoto')} type="button" className={s.cta} onClick={() => setPhase('pop')}>
                 {t.toPhoto}
               </button>
             ) : (
@@ -735,6 +739,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
       <Confetti burst={burst} colors={['#ee6a58', '#ffb52e', '#3fa39a', '#8e72d0', '#f58ea6', '#fffaf0']} origin={{ x: 0.5, y: 0.5 }} count={120} />
       <Confetti burst={claps} colors={['#ffb52e', '#f58ea6', '#fffaf0', '#3fa39a']} origin={{ x: 0.5, y: 0.72 }} count={18} />
+
+      {phase === 'pop' ? <BalloonGame t={GAME_TEXT[locale]} onDone={() => setPhase('photo')} /> : null}
 
       {finale ? (
         <Finale

@@ -3,9 +3,10 @@
 import { type CSSProperties, type KeyboardEvent, type PointerEvent, useMemo, useRef, useState } from 'react';
 import { Confetti, Finale, Hint, Sprite, Stage, TapCue, Typewriter, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
-import { useText } from './i18n';
+import { GAME_TEXT, useText } from './i18n';
+import { StarGame } from './StarGame';
 import { meta } from './meta';
-import { fmt } from '@/i18n/client';
+import { fmt, useLocale } from '@/i18n/client';
 import s from './style.module.css';
 
 /** Titik menetap tiap lampion di langit: [kiri %, atas %, skala]. */
@@ -44,9 +45,10 @@ const SLOTS: Record<number, [number, number, number][]> = {
 };
 
 const BG = '/art/bg-lampion.webp';
-const ART = [BG, 'lampion', 'lampion-padam', 'lampion-bulan', 'lampion-kecil'];
+const ART = [BG, 'lampion', 'lampion-padam', 'lampion-bulan', 'lampion-kecil', 'game-bintang'];
 
-type Phase = 'intro' | 'wish' | 'sky' | 'letter';
+/** intro → wish (lampion satu per satu) → sky (langit penuh) → stars (mini-game bintang jatuh) → letter */
+type Phase = 'intro' | 'wish' | 'sky' | 'stars' | 'letter';
 
 /** PRNG kecil supaya posisi bintang/lampion sama di tiap render. */
 function seeded(seed: number) {
@@ -71,6 +73,7 @@ export default function Lampion(props: TemplateProps) {
 
 function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void }) {
   const t = useText();
+  const locale = useLocale();
   const notes = data.notes.map((x) => x.trim()).filter(Boolean).slice(0, 6);
   const photos = data.photos.filter(Boolean);
   const n = notes.length ? notes.length : 3;
@@ -286,7 +289,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     onKeyDown: onKey(i),
   });
 
-  const skyish = phase === 'sky' || phase === 'letter';
+  const skyish = phase === 'sky' || phase === 'stars' || phase === 'letter';
 
   /** polaroid kecil di kartu; diketuk untuk diperbesar */
   const snapBtn = (i: number) => (
@@ -485,11 +488,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
             onClick={() => {
               if (phase === 'intro') goNextBeat(t.intro.length, startWishes);
               else if (phase === 'sky')
-                goNextBeat(t.outro.length, () => {
-                  setPhase('letter');
-                  sfx.chime();
-                  later(() => setLanded(true), 4400);
-                });
+                goNextBeat(t.outro.length, () => setPhase('stars'));
               else if (preLast) {
                 if (!typed) setTyped(true);
                 else {
@@ -539,6 +538,17 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         at={cueOn === 'letter' ? { x: 0.5, y: 0.72 } : cueOn === 'light' || cueOn === 'release' ? { x: 0.5, y: 0.55 } : undefined}
         delay={cueOn === 'tell' ? 3400 : 2600}
       />
+
+      {phase === 'stars' ? (
+        <StarGame
+          t={GAME_TEXT[locale]}
+          onDone={() => {
+            setPhase('letter');
+            sfx.chime();
+            later(() => setLanded(true), 4400);
+          }}
+        />
+      ) : null}
 
       {big !== null && photos[big] ? (
         <button type="button" className={s.bigWrap} aria-label={t.photoClose} onClick={() => setBig(null)}>

@@ -1,0 +1,202 @@
+/* Pembungkus MiniGame. Penangkal sementara: kit memberi akar MiniGame kelas fase ('play'), yang
+   bertabrakan dengan gaya tombol .play di Game.module.css (latar aksen, sudut bulat, skala saat ditekan). */
+.host {
+  position: absolute;
+  inset: 0;
+  z-index: 35;
+}
+.host > div {
+  margin: 0 !important;
+  min-height: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  cursor: auto !important;
+  transform: none !important;
+  transition: none !important;
+}
+/* kartu menang kit selalu di atas isi arena (balon, toples, celetukan) */
+.host [class*='winWrap'] {
+  z-index: 20;
+}
+.field {
+  position: absolute;
+  inset: 0;
+}
+.art {
+  height: 5.2em;
+  width: auto;
+}
+
+/* ── kumbang: titik (left, top) = tengah badannya ── */
+.bee {
+  position: absolute;
+  z-index: 2;
+  aspect-ratio: 240 / 200;
+  transform: translate(-50%, -50%);
+  transition:
+    left 0.9s cubic-bezier(0.45, 0, 0.3, 1),
+    top 0.9s cubic-bezier(0.45, -0.6, 0.3, 1.2);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+/* area sentuh lebih lega dari gambarnya */
+.bee::before {
+  content: '';
+  position: absolute;
+  inset: -22%;
+  border-radius: 50%;
+}
+.body {
+  position: absolute;
+  inset: 0;
+  display: block;
+  transition: transform 0.25s ease;
+}
+.flip .body {
+  transform: scaleX(-1);
+}
+.sprite,
+.face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+.munching .body {
+  animation: munch 0.9s ease-in-out infinite;
+}
+.flip.munching .body {
+  animation-name: munchFlip;
+}
+@keyframes munch {
+  0%, 100% { transform: rotate(-4deg) translateY(0); }
+  50% { transform: rotate(3deg) translateY(-3px); }
+}
+@keyframes munchFlip {
+  0%, 100% { transform: scaleX(-1) rotate(-4deg) translateY(0); }
+  50% { transform: scaleX(-1) rotate(3deg) translateY(-3px); }
+}
+.flying .body {
+  animation: buzz 0.12s linear infinite;
+}
+@keyframes buzz {
+  0%, 100% { translate: 0 0; }
+  50% { translate: 0 -2px; }
+}
+.gone {
+  pointer-events: none;
+  transition: none;
+  animation: huff 1.6s cubic-bezier(0.5, 0, 0.6, 1) forwards;
+}
+@keyframes huff {
+  0% { transform: translate(-50%, -50%); }
+  18% { transform: translate(-50%, -62%) scale(1.08); }
+  100% { transform: translate(160%, -420%) scale(0.5) rotate(18deg); opacity: 0; }
+}
+.chew {
+  animation: chew 0.45s ease-in-out infinite;
+  transform-origin: 86px 130px;
+}
+@keyframes chew {
+  0%, 100% { transform: scaleY(1); }
+  50% { transform: scaleY(0.35); }
+}
+.sweat {
+  animation: drip 1.2s ease-in infinite;
+}
+@keyframes drip {
+  0% { transform: translateY(-4px); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateY(10px); opacity: 0; }
+}
+.puff {
+  animation: puff 1.1s ease-out infinite;
+}
+.puff2 {
+  animation-delay: 0.35s;
+}
+@keyframes puff {
+  from { transform: translate(0, 0) scale(0.6); opacity: 0.85; }
+  to { transform: translate(-10px, -16px) scale(1.3); opacity: 0; }
+}
+
+/* remah kelopak */
+.crumb {
+  position: absolute;
+  z-index: 1;
+  width: 1.3em;
+  pointer-events: none;
+  animation: crumb 1.3s ease-in forwards;
+}
+.crumb img {
+  width: 100%;
+  height: auto;
+}
+@keyframes crumb {
+  from { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  to { transform: translate(-1.2em, 5em) rotate(160deg); opacity: 0; }
+}
+.munchText {
+  position: absolute;
+  z-index: 3;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.25em;
+  font-weight: 700;
+  color: #6a3a1c;
+  text-shadow: 0 0 0.4em rgba(255, 248, 236, 0.95);
+  pointer-events: none;
+  white-space: nowrap;
+  animation: nyam 1.4s ease-in-out infinite;
+}
+@keyframes nyam {
+  0%, 100% { transform: translateY(0) rotate(-4deg); opacity: 0.9; }
+  50% { transform: translateY(-0.25em) rotate(3deg); opacity: 1; }
+}
+
+/* celetukan si kumbang */
+.bubble {
+  position: absolute;
+  left: 50%;
+  top: 3.6em;
+  z-index: 4;
+  max-width: 86%;
+  padding: 0.7em 1.1em;
+  border-radius: 1.1em;
+  transform: translateX(-50%);
+  font-family: var(--font-hand, cursive);
+  font-size: 1.3em;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  color: #3a231b;
+  background: #fffaf0;
+  box-shadow: 0 0.5em 1.2em -0.5em rgba(60, 30, 20, 0.5);
+  animation: say 0.45s cubic-bezier(0.34, 1.6, 0.64, 1) both;
+  pointer-events: none;
+}
+@keyframes say {
+  from { opacity: 0; transform: translate(-50%, 0.6em) scale(0.85); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bee {
+    transition-duration: 0.15s;
+  }
+  .munching .body,
+  .flip.munching .body,
+  .flying .body,
+  .crumb,
+  .munchText {
+    animation: none;
+  }
+  .gone {
+    animation-duration: 0.3s;
+  }
+}

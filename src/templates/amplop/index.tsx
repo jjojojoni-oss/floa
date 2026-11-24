@@ -4,7 +4,8 @@ import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import { Finale, Hint, HoldButton, Sprite, Stage, TapCue, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
-import { type AmplopText, TEXT } from './i18n';
+import { CatGame, PawPrint } from './CatGame';
+import { type AmplopText, GAME_TEXT, TEXT } from './i18n';
 import { meta } from './meta';
 import s from './style.module.css';
 
@@ -20,6 +21,8 @@ const ART = [
   'amplop-retak',
   'amplop-segel-kiri',
   'amplop-segel-kanan',
+  'game-kucing',
+  'game-kucing-bangun',
 ];
 
 export default function Amplop(props: TemplateProps) {
@@ -117,6 +120,9 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const [hold, setHold] = useState(0);
   const [taps, setTaps] = useState(0);
   const [finale, setFinale] = useState(false);
+  /** mini-game: kucing yang tidur di atas amplop harus dielus dulu sampai pindah */
+  const [catDone, setCatDone] = useState(false);
+  const envRef = useRef<HTMLDivElement>(null);
   /** selipan yang sedang dipegang/akan ditarik */
   const [cur, setCur] = useState(0);
   /** true saat selipan `cur` sedang dibaca (sudah ditarik keluar) */
@@ -128,7 +134,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   /** benda yang sekarang harus disentuh (untuk penunjuk TapCue) */
   const cueEl = useRef<HTMLElement | null>(null);
   const later = useTimers();
-  const t = TEXT[useLocale()];
+  const locale = useLocale();
+  const t = TEXT[locale];
 
   const to = data.to.trim() || t.you;
   const from = data.from.trim();
@@ -221,7 +228,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       : side !== 'back'
         ? null
         : phase === 'sealed'
-          ? 'seal'
+          ? catDone ? 'seal' : null
           : inItems
             ? reading ? (leaving ? null : 'next') : 'pull'
             : phase === 'out'
@@ -273,8 +280,9 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       ) : null}
 
       <div className={s.mid}>
-        <div className={s.env}>
-          <div className={cx(s.bob, !opened && s.floaty)}>
+        <div ref={envRef} className={s.env}>
+          {/* amplop berhenti mengayun selama si kucing tidur di atasnya */}
+          <div className={cx(s.bob, !opened && (catDone || side !== 'back') && s.floaty)}>
             <div className={cx(s.flip, side === 'turnOut' && s.turnOut, side === 'turnIn' && s.turnIn)}>
               {showFront ? (
                 <button ref={cue('front')} type="button" className={s.front} onClick={flip} aria-label={t.flip}>
@@ -328,6 +336,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
                     </button>
                   ) : null}
                   <Sprite decoding="sync" name="amplop-kantong" className={cx(s.layer, s.pocket)} />
+                  {/* cap kaki si kucing yang tadi tidur di sini */}
+                  {catDone ? <PawPrint /> : null}
                   <div className={s.flap}>
                     <Sprite decoding="sync" name="amplop-tutup" className={cx(s.layer, s.flapOut)} />
                     <Sprite decoding="sync" name="amplop-tutup-dalam" className={cx(s.layer, s.flapIn)} />
@@ -413,12 +423,14 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
         at={cueOn === 'pull' ? { x: 0.5, y: 0.22 } : undefined}
         delay={cueOn === 'front' ? 2200 : 2800}
       />
-      {side === 'back' && phase === 'sealed' ? (
+      {side === 'back' && phase === 'sealed' && catDone ? (
         <Hint key={taps > 0 ? 't' : 'h'}>
           {taps > 0 ? fmt(t.hintMore, { n: TAPS_TO_BREAK - taps }) : t.hintHold}
         </Hint>
       ) : null}
       {inItems && !reading ? <Hint key="pull">{t.hintPull}</Hint> : null}
+
+      {side === 'back' && phase === 'sealed' && !catDone ? <CatGame env={envRef} t={GAME_TEXT[locale]} onDone={() => setCatDone(true)} /> : null}
 
       {finale ? (
         <Finale
