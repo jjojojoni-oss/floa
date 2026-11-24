@@ -1,0 +1,867 @@
+/* Our Vinyl: sampul album + pemutar piringan (dilihat dari atas).
+   --u  = satu satuan lukisan pemutar (kanvas 700×570), --su = satu satuan lukisan sampul (kanvas 600×580,
+   persegi sampulnya 520 berpojok di 30,20). Semua tempelan DOM memakai satuan itu supaya pas di atas lukisan. */
+.wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* piringan & pemutar bergeser dari luar layar: dipotong tanpa membuat adegan bisa digulir ke samping */
+  overflow: clip;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  color: #2b1a12;
+  /* 1em milik Stage dalam satuan kontainer: variabel ini dipakai elemen dengan ukuran huruf berbeda-beda */
+  --em: min(calc(100cqw / 24.4), calc(100cqh / 42));
+  /* tinggi lebih di layar yang lebih jangkung dari 42em */
+  --extra: calc(100cqh - var(--em) * 42);
+  --u: calc(var(--em) * 0.0338);
+  --su: calc(var(--em) * 17.2 / 520);
+  /* sampul besar: pojok kiri-atas perseginya */
+  --sx: calc(50cqw - var(--em) * 9.5);
+  --sy: calc(var(--em) * 9.4 + var(--extra) * 0.46);
+  /* baris info di atas pemutar (sampul kecil + judul lagu) */
+  --tx: calc(50cqw - var(--em) * 10.9);
+  --iy: calc(var(--em) * 6.3 + var(--extra) * 0.24);
+  /* pemutar piringan: pojok kiri-atas kanvasnya (badan kayunya 20..660 dari 700, jadi tengahnya di 340) */
+  --dx: calc(50cqw - var(--u) * 340);
+  --dy: calc(var(--em) * 16.3 + var(--extra) * 0.56);
+  --pull: 0;
+}
+.wrap.ready {
+  opacity: 1;
+}
+.art {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── kepala: di antara tombol musik (kiri) dan suara (kanan) ── */
+.head {
+  position: absolute;
+  left: 3.6em;
+  right: 3.6em;
+  top: 1.1em;
+  z-index: 5;
+  text-align: center;
+  pointer-events: none;
+}
+.head {
+  transition: opacity 0.35s ease;
+}
+.head > div {
+  animation: up 0.6s 0.1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.eyebrow {
+  font-size: 0.72em;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #8f2c1c;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.name {
+  margin-top: 0.02em;
+  font-family: var(--font-serif, Georgia, serif);
+  font-variation-settings: 'SOFT' 100;
+  font-size: 2.7em;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+.name.small {
+  font-size: 2em;
+}
+.from {
+  margin-top: 0.1em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.55em;
+  font-weight: 600;
+  line-height: 1.05;
+  opacity: 0.9;
+  overflow-wrap: anywhere;
+}
+.big {
+  margin-top: 0.12em;
+  font-family: var(--font-serif, Georgia, serif);
+  font-variation-settings: 'SOFT' 100;
+  font-size: 1.46em;
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.big.small {
+  font-size: 1.18em;
+}
+@keyframes up {
+  from { opacity: 0; transform: translateY(0.7em); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ── pemutar piringan ── */
+.deck,
+.arm {
+  position: absolute;
+  transform: translateY(72cqh);
+  opacity: 0;
+  transition:
+    transform 1.05s cubic-bezier(0.3, 0.7, 0.2, 1),
+    opacity 0.35s ease;
+}
+.deckView .deck,
+.deckView .arm {
+  transform: none;
+  opacity: 1;
+}
+.deck {
+  left: var(--dx);
+  top: var(--dy);
+  width: calc(var(--u) * 700);
+  height: calc(var(--u) * 570);
+  z-index: 1;
+}
+/* lampu di (74, 426) kanvas pemutar */
+.led {
+  position: absolute;
+  left: 10.57%;
+  top: 74.74%;
+  width: 1.7%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff6cf 0%, #ff8a55 50%, rgba(255, 106, 60, 0) 78%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.ledOn {
+  opacity: 1;
+  box-shadow: 0 0 0.5em 0.14em rgba(255, 112, 60, 0.8);
+  animation: led 1.8s ease-in-out infinite;
+}
+@keyframes led {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.35); }
+}
+/* lengan jarum: porosnya di (90, 100) kanvas lengan = (560, 136) kanvas pemutar */
+.arm {
+  left: calc(var(--dx) + var(--u) * 470);
+  top: calc(var(--dy) + var(--u) * 36);
+  width: calc(var(--u) * 180);
+  height: calc(var(--u) * 480);
+  z-index: 4;
+  pointer-events: none;
+  /* bayangan dipasang di pembungkus yang tidak ikut berputar, jadi arahnya tetap */
+  filter: drop-shadow(calc(var(--u) * 5) calc(var(--u) * 8) calc(var(--u) * 4) rgba(28, 14, 6, 0.5));
+}
+/* jarum terangkat: bayangannya menjauh */
+.arm.up {
+  filter: drop-shadow(calc(var(--u) * 12) calc(var(--u) * 18) calc(var(--u) * 8) rgba(28, 14, 6, 0.36));
+}
+.armRot {
+  width: 100%;
+  height: 100%;
+  transform-origin: calc(var(--u) * 90) calc(var(--u) * 100);
+  transition: transform 0.95s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.armRot.dragging {
+  transition: none;
+}
+.armHit {
+  position: absolute;
+  left: calc(var(--dx) + var(--u) * 430);
+  top: calc(var(--dy) + var(--u) * 10);
+  width: calc(var(--u) * 250);
+  height: calc(var(--u) * 510);
+  z-index: 6;
+  border-radius: 1em;
+  cursor: grab;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── piringan hitam: kotaknya = piringan di atas pemutar (pusat 270,266; jari-jari 206) ── */
+.disc {
+  position: absolute;
+  left: calc(var(--dx) + var(--u) * 64);
+  top: calc(var(--dy) + var(--u) * 60);
+  width: calc(var(--u) * 412);
+  height: calc(var(--u) * 412);
+  z-index: 2;
+  perspective: 54em;
+  /* di dalam sampul: sedikit lebih besar, pusatnya menggeser ke kanan mengikuti tarikan jari */
+  transform: translate(
+      calc(var(--sx) + var(--em) * 10.2 - var(--dx) - var(--u) * 270 + var(--pull) * var(--em) * 6.4),
+      calc(var(--sy) + var(--em) * 8.6 - var(--dy) - var(--u) * 266)
+    )
+    scale(1.18);
+  transition: transform 0.14s linear;
+}
+.disc::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: calc(var(--u) * 5) calc(var(--u) * 9) calc(var(--u) * 13) rgba(28, 14, 6, 0.55);
+}
+/* meluncur keluar dari sampul */
+.out .disc {
+  transform: translate(
+      calc(var(--sx) + var(--em) * 10.2 - var(--dx) - var(--u) * 270 + var(--em) * 10.6),
+      calc(var(--sy) + var(--em) * 8.6 - var(--dy) - var(--u) * 266)
+    )
+    scale(1.18);
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.deckView .disc {
+  transform: none;
+  transition: transform 1.05s cubic-bezier(0.3, 0.7, 0.2, 1);
+}
+/* diangkat sebentar selagi dibalik */
+.deckView .disc.lift {
+  transform: translateY(calc(var(--em) * -0.9)) scale(1.08);
+  transition: transform 0.5s ease;
+}
+.flipper {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform 1.2s cubic-bezier(0.45, 0.05, 0.2, 1);
+}
+.flipper.flipped {
+  transform: rotateY(180deg);
+}
+.dFace {
+  position: absolute;
+  inset: 0;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.dBack {
+  transform: rotateY(180deg);
+}
+.spin {
+  width: 100%;
+  height: 100%;
+  animation: spin 1.8s linear infinite;
+  animation-play-state: paused;
+}
+.spinning {
+  animation-play-state: running;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.discSvg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.lblTop,
+.lblBottom {
+  font-family: var(--font-ui, system-ui, sans-serif);
+  font-weight: 800;
+  fill: #fbf0d2;
+}
+.lblTop {
+  font-size: 10.5px;
+  letter-spacing: 0.2em;
+}
+.lblBottom {
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 13px;
+  font-weight: 600;
+  fill-opacity: 0.85;
+}
+/* kilap piringan: tidak ikut berputar */
+.sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  pointer-events: none;
+  background: conic-gradient(from 20deg, transparent 0 5%, rgba(255, 255, 255, 0.2) 10.5%, transparent 16.5% 50%, rgba(255, 255, 255, 0.12) 56.5%, transparent 63% 100%);
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 36%, #000 37% 98.5%, transparent 100%);
+  mask-image: radial-gradient(circle closest-side, transparent 36%, #000 37% 98.5%, transparent 100%);
+  transition: opacity 0.3s ease;
+}
+.ph_flip .sheen {
+  opacity: 0;
+}
+.discHit {
+  position: absolute;
+  left: calc(var(--dx) + var(--u) * 64);
+  top: calc(var(--dy) + var(--u) * 60);
+  width: calc(var(--u) * 412);
+  height: calc(var(--u) * 412);
+  z-index: 3;
+  border-radius: 50%;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* di dalam sampul: sesekali menyembul sedikit, mengajak ditarik */
+.disc.nudge {
+  animation: nudge 4.8s 2s ease-in-out infinite;
+}
+@keyframes nudge {
+  0%, 60%, 100% { translate: 0 0; }
+  72% { translate: 2.4cqw 0; }
+  84% { translate: 0 0; }
+  90% { translate: 0.8cqw 0; }
+}
+
+/* ── not balok yang melayang dari piringan selama lagu diputar ── */
+.notes {
+  position: absolute;
+  left: calc(var(--dx) + var(--u) * 150);
+  top: calc(var(--dy) + var(--u) * 20);
+  width: calc(var(--u) * 300);
+  height: calc(var(--u) * 190);
+  z-index: 3;
+  pointer-events: none;
+  color: #fff3d0;
+}
+.notes i {
+  position: absolute;
+  bottom: 0;
+  width: 1.3em;
+  opacity: 0;
+  filter: drop-shadow(0 0.08em 0.1em rgba(50, 25, 8, 0.6));
+  animation: rise 3.6s linear infinite;
+}
+.notes i:nth-child(1) { left: 58%; --nx: 5cqw; }
+.notes i:nth-child(2) { left: 30%; --nx: -3cqw; width: 1.5em; animation-delay: 1.2s; }
+.notes i:nth-child(3) { left: 76%; --nx: 2cqw; width: 1.1em; animation-delay: 2.4s; }
+.notes svg {
+  display: block;
+  width: 100%;
+  fill: currentColor;
+}
+.notesGold {
+  color: #ffe08a;
+}
+@keyframes rise {
+  0% { opacity: 0; transform: translate(0, 0) rotate(-10deg) scale(0.55); }
+  14% { opacity: 0.95; }
+  70% { opacity: 0.75; }
+  100% { opacity: 0; transform: translate(var(--nx), -32cqw) rotate(12deg) scale(1); }
+}
+
+/* ── sampul album ── */
+.sleeve {
+  position: absolute;
+  left: calc(var(--sx) - var(--su) * 30);
+  top: calc(var(--sy) - var(--su) * 20);
+  width: calc(var(--su) * 600);
+  height: calc(var(--su) * 580);
+  z-index: 3;
+  transform-origin: 0 0;
+  transition:
+    transform 1.05s cubic-bezier(0.3, 0.7, 0.2, 1),
+    opacity 0.35s ease;
+  /* backwards saja: setelah selesai, opacity kembali diatur kelas fase (mis. disembunyikan saat mini-game) */
+  animation: sleeveIn 0.7s 0.15s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+}
+@keyframes sleeveIn {
+  from { opacity: 0; translate: 0 1.2em; rotate: -2deg; }
+  to { opacity: 1; translate: 0 0; rotate: 0deg; }
+}
+/* di atas pemutar: sampulnya jadi gambar kecil yang sedikit miring di kiri judul lagu (pojok perseginya di --tx, --iy) */
+.deckView .sleeve {
+  transform: translate(calc(var(--tx) - var(--sx) + var(--su) * 15), calc(var(--iy) - var(--sy) + var(--su) * 10)) scale(0.5) rotate(-4deg);
+}
+/* lagu yang punya fotonya sendiri: sampul album mundur ke belakang foto itu */
+.deckView.hasSingle .sleeve {
+  transform: translate(calc(var(--tx) - var(--sx) + var(--su) * 19.2 - var(--em) * 0.1), calc(var(--iy) - var(--sy) + var(--su) * 12.8 - var(--em) * 0.3)) scale(0.36) rotate(-7deg);
+  transition-duration: 0.55s, 0.35s;
+}
+.coverPhoto {
+  position: absolute;
+  left: calc(var(--su) * 52);
+  top: calc(var(--su) * 42);
+  width: calc(var(--su) * 476);
+  height: calc(var(--su) * 318);
+  overflow: hidden;
+  background: #2b1a12;
+}
+.coverPhoto img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.94) contrast(1.03);
+}
+/* foto terasa tercetak di karton: serat kertas + garis tepi tipis */
+.coverPhoto::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('/art/tex-kertas.webp') 0 0 / 200px 200px;
+  mix-blend-mode: multiply;
+  opacity: 0.45;
+  box-shadow: inset 0 0 0 1px rgba(60, 30, 10, 0.35);
+}
+/* bekas lingkar piringan yang menekan karton dari dalam */
+.wear {
+  position: absolute;
+  left: calc(var(--su) * 30);
+  top: calc(var(--su) * 20);
+  width: calc(var(--su) * 520);
+  height: calc(var(--su) * 520);
+  pointer-events: none;
+  background: radial-gradient(circle closest-side, transparent 90%, rgba(255, 250, 235, 0.22) 92%, rgba(255, 250, 235, 0.07) 94.5%, transparent 96.5%);
+}
+/* pita "obi" di sisi kiri sampul */
+.obi {
+  position: absolute;
+  left: calc(var(--su) * 30);
+  top: calc(var(--su) * 20);
+  width: calc(var(--su) * 62);
+  height: calc(var(--su) * 520);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(var(--su) * 22) 0;
+  writing-mode: vertical-rl;
+  rotate: 180deg;
+  color: #fbf0d2;
+  background-color: #c0392b;
+  background-image: linear-gradient(rgba(192, 57, 43, 0.72), rgba(192, 57, 43, 0.72)), url('/art/tex-kertas.webp');
+  background-size: auto, 200px 200px;
+  background-blend-mode: normal, multiply;
+  /* diputar 180°, jadi bayangan "kanan" ditulis ke kiri */
+  box-shadow: calc(var(--su) * -3) 0 calc(var(--su) * 6) rgba(40, 15, 5, 0.35);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.obi b {
+  font-size: calc(var(--su) * 23);
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.obi i {
+  font-style: normal;
+  font-size: calc(var(--su) * 14);
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+/* nama panjang: pita cukup memuat namanya saja */
+.obiLong b {
+  font-size: calc(var(--su) * 17);
+  letter-spacing: 0.12em;
+}
+.obiLong i {
+  display: none;
+}
+/* kilau yang sesekali menyapu sampul selagi piringannya belum ditarik */
+.gloss {
+  position: absolute;
+  left: calc(var(--su) * 30);
+  top: calc(var(--su) * 20);
+  width: calc(var(--su) * 520);
+  height: calc(var(--su) * 520);
+  overflow: hidden;
+  pointer-events: none;
+}
+.gloss::after {
+  content: '';
+  position: absolute;
+  inset: -20% -60%;
+  background: linear-gradient(112deg, transparent 43%, rgba(255, 252, 235, 0.42) 50%, transparent 57%);
+  transform: translateX(-75%);
+  animation: gloss 4.6s 1.6s ease-in-out infinite;
+}
+.deckView .gloss {
+  display: none;
+}
+@keyframes gloss {
+  0%, 60% { transform: translateX(-75%); }
+  100% { transform: translateX(75%); }
+}
+.sText {
+  position: absolute;
+  left: calc(var(--su) * 114);
+  top: calc(var(--su) * 386);
+  width: calc(var(--su) * 414);
+  height: calc(var(--su) * 140);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: #2b1a12;
+}
+.sTitle {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-family: var(--font-serif, Georgia, serif);
+  font-variation-settings: 'SOFT' 100;
+  font-size: calc(var(--su) * 46);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.sTitle.long {
+  font-size: calc(var(--su) * 35);
+}
+.sArtist {
+  margin-top: calc(var(--su) * 9);
+  overflow: hidden;
+  font-size: calc(var(--su) * 18);
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #b8432a;
+}
+/* dua nama panjang: boleh turun jadi dua baris, cetakan label di bawahnya mengalah */
+.sArtist.long {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: calc(var(--su) * 14.5);
+  line-height: 1.25;
+  letter-spacing: 0.1em;
+  white-space: normal;
+  text-wrap: balance;
+}
+.sArtist.long + .sImprint {
+  display: none;
+}
+.sImprint {
+  margin-top: calc(var(--su) * 7);
+  font-size: calc(var(--su) * 12);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  opacity: 0.5;
+}
+.sticker {
+  position: absolute;
+  left: calc(var(--su) * 408);
+  top: calc(var(--su) * 30);
+  width: calc(var(--su) * 128);
+  height: calc(var(--su) * 128);
+  rotate: 12deg;
+}
+.sticker > span {
+  position: absolute;
+  inset: 0;
+  /* pusat stiker di lukisannya sedikit di kiri-atas tengah kanvas */
+  translate: -2% -3.5%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.05;
+  color: #4a300b;
+  text-shadow: 0 0.06em 0 rgba(255, 244, 204, 0.6);
+}
+.sticker b {
+  font-size: calc(var(--su) * 13.5);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.sticker i {
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: calc(var(--su) * 21);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.stickerLong i {
+  font-size: calc(var(--su) * 15.5);
+}
+.pullHit {
+  position: absolute;
+  left: var(--sx);
+  top: var(--sy);
+  width: calc(var(--em) * 19.6);
+  height: calc(var(--em) * 17.2);
+  z-index: 6;
+  cursor: grab;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── baris info: foto lagu + nomor & judul lagu ── */
+/* "single"-nya lagu ini: foto persegi di depan sampul album, dengan nomor lagunya di pojok */
+.single {
+  position: absolute;
+  left: calc(var(--tx) + var(--em) * 1.5);
+  top: calc(var(--iy) + var(--em) * 1);
+  width: calc(var(--em) * 7.4);
+  height: calc(var(--em) * 7.4);
+  z-index: 4;
+  padding: calc(var(--em) * 0.3);
+  background: #fffaf0;
+  box-shadow:
+    0 0.06em 0.12em rgba(60, 30, 20, 0.25),
+    0 1em 1.6em -0.8em rgba(40, 15, 5, 0.75);
+  rotate: 5deg;
+  animation: singleIn 0.55s 0.12s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+}
+.single img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.94) contrast(1.03);
+}
+/* serat kertas di atas fotonya, seperti tercetak di karton sampul */
+.single::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('/art/tex-kertas.webp') 0 0 / 200px 200px;
+  mix-blend-mode: multiply;
+  opacity: 0.4;
+  pointer-events: none;
+}
+.single b {
+  position: absolute;
+  left: -0.7em;
+  top: -0.7em;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 2.5em;
+  height: 2.5em;
+  border-radius: 50%;
+  font-size: 0.74em;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #fff7ea;
+  background: radial-gradient(circle at 34% 30%, #e2573a, #c8372d 55%, #9c261c);
+  box-shadow:
+    inset 0 0 0 0.12em rgba(255, 240, 210, 0.5),
+    0 0.2em 0.4em rgba(40, 15, 5, 0.45);
+  rotate: -12deg;
+}
+@keyframes singleIn {
+  from { opacity: 0; transform: translate(-1.6em, 0.4em) rotate(-12deg) scale(0.78); }
+  to { opacity: 1; transform: none; }
+}
+.info {
+  position: absolute;
+  left: calc(50cqw - var(--em) * 1.1);
+  top: var(--iy);
+  width: calc(var(--em) * 12.3);
+  height: calc(var(--em) * 8.6);
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+.deckView .info {
+  opacity: 1;
+  transition-delay: 0.7s;
+}
+/* selama mini-game: judul, sampul kecil dan teks lagu menyingkir supaya celetukan debunya terbaca */
+.ph_dust .head,
+.ph_dust .sleeve,
+.ph_dust .info {
+  opacity: 0;
+  transition-delay: 0s;
+}
+.track,
+.prompt {
+  animation: up 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.track {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.trackNo {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  font-size: 0.7em;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #8f2c1c;
+}
+/* lagu penutup: label kuningan, senada dengan stiker "edisi 1 dari 1" */
+.trackNo.last {
+  padding: 0.5em 1em 0.5em 0.8em;
+  border-radius: 99em;
+  color: #47300b;
+  background: linear-gradient(135deg, #fff4cc 0%, #f1d58a 28%, #d3a548 72%, #b18430 100%);
+  box-shadow:
+    inset 0 0.08em 0 rgba(255, 255, 255, 0.7),
+    inset 0 -0.08em 0 rgba(110, 75, 20, 0.35),
+    0 0.3em 0.7em -0.3em rgba(60, 30, 5, 0.7);
+  animation: badge 0.6s 0.1s cubic-bezier(0.34, 1.6, 0.64, 1) both;
+}
+@keyframes badge {
+  from { opacity: 0; transform: scale(0.7) rotate(-6deg); }
+  to { opacity: 1; transform: none; }
+}
+/* tiga batang kecil yang naik-turun selama lagu diputar */
+.eq {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 0.18em;
+  height: 1.1em;
+}
+.eq i {
+  width: 0.24em;
+  height: 100%;
+  border-radius: 0.2em;
+  background: currentColor;
+  transform-origin: 50% 100%;
+  transform: scaleY(0.35);
+}
+.eqOn i {
+  animation: eq 0.9s ease-in-out infinite;
+}
+.eqOn i:nth-child(2) {
+  animation-delay: 0.18s;
+}
+.eqOn i:nth-child(3) {
+  animation-delay: 0.36s;
+}
+@keyframes eq {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}
+.lyric {
+  margin-top: 0.22em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.9em;
+  font-weight: 700;
+  line-height: 1.02;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.lyric.mid {
+  font-size: 1.62em;
+}
+.lyric.long {
+  font-size: 1.42em;
+}
+.lyric.xlong {
+  font-size: 1.28em;
+}
+/* garis bawah yang digoreskan di bawah judul lagu penutup */
+.swoosh {
+  width: 72%;
+  height: 0.6em;
+  margin-top: 0.28em;
+  overflow: visible;
+}
+.swoosh path {
+  fill: none;
+  stroke: #c0392b;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  /* tersembunyi sampai mulai digoreskan (ujung garis yang membulat tidak muncul lebih dulu sebagai titik) */
+  opacity: 0;
+  animation: draw 0.9s 0.9s ease-out forwards;
+}
+@keyframes draw {
+  from { opacity: 1; stroke-dashoffset: 1; }
+  to { opacity: 1; stroke-dashoffset: 0; }
+}
+.dots {
+  display: flex;
+  gap: 0.34em;
+  margin-top: 0.7em;
+}
+.dots i {
+  width: 1.1em;
+  height: 0.22em;
+  border-radius: 0.2em;
+  background: rgba(43, 26, 18, 0.2);
+  transition: background 0.3s ease;
+}
+.dots i.on {
+  background: #c0392b;
+}
+.dots i.end.on {
+  background: #f6dd9a;
+  box-shadow: 0 0 0 0.06em #a87a26;
+}
+.prompt {
+  font-family: var(--font-hand, cursive);
+  font-size: 1.56em;
+  font-weight: 600;
+  line-height: 1.1;
+  text-wrap: balance;
+}
+
+/* ── kaki: tombol lanjut ── */
+.foot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1.9em;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 1.4em;
+  pointer-events: none;
+}
+.cta {
+  min-height: 3.1em;
+  padding: 0.85em 1.7em 0.9em;
+  border-radius: 99em;
+  font-size: 1em;
+  font-weight: 800;
+  color: #fff7ea;
+  background: linear-gradient(180deg, #e2573a 0%, #c8372d 55%, #a82a20 100%);
+  text-shadow: 0 0.06em 0 rgba(100, 20, 10, 0.4);
+  box-shadow:
+    inset 0 0.07em 0 rgba(255, 255, 255, 0.4),
+    inset 0 -0.12em 0 rgba(90, 20, 10, 0.3),
+    0 0.16em 0 #7d1f16,
+    0 1em 1.8em -0.8em rgba(60, 20, 5, 0.75);
+  cursor: pointer;
+  pointer-events: auto;
+  transition: transform 0.12s ease;
+  animation: up 0.55s 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.cta:active {
+  transform: translateY(0.08em) scale(0.98);
+}
+.or {
+  opacity: 0.7;
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin,
+  .gloss::after,
+  .eqOn i,
+  .disc.nudge,
+  .ledOn,
+  .trackNo.last {
+    animation: none;
+  }
+  .notes {
+    display: none;
+  }
+  .swoosh path {
+    animation: none;
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
