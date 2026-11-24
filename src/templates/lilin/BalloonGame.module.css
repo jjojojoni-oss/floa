@@ -1,0 +1,294 @@
+/* Pembungkus MiniGame. Penangkal sementara: kit memberi akar MiniGame kelas fase ('play'), yang
+   bertabrakan dengan gaya tombol .play di Game.module.css (latar aksen, sudut bulat, skala saat ditekan). */
+.host {
+  position: absolute;
+  inset: 0;
+  z-index: 35;
+}
+.host > div {
+  margin: 0 !important;
+  min-height: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  color: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  cursor: auto !important;
+  transform: none !important;
+  transition: none !important;
+}
+/* kartu menang kit selalu di atas isi arena (balon, toples, celetukan) */
+.host [class*='winWrap'] {
+  z-index: 20;
+}
+.field {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── balon: (left, top) = tengah gelembungnya; tombolnya mencakup balon + talinya ── */
+.balloon {
+  position: absolute;
+  z-index: 2;
+  width: 7.2em;
+  height: 15.8em;
+  margin: -3.8em 0 0 -3.6em;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  animation: rise 1.3s var(--d, 0s) cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+@keyframes rise {
+  from { transform: translateY(26em); }
+  to { transform: none; }
+}
+.bob {
+  position: absolute;
+  inset: 0;
+  display: block;
+  animation: bob 3.2s ease-in-out infinite;
+  transform-origin: 50% 0;
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(-2.5deg); }
+  50% { transform: translateY(-0.5em) rotate(2.5deg); }
+}
+.balloonArt {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: auto;
+}
+.face {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 150 / 330;
+  pointer-events: none;
+}
+.popped {
+  pointer-events: none;
+}
+.popped .bob {
+  animation: none;
+  opacity: 0;
+  transform: scale(1.25);
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+/* letusan: cincin + serpih */
+.burst {
+  position: absolute;
+  left: 50%;
+  top: 22%;
+  width: 6em;
+  height: 6em;
+  margin: -3em 0 0 -3em;
+  border-radius: 50%;
+  border: 0.35em dashed #fff3d6;
+  animation: burst 0.45s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes burst {
+  from { transform: scale(0.3); opacity: 1; }
+  to { transform: scale(1.5); opacity: 0; }
+}
+
+/* balon emas */
+.gold {
+  animation-duration: 1.6s;
+}
+.halo {
+  position: absolute;
+  left: 50%;
+  top: 22%;
+  width: 9em;
+  height: 9em;
+  margin: -4.5em 0 0 -4.5em;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 228, 140, 0.75), rgba(255, 228, 140, 0) 70%);
+  animation: glow 1.8s ease-in-out infinite;
+}
+@keyframes glow {
+  0%, 100% { opacity: 0.65; transform: scale(0.92); }
+  50% { opacity: 1; transform: scale(1.06); }
+}
+.sparkle {
+  position: absolute;
+  left: 82%;
+  top: 4%;
+  font-size: 1.4em;
+  color: #fff6c8;
+  text-shadow: 0 0 0.4em #ffd56a;
+  animation: twinkle 1.4s ease-in-out infinite;
+}
+.sparkle2 {
+  left: 6%;
+  top: 30%;
+  font-size: 1em;
+  animation-delay: 0.6s;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; transform: scale(0.7) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.1) rotate(20deg); }
+}
+.goldNote {
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  z-index: 3;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.35em;
+  font-weight: 700;
+  color: #5a2e14;
+  text-shadow: 0 0 0.4em rgba(255, 248, 236, 0.95);
+  pointer-events: none;
+  animation: say 0.5s 0.8s cubic-bezier(0.34, 1.6, 0.64, 1) both;
+}
+
+/* ── isi balon ── */
+.reveal {
+  position: absolute;
+  z-index: 3;
+  width: 7em;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  animation: reveal 0.6s cubic-bezier(0.34, 1.6, 0.64, 1) both;
+}
+.reveal.big {
+  width: 13em;
+}
+@keyframes reveal {
+  0% { transform: translate(-50%, -50%) scale(0.2) rotate(-30deg); opacity: 0; }
+  60% { opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1) rotate(-6deg); opacity: 1; }
+}
+.itemArt {
+  width: 4.6em;
+  height: auto;
+}
+.wide {
+  width: 6em;
+}
+/* garis bau kartun (lucu, bukan jorok) */
+.stink {
+  position: absolute;
+  left: 50%;
+  top: -1.4em;
+  display: flex;
+  gap: 0.4em;
+  transform: translateX(-50%);
+}
+.stink i {
+  width: 0.5em;
+  height: 1.6em;
+  border-radius: 1em;
+  border-left: 0.18em solid rgba(120, 140, 70, 0.7);
+  animation: wave 1.1s ease-in-out infinite;
+}
+.stink i:nth-child(2) {
+  animation-delay: 0.25s;
+}
+.stink i:nth-child(3) {
+  animation-delay: 0.5s;
+}
+@keyframes wave {
+  0%, 100% { transform: translateY(0) skewX(12deg); opacity: 0.4; }
+  50% { transform: translateY(-0.4em) skewX(-12deg); opacity: 1; }
+}
+.voucher {
+  display: grid;
+  gap: 0.1em;
+  padding: 0.9em 1.1em;
+  border-radius: 0.4em;
+  text-align: center;
+  color: #6a2e1c;
+  background: #fff8e6;
+  box-shadow: inset 0 0 0 0.18em #fff8e6, inset 0 0 0 0.26em #e2a940, 0 0.8em 1.6em -0.8em rgba(60, 30, 20, 0.6);
+}
+.voucher b {
+  font-size: 0.75em;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  color: #c27a1a;
+}
+.voucher span {
+  font-family: var(--font-hand, cursive);
+  font-size: 1.9em;
+  font-weight: 700;
+  line-height: 1.05;
+}
+.voucher i {
+  font-style: normal;
+  font-size: 0.72em;
+  font-weight: 700;
+  color: #8a6a4a;
+}
+
+/* rak barang konyol */
+.shelf {
+  position: absolute;
+  left: 1em;
+  bottom: 3.4em;
+  z-index: 2;
+  display: flex;
+  gap: 0.3em;
+  pointer-events: none;
+}
+.shelfItem {
+  width: 3.2em;
+  animation: land 0.5s cubic-bezier(0.34, 1.6, 0.64, 1) both;
+}
+.shelfItem .itemArt,
+.shelfItem .wide {
+  width: 100%;
+}
+@keyframes land {
+  from { transform: translateY(-2em) scale(0.6); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+/* celetukan */
+.bubble {
+  position: absolute;
+  left: 50%;
+  top: 3.6em;
+  z-index: 4;
+  max-width: 86%;
+  padding: 0.7em 1.1em;
+  border-radius: 1.1em;
+  transform: translateX(-50%);
+  font-family: var(--font-hand, cursive);
+  font-size: 1.3em;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  color: #3a231b;
+  background: #fffaf0;
+  box-shadow: 0 0.5em 1.2em -0.5em rgba(60, 30, 20, 0.5);
+  animation: say 0.45s cubic-bezier(0.34, 1.6, 0.64, 1) both;
+  pointer-events: none;
+}
+@keyframes say {
+  from { opacity: 0; transform: translate(-50%, 0.6em) scale(0.85); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .balloon,
+  .bob,
+  .halo,
+  .sparkle,
+  .stink i {
+    animation: none;
+  }
+}

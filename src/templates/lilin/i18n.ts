@@ -212,3 +212,53 @@ export const TEXT: Record<Locale, typeof id> = {
     finale: 'The card under the plate',
   },
 };
+
+/** Teks mini-game "Pecahkan Balon" (lines: celetukan setelah balon ke-1, ke-2, dan balon emas). */
+export type GameText = {
+  title: string;
+  how: string;
+  winTitle: string;
+  winLine: string;
+  balloonLabel: string;
+  goldLabel: string;
+  goldNote: string;
+  /** voucher di balon emas: [label, isi, keterangan] */
+  voucher: [string, string, string];
+  lines: string[];
+};
+
+export const GAME_TEXT: Record<Locale, GameText> = {
+  id: {
+    title: 'Pecahkan balonnya!',
+    how: 'Tiap balon ada isinya. Ketuk balonnya.',
+    winTitle: 'Selamat! Kamu dapat voucher.',
+    winLine: 'Kaus kaki dan sandalnya boleh dibalikin. Vouchernya simpan baik-baik.',
+    balloonLabel: 'Letuskan balon',
+    goldLabel: 'Letuskan balon emas',
+    goldNote: 'Eh, ada satu lagi…',
+    voucher: ['VOUCHER', '1× peluk', 'berlaku selamanya'],
+    lines: ['Kaus kaki bau. Bukan punyaku, sumpah.', 'Sandal jepit sebelah. Pasangannya dibawa kucing.', 'Nah, yang ini beneran hadiahnya.'],
+  },
+  ms: {
+    title: 'Pecahkan belon!',
+    how: 'Setiap belon ada isinya. Ketik belonnya.',
+    winTitle: 'Tahniah! Awak dapat baucar.',
+    winLine: 'Stoking dan selipar tu boleh pulangkan. Baucar ni simpan elok-elok.',
+    balloonLabel: 'Letupkan belon',
+    goldLabel: 'Letupkan belon emas',
+    goldNote: 'Eh, ada satu lagi…',
+    voucher: ['BAUCAR', '1× pelukan', 'sah selamanya'],
+    lines: ['Stoking busuk. Bukan aku punya, sumpah.', 'Selipar sebelah. Pasangannya dibawa kucing.', 'Ha, yang ni betul-betul hadiahnya.'],
+  },
+  en: {
+    title: 'Pop the balloons!',
+    how: 'Every balloon hides something. Tap one.',
+    winTitle: 'Congrats! You won a voucher.',
+    winLine: 'Feel free to return the sock and the flip-flop. Keep the voucher safe.',
+    balloonLabel: 'Pop the balloon',
+    goldLabel: 'Pop the golden balloon',
+    goldNote: 'Oh, there’s one more…',
+    voucher: ['VOUCHER', '1 hug', 'never expires'],
+    lines: ['A smelly sock. Not mine, I swear.', 'One flip-flop. The cat took the other one.', 'Okay, this one is the real gift.'],
+  },
+};

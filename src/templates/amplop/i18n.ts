@@ -128,3 +128,40 @@ export const TEXT: Record<Locale, AmplopText> = {
     receiptKept: 'kept, not thrown away',
   },
 };
+
+/** Teks mini-game "Kucing Tidur" (lines: gerutuan si kucing setelah dielus ke-1…3). */
+export type GameText = {
+  title: string;
+  how: string;
+  winTitle: string;
+  winLine: string;
+  catLabel: string;
+  lines: string[];
+};
+
+export const GAME_TEXT: Record<Locale, GameText> = {
+  id: {
+    title: 'Ada kucing tidur di amplopmu!',
+    how: 'Elus kucingnya biar mau pindah.',
+    winTitle: 'Akhirnya dia minggir.',
+    winLine: 'Tapi dia ninggalin cap kaki. Anggap aja perangko tambahan.',
+    catLabel: 'Elus kucingnya',
+    lines: ['Mrrr… lima menit lagi.', 'Ini kasur paling hangat se-rumah, tahu.', 'Meong! Ya udah, silakan.'],
+  },
+  ms: {
+    title: 'Ada kucing tidur atas sampulmu!',
+    how: 'Usap kucing tu supaya dia beralih.',
+    winTitle: 'Akhirnya dia beralih.',
+    winLine: 'Tapi dia tinggalkan cap kaki. Anggap je setem tambahan.',
+    catLabel: 'Usap kucing',
+    lines: ['Mrrr… lima minit lagi.', 'Ini tilam paling hangat dalam rumah, tahu.', 'Meow! Yalah, silakan.'],
+  },
+  en: {
+    title: 'A cat is napping on your letter!',
+    how: 'Pet the cat so it moves.',
+    winTitle: 'It finally moved.',
+    winLine: 'It left a paw print, though. Call it a bonus stamp.',
+    catLabel: 'Pet the cat',
+    lines: ['Mrrr… five more minutes.', 'This is the warmest bed in the house, you know.', 'Meow! Fine, it’s all yours.'],
+  },
+};

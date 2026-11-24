@@ -158,3 +158,48 @@ export const TEXT: Record<Locale, LampionText> = {
 export function useText() {
   return TEXT[useLocale()];
 }
+
+/** Teks mini-game "Tangkap Bintang Jatuh" (wishes: harapan untuk bintang ke-1…3). */
+export type GameText = {
+  title: string;
+  how: string;
+  winTitle: string;
+  winLine: string;
+  starLabel: string;
+  planeLabel: string;
+  plane: string;
+  wishes: string[];
+};
+
+export const GAME_TEXT: Record<Locale, GameText> = {
+  id: {
+    title: 'Tangkap bintang jatuh!',
+    how: 'Ketuk bintangnya. Tiap bintang, satu harapan.',
+    winTitle: 'Tiga harapan, aman di toples.',
+    winLine: 'Sisanya biar aku yang usahakan.',
+    starLabel: 'Tangkap bintangnya',
+    planeLabel: 'Pesawat lewat',
+    plane: 'Eh, itu pesawat. Semoga penumpangnya juga sampai dengan selamat.',
+    wishes: ['Harapan pertama: semoga kamu selalu sehat.', 'Harapan kedua: semoga sinyal di kamarmu selalu penuh.', 'Harapan ketiga: semoga kita cepat ketemu.'],
+  },
+  ms: {
+    title: 'Tangkap bintang jatuh!',
+    how: 'Ketik bintangnya. Setiap bintang, satu hajat.',
+    winTitle: 'Tiga hajat, selamat dalam balang.',
+    winLine: 'Selebihnya biar aku yang usahakan.',
+    starLabel: 'Tangkap bintang',
+    planeLabel: 'Kapal terbang lalu',
+    plane: 'Eh, itu kapal terbang. Semoga penumpangnya selamat sampai.',
+    wishes: ['Hajat pertama: semoga awak sentiasa sihat.', 'Hajat kedua: semoga line dalam bilik awak sentiasa penuh.', 'Hajat ketiga: semoga kita cepat berjumpa.'],
+  },
+  en: {
+    title: 'Catch the shooting stars!',
+    how: 'Tap the star. Each one is a wish.',
+    winTitle: 'Three wishes, safe in the jar.',
+    winLine: 'I’ll take care of the rest.',
+    starLabel: 'Catch the star',
+    planeLabel: 'A passing plane',
+    plane: 'Oops, that’s a plane. Safe travels to everyone on board.',
+    wishes: ['Wish one: may you always stay healthy.', 'Wish two: may your room always have full signal.', 'Wish three: may we see each other soon.'],
+  },
+};
