@@ -26,6 +26,22 @@ const id = {
   letter: 'Buka surat di ujung tali',
   letterTag: 'surat',
   finale: 'Surat di ujung tali',
+  game: {
+    huh: 'eh?',
+    title: 'Eh, mati lampu!',
+    how: 'Ketuk 3 barang yang kelihatan samar-samar. Lampunya nyala lagi kok.',
+    start: 'Ketuk remot, sekring, dan si kucing',
+    fuseEarly: 'Klik! Sekringnya naik. Tinggal cari yang lain.',
+    lightsOn: 'Nah, nyala!',
+    lines: {
+      remote: 'Remot yang hilang tiga minggu! Ternyata di sini.',
+      cat: 'Pantes sepi. Kucingnya tidur di sini dari tadi.',
+      fuse: 'Klik! Siapa yang nyalain setrika sama magic com barengan?',
+    },
+    items: { remote: 'Remot TV', cat: 'Kucing yang tidur', fuse: 'Kotak sekring' },
+    winTitle: 'Terang lagi!',
+    winLine: 'Remotnya ketemu, kucingnya masih tidur. Hari yang sempurna.',
+  },
 };
 
 export const TEXT: Record<Locale, typeof id> = {
@@ -55,6 +71,22 @@ export const TEXT: Record<Locale, typeof id> = {
     letter: 'Buka surat di hujung tali',
     letterTag: 'surat',
     finale: 'Surat di hujung tali',
+    game: {
+      huh: 'eh?',
+      title: 'Alamak, gelap!',
+      how: 'Ketuk 3 barang yang nampak samar-samar. Lampu akan menyala semula.',
+      start: 'Ketuk alat kawalan, suis utama dan si kucing',
+      fuseEarly: 'Klik! Suis utama naik. Tinggal cari yang lain.',
+      lightsOn: 'Ha, menyala!',
+      lines: {
+        remote: 'Alat kawalan jauh yang hilang tiga minggu! Rupanya di sini.',
+        cat: 'Patutlah sunyi. Kucing tidur di sini rupanya.',
+        fuse: 'Klik! Siapa pasang seterika dengan periuk nasi serentak?',
+      },
+      items: { remote: 'Alat kawalan jauh TV', cat: 'Kucing yang tidur', fuse: 'Kotak suis utama' },
+      winTitle: 'Terang semula!',
+      winLine: 'Alat kawalan jumpa, kucing masih tidur. Hari yang sempurna.',
+    },
   },
   en: {
     you: 'you',
@@ -81,5 +113,21 @@ export const TEXT: Record<Locale, typeof id> = {
     letter: 'Open the letter at the end of the string',
     letterTag: 'letter',
     finale: 'The letter at the end of the string',
+    game: {
+      huh: 'huh?',
+      title: 'Oops, blackout!',
+      how: 'Tap the 3 things you can just about see. The lights will come back on.',
+      start: 'Tap the remote, the breaker and the cat',
+      fuseEarly: 'Click! Breaker flipped. Now the others.',
+      lightsOn: 'And there we go!',
+      lines: {
+        remote: 'The remote that went missing for three weeks! So this is where it was.',
+        cat: 'No wonder it was quiet. The cat was napping here all along.',
+        fuse: 'Click! Who ran the iron and the rice cooker at the same time?',
+      },
+      items: { remote: 'TV remote', cat: 'Sleeping cat', fuse: 'Breaker box' },
+      winTitle: 'Lights back on!',
+      winLine: 'Remote found, cat still asleep. A perfect day.',
+    },
   },
 };

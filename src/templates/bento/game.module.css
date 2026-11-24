@@ -1,0 +1,207 @@
+/* Mini-game "Semut lapar!": tiga semut antre di meja, masing-masing dapat sebutir nasi. */
+.introArt {
+  position: relative;
+  display: block;
+  width: 5.6em;
+}
+.introGrain {
+  position: absolute;
+  left: 0.9em;
+  top: -0.9em;
+  rotate: -12deg;
+}
+.table {
+  position: absolute;
+  inset: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  --row: calc(100% - 7em);
+}
+
+/* tumpahan nasi */
+.pile {
+  position: absolute;
+  left: 9%;
+  top: var(--row);
+  width: 4em;
+  height: 2.4em;
+  translate: -50% -10%;
+  pointer-events: none;
+}
+.grain {
+  position: absolute;
+  width: 1.4em;
+  height: auto;
+}
+
+/* semut: kotak sentuh besar (≈ 106 × 90 px) */
+.ant {
+  position: absolute;
+  z-index: 2;
+  left: 114%;
+  top: var(--row);
+  width: 6.4em;
+  height: 5.8em;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: left 1.7s cubic-bezier(0.3, 0.6, 0.35, 1) calc(var(--i) * 0.5s);
+}
+.ant::before {
+  content: '';
+  position: absolute;
+  inset: -0.8em 0;
+}
+.ant.arrived {
+  left: var(--spot);
+}
+/* sudah kebagian: berbalik, lalu pulang ke kanan, lewat di belakang semut yang masih antre
+   dan tidak lagi menangkap ketukan (supaya ketukan untuk semut berikutnya tidak tertahan) */
+.ant.fed {
+  left: 124%;
+  z-index: 1;
+  pointer-events: none;
+  cursor: default;
+  transition: left 2.6s ease-in 0.9s;
+}
+.walker {
+  position: relative;
+  display: block;
+  width: 5.6em;
+  transition: transform 0.35s ease 0.6s;
+}
+.fed .walker {
+  transform: scaleX(-1);
+}
+.body {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: none;
+  animation: waddle 0.34s ease-in-out 5 calc(var(--i) * 0.5s);
+  transform-origin: 50% 90%;
+}
+.fed .body {
+  animation: waddle 0.3s ease-in-out infinite 0.9s;
+}
+@keyframes waddle {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  50% { transform: rotate(-4deg) translateY(-0.15em); }
+}
+.hop .walker {
+  animation: hop 1.2s ease-in-out infinite;
+}
+@keyframes hop {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-0.6em); }
+}
+
+/* sebutir nasi di atas kepala */
+.gift {
+  position: absolute;
+  z-index: 1;
+  left: 16%;
+  top: -12%;
+  width: 1.7em;
+  height: auto;
+  opacity: 0;
+  transform: translateY(-1.4em) scale(0.6);
+  transition: opacity 0.25s ease, transform 0.45s cubic-bezier(0.34, 1.7, 0.64, 1);
+}
+.given {
+  opacity: 1;
+  transform: rotate(-10deg);
+}
+
+/* sosis curian di punggung semut rakus */
+.loot {
+  position: absolute;
+  z-index: 1;
+  left: 46%;
+  top: -46%;
+  width: 3.4em;
+  height: auto;
+  animation: wobble 1.1s ease-in-out infinite;
+  transition: transform 0.8s cubic-bezier(0.5, -0.4, 0.6, 1), opacity 0.6s ease 0.3s;
+}
+@keyframes wobble {
+  0%, 100% { rotate: -8deg; }
+  50% { rotate: 8deg; }
+}
+.lootBack {
+  animation: none;
+  transform: translate(-6em, -16em) rotate(-200deg) scale(0.7);
+  opacity: 0;
+}
+
+/* gelembung terima kasih */
+.bubble {
+  position: absolute;
+  left: 50%;
+  bottom: 105%;
+  translate: -50% 0;
+  padding: 0.3em 0.75em 0.35em;
+  border-radius: 1em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.15em;
+  font-weight: 700;
+  white-space: nowrap;
+  color: #3b2a22;
+  background: #fffaf0;
+  box-shadow: 0 0.3em 0.7em -0.3em rgba(60, 30, 20, 0.45);
+  animation: bubble 0.5s cubic-bezier(0.34, 1.7, 0.64, 1) both;
+}
+/* tulisan tetap terbaca walau semutnya berbalik */
+.fed .bubble {
+  transform: scaleX(-1);
+}
+@keyframes bubble {
+  from { opacity: 0; scale: 0.5; }
+  to { opacity: 1; scale: 1; }
+}
+
+.won .ant {
+  z-index: 0;
+  pointer-events: none;
+}
+
+.line {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  top: 3.2em;
+  width: min(20em, calc(100% - 2.4em));
+  translate: -50% 0;
+  padding: 0.6em 1em;
+  border-radius: 1em;
+  text-align: center;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.12em;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #fff6e4;
+  background: rgba(58, 36, 22, 0.78);
+  pointer-events: none;
+  animation: lineIn 0.45s cubic-bezier(0.34, 1.5, 0.64, 1) both;
+}
+@keyframes lineIn {
+  from { opacity: 0; transform: translateY(0.6em) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ant,
+  .ant.fed {
+    transition-duration: 0.01s;
+    transition-delay: 0s;
+  }
+  .body,
+  .fed .body,
+  .hop .walker,
+  .loot {
+    animation: none;
+  }
+}
