@@ -79,6 +79,11 @@ const DEMO: Record<string, DemoExtra> = {
     password: '2208',
     hint: { id: 'Tanggal kita jadian (DDMM)', ms: 'Tarikh kita mula bersama (DDMM)', en: 'The day we got together (DDMM)' },
   },
+  paspor: {
+    song: { id: '6JvIHbzifm6Qr3V151za8o', title: 'Kangen', artist: 'Dewa 19' },
+    password: '1101',
+    hint: { id: 'Tanggal terbit paspor kita (DDMM)', ms: 'Tarikh pasport kita dikeluarkan (DDMM)', en: 'The day our passport was issued (DDMM)' },
+  },
   bioskop: {
     song: { id: '2BCYKFDWnZi9PMkZiemQh1', title: 'Film Favorit', artist: 'Sheila On 7' },
     password: '1915',

@@ -13,10 +13,11 @@ import { meta as plester } from './plester/meta';
 import { meta as polaroid } from './polaroid/meta';
 import { meta as scrapbook } from './scrapbook/meta';
 import { meta as toga } from './toga/meta';
+import { meta as paspor } from './paspor/meta';
 import { meta as vinyl } from './vinyl/meta';
 
 /** Urutan di sini = urutan di katalog. Teks bawaannya Bahasa Indonesia; pakai localizeMeta untuk bahasa lain. */
-export const TEMPLATES: TemplateMeta[] = [buket, lilin, lampion, amplop, polaroid, mau, plester, toga, memories, bento, scrapbook, anniversary, vinyl, bioskop];
+export const TEMPLATES: TemplateMeta[] = [buket, lilin, lampion, amplop, polaroid, mau, plester, toga, memories, bento, scrapbook, anniversary, vinyl, paspor, bioskop];
 
 const OCCASION_LABELS: Record<OccasionId, Record<Locale, string>> = {
   ultah: { id: 'Ulang tahun', ms: 'Hari jadi', en: 'Birthday' },

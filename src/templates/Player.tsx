@@ -32,6 +32,7 @@ const PLAYERS: Record<string, ComponentType<TemplateProps>> = {
   plester: dynamic(() => import('./plester'), { ssr: false, loading: Loading }),
   toga: dynamic(() => import('./toga'), { ssr: false, loading: Loading }),
   vinyl: dynamic(() => import('./vinyl'), { ssr: false, loading: Loading }),
+  paspor: dynamic(() => import('./paspor'), { ssr: false, loading: Loading }),
   bioskop: dynamic(() => import('./bioskop'), { ssr: false, loading: Loading }),
 };
 
@@ -50,6 +51,7 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
   plester: () => import('./plester'),
   toga: () => import('./toga'),
   vinyl: () => import('./vinyl'),
+  paspor: () => import('./paspor'),
   bioskop: () => import('./bioskop'),
 };
 
