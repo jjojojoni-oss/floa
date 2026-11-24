@@ -43,7 +43,8 @@ export function SiteHeader() {
         <Logo />
       </Link>
       <div className="flex items-center gap-2">
-        <LangSwitcher className="max-[360px]:hidden" />
+        {/* di HP pemilih bahasa hanya di footer, supaya header lega */}
+        <LangSwitcher className="max-sm:hidden" />
         <Link href="/kado-saya" className="btn btn-ghost h-10 px-4 text-[13px]">
           {t.nav.myGifts}
         </Link>
