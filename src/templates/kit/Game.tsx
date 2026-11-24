@@ -79,6 +79,12 @@ export function MiniGame({
     onDone();
   };
 
+  // baris cara main cukup sebentar: hilang setelah sentuhan pertama atau 4 detik
+  useEffect(() => {
+    const t = setTimeout(() => setTouched(true), 4000);
+    return () => clearTimeout(t);
+  }, []);
+
   // langsung main; onStart dipanggil sekali saat arena muncul
   const started = useRef(false);
   useEffect(() => {
@@ -93,6 +99,8 @@ export function MiniGame({
 
   return (
     <div className={s.game} data-phase={phase} role="group" aria-label={title} onPointerDownCapture={() => !touched && setTouched(true)}>
+      {/* selubung lembut di atas: judul template meredup supaya tidak bertumpuk dengan teks game */}
+      <div className={s.veil} aria-hidden />
       <div className={s.field}>{field}</div>
 
       {phase === 'play' ? (
@@ -108,7 +116,7 @@ export function MiniGame({
                 </span>
               ) : null}
             </div>
-            <p className={cx(s.hudHow, (touched || score > 0) && s.gone)}>{how}</p>
+            {how ? <p className={cx(s.hudHow, (touched || score > 0) && s.gone)}>{how}</p> : null}
           </div>
           <button type="button" className={s.skipCorner} onClick={finish}>
             {k.gameSkip}

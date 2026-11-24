@@ -56,7 +56,7 @@ export function HungryAnts({ t, to, onDone }: { t: GameText; to: string; onDone:
   return (
     <MiniGame
       title={t.title}
-      how={t.how}
+      how=""
       art={
         <span className={g.introArt} aria-hidden>
           <Sprite name="game-semut" style={{ width: '5.6em', height: 'auto', maxHeight: 'none' }} />
