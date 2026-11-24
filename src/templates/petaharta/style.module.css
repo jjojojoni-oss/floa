@@ -1,0 +1,1578 @@
+/* Peta Harta. Latar Stage = meja kayu. Petanya (lukisan perkamen 780 × 1500 satuan) dipasang sebagai "dunia" yang
+   menutup layar seperti latar (cover, menempel di bawah): 1em di dalam .world = 32 satuan lukisan. Selama dibuka,
+   peta terlihat di antara dua gulungan; --p (0..1) diatur dari JS. */
+.wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* peta yang diperbesar ke tanda X lebih lebar dari layar: dipotong tanpa bisa digulir ke samping */
+  overflow: clip;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  --p: 0;
+  --u: max(calc(100cqw / 780), calc(100cqh / 1500));
+}
+.wrap.ready {
+  opacity: 1;
+}
+
+/* ───────── peta ───────── */
+.mapShadow {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+.prelude .mapShadow {
+  filter: drop-shadow(0 0.7em 0.9em rgba(12, 5, 0, 0.6));
+}
+.mapLayer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  transform: scale(calc(0.84 + 0.16 * var(--p)));
+  clip-path: inset(calc((1 - var(--p)) * 50% - 0.2em) 0 calc((1 - var(--p)) * 50% - 0.2em) 0);
+}
+.world {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 24.375em;
+  height: 46.875em;
+  margin-left: -12.1875em;
+  font-size: calc(var(--u) * 32);
+  transform-origin: 9.375em 10.5625em;
+  transition: transform 1.9s cubic-bezier(0.55, 0, 0.22, 1);
+}
+/* mendekat ke tanda X: X ditaruh di tengah layar, sedikit di atas */
+.zoomed .world {
+  transform: translate(2.8125em, calc(36.3125em - 54cqh)) scale(2.1);
+}
+.over .world {
+  visibility: hidden;
+  transition: visibility 0s 0.9s;
+}
+.mapArt {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* jalur titik-titik (satuan lukisan) */
+.route {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  overflow: visible;
+  pointer-events: none;
+}
+.routeDots,
+.routeShadow {
+  fill: none;
+  stroke-linecap: round;
+  stroke-dasharray: 0.1 19;
+}
+.routeDots {
+  stroke: #c2412d;
+  stroke-width: 8.5;
+}
+.routeShadow {
+  stroke: rgba(90, 40, 16, 0.3);
+  stroke-width: 9;
+  transform: translate(1.5px, 2.5px);
+}
+/* belokan ke titik iseng: garis pensil putus-putus */
+.routeGag {
+  stroke: #6a4a2a;
+  stroke-width: 4;
+  stroke-dasharray: 12 11;
+}
+
+/* label tulisan tangan di peta: pembungkus tanpa ukuran huruf sendiri supaya posisinya tetap em dunia */
+.label {
+  position: absolute;
+  z-index: 3;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.here {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: translateX(-50%) rotate(-4deg);
+  font-family: var(--font-hand, cursive);
+  font-size: 1.15em;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  color: #4a2e18;
+  text-shadow: 0 0 0.2em #f6e8c6, 0 0 0.1em #f6e8c6;
+  pointer-events: none;
+}
+.here svg {
+  width: 0.8em;
+  height: auto;
+  margin-top: 0.05em;
+  fill: none;
+  stroke: #4a2e18;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.mapBy {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 7.4em;
+  translate: -50% -50%;
+  rotate: -4deg;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.05em;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  color: #5a3a1e;
+  text-shadow: 0 0 0.2em #f6e8c6;
+  pointer-events: none;
+}
+.mapBy.long {
+  font-size: 0.92em;
+}
+
+/* titik bernomor */
+.stop {
+  position: absolute;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  width: 3.7em;
+  height: 3.7em;
+  margin: -1.85em 0 0 -1.85em;
+  border-radius: 50%;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  opacity: 0;
+}
+.stop:focus-visible {
+  outline: 0.12em dashed #c2412d;
+  outline-offset: -0.1em;
+}
+.stop:disabled {
+  cursor: default;
+}
+.charted .stop {
+  animation: stopIn 0.55s calc(var(--i) * 0.11s + 0.15s) cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+@keyframes stopIn {
+  from { opacity: 0; transform: scale(0.3) rotate(-20deg); }
+  to { opacity: 1; transform: none; }
+}
+.pin {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 2.35em;
+  height: 2.35em;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 32%, #fffaf0, #f1e0b6);
+  box-shadow: 0 0.12em 0.25em rgba(70, 36, 10, 0.4);
+  transition: background 0.4s ease;
+}
+.pin svg {
+  position: absolute;
+  left: -0.22em;
+  top: -0.22em;
+  width: calc(100% + 0.44em);
+  height: calc(100% + 0.44em);
+  overflow: visible;
+  fill: none;
+  stroke: #4a2e18;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke 0.4s ease;
+}
+.pin b {
+  position: relative;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.55em;
+  font-weight: 700;
+  line-height: 1;
+  color: #4a2e18;
+  transition: color 0.4s ease;
+}
+.next .pin {
+  background: radial-gradient(circle at 38% 32%, #fffdf6, #fbeccc);
+}
+.next .pin svg {
+  stroke: #c2412d;
+  stroke-width: 4.4;
+}
+.next .pin b {
+  color: #c2412d;
+}
+/* denyut di titik berikutnya */
+.next::before {
+  content: '';
+  position: absolute;
+  inset: 0.5em;
+  border-radius: 50%;
+  border: 0.14em solid rgba(194, 65, 45, 0.85);
+  animation: ping 1.7s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes ping {
+  from { transform: scale(0.8); opacity: 1; }
+  to { transform: scale(1.55); opacity: 0; }
+}
+.done .pin {
+  background: radial-gradient(circle at 38% 32%, #ec7258, #b8391f);
+}
+.done .pin svg {
+  stroke: #6a1e12;
+}
+.done .pin b {
+  color: #fff4e0;
+}
+.zonk .pin {
+  background: radial-gradient(circle at 38% 32%, #f4ead2, #dccaa2);
+}
+.zonk .pin svg {
+  stroke: #7a5a3a;
+}
+.zonk .pin b {
+  color: rgba(74, 46, 24, 0.45);
+}
+.cross {
+  position: absolute;
+  inset: 0.15em;
+  width: calc(100% - 0.3em);
+  height: calc(100% - 0.3em);
+  overflow: visible;
+}
+.pin .cross path {
+  stroke: #4a2e18;
+  stroke-width: 3.4;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 0.5s 0.2s ease-out forwards;
+}
+@keyframes draw {
+  to { stroke-dashoffset: 0; }
+}
+.zonkTag {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  translate: -50% -0.45em;
+  rotate: -6deg;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.1em;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  color: #4a2e18;
+  text-shadow: 0 0 0.2em #f6e8c6;
+  animation: fadeIn 0.4s 0.5s both;
+}
+.shake {
+  animation: shake 0.45s ease both;
+}
+@keyframes shake {
+  0%, 100% { transform: none; }
+  20% { transform: translateX(-0.25em) rotate(-8deg); }
+  45% { transform: translateX(0.22em) rotate(6deg); }
+  70% { transform: translateX(-0.12em) rotate(-3deg); }
+}
+/* tanda X */
+.stopX {
+  width: 4.4em;
+  height: 4.4em;
+  margin: -2.2em 0 0 -2.2em;
+  z-index: 4;
+}
+.xArt {
+  width: 3.5em;
+  height: 3.5em;
+}
+.stopX.next .xArt {
+  animation: xPulse 1.5s ease-in-out infinite;
+}
+@keyframes xPulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255, 210, 120, 0)); }
+  50% { transform: scale(1.1) rotate(-4deg); filter: drop-shadow(0 0 0.5em rgba(255, 214, 120, 0.95)); }
+}
+.stopX.next::before {
+  inset: 0.2em;
+}
+.zoomed .stop,
+.zoomed .flag,
+.zoomed .crab,
+.zoomed .label {
+  opacity: 0;
+  animation: none;
+  transition: opacity 0.5s ease;
+}
+.zoomed .stopX {
+  transition: opacity 0.6s ease 1.7s;
+}
+
+/* bendera di titik yang sudah dikunjungi; kaki tiang di (30%, 93%) */
+.flag {
+  position: absolute;
+  z-index: 4;
+  width: 1.8em;
+  height: auto;
+  transform-origin: 30% 93%;
+  animation: flagIn 0.55s 0.15s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+  pointer-events: none;
+}
+@keyframes flagIn {
+  from { opacity: 0; transform: translateY(-1em) scale(0.4) rotate(-30deg); }
+  to { opacity: 1; transform: none; }
+}
+
+/* perahu kertas: titik jangkarnya = garis air di tengah lambung */
+.boat {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  z-index: 6;
+  pointer-events: none;
+}
+.boatIn {
+  position: absolute;
+  left: -1.75em;
+  top: -1.95em;
+  width: 3.5em;
+  height: 2.26em;
+  transform-origin: 50% 86%;
+  animation: bob 2.6s ease-in-out infinite;
+}
+.sailing .boatIn {
+  animation-duration: 0.9s;
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-0.12em) rotate(3deg); }
+}
+.boatArt {
+  width: 100%;
+  height: 100%;
+  rotate: var(--rot, 0deg);
+  transition: scale 0.25s ease;
+}
+.boat[data-flip='1'] .boatArt {
+  scale: -1 1;
+}
+.zoomed .boat {
+  opacity: 0;
+  transition: opacity 0.5s ease 1.2s;
+}
+
+/* kepiting di titik iseng */
+.crab {
+  position: absolute;
+  z-index: 4;
+  scale: 0.82;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.crabArt,
+.crabFace {
+  position: absolute;
+  left: -2.3em;
+  top: -3.1em;
+  width: 4.6em;
+  height: 3.55em;
+}
+.crab::before {
+  content: '';
+  position: absolute;
+  left: -1.5em;
+  top: -0.7em;
+  width: 3em;
+  height: 1em;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(70, 40, 14, 0.35), transparent);
+}
+.crabOn .crabArt,
+.crabOn .crabFace {
+  animation: crabUp 0.6s cubic-bezier(0.3, 1.6, 0.5, 1) both, crabWave 0.5s 0.6s ease-in-out 4 alternate;
+}
+.crab:not(.crabOn) .crabArt,
+.crab:not(.crabOn) .crabFace {
+  animation: crabIdle 2.4s ease-in-out infinite;
+}
+@keyframes crabUp {
+  from { opacity: 0; transform: translateY(1.2em) scale(0.3); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes crabWave {
+  from { transform: rotate(-6deg); }
+  to { transform: rotate(6deg) translateY(-0.15em); }
+}
+@keyframes crabIdle {
+  0%, 100% { transform: translateX(-0.1em); }
+  50% { transform: translateX(0.12em) translateY(-0.05em); }
+}
+.crabPupil {
+  animation: look 2.2s ease-in-out infinite;
+}
+@keyframes look {
+  0%, 55%, 100% { transform: none; }
+  65%, 90% { transform: translateX(-3px); }
+}
+.crabBubble {
+  position: absolute;
+  left: 0.6em;
+  bottom: 2.9em;
+  width: max-content;
+  max-width: 9.4em;
+  translate: -100% 0;
+  padding: 0.42em 0.8em 0.48em;
+  border-radius: 0.9em;
+  text-align: center;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.15em;
+  font-weight: 700;
+  line-height: 1.05;
+  text-wrap: balance;
+  color: #3a2a18;
+  background: #fffaf0;
+  box-shadow: 0 0.4em 0.9em -0.3em rgba(60, 30, 10, 0.55);
+  animation: bubbleIn 0.4s 0.35s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+.crabBubble::after {
+  content: '';
+  position: absolute;
+  left: 84%;
+  top: 100%;
+  width: 0.8em;
+  height: 0.8em;
+  margin: -0.45em 0 0 -0.4em;
+  border-radius: 0.12em;
+  background: #fffaf0;
+  transform: rotate(45deg);
+}
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(0.5em) scale(0.92); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ───────── galian di tanda X (dunia diperbesar 2.1×) ───────── */
+.digSpot {
+  position: absolute;
+  z-index: 7;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.hole {
+  position: absolute;
+  left: -3.5em;
+  top: -1.55em;
+  width: 7em;
+  height: 3.72em;
+  opacity: 0;
+  transform: scale(calc(0.3 + 0.7 * var(--k, 0)));
+  transition: transform 0.5s cubic-bezier(0.3, 1.4, 0.5, 1), opacity 0.4s ease;
+}
+.moundOn .hole {
+  opacity: min(1, calc(var(--k, 0) * 2));
+}
+.holeGlow {
+  position: absolute;
+  left: -4.5em;
+  top: -3.6em;
+  width: 9em;
+  height: 7.4em;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 247, 200, 0.95), rgba(255, 210, 110, 0.6) 38%, rgba(255, 170, 70, 0.18) 70%, transparent);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.8s ease, transform 1s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.shining .holeGlow {
+  opacity: 1;
+  transform: scale(1);
+  animation: glowPulse 1.2s 0.8s ease-in-out infinite alternate;
+}
+@keyframes glowPulse {
+  to { transform: scale(1.12); }
+}
+.mound {
+  position: absolute;
+  left: -3.7em;
+  top: -3.15em;
+  width: 7.4em;
+  height: 4.11em;
+  opacity: 0;
+  transform-origin: 50% 88%;
+}
+.moundOn .mound {
+  opacity: 1;
+  transform: scale(1, calc(1 - var(--k, 0) * 0.8));
+  transition: transform 0.5s cubic-bezier(0.3, 1.3, 0.5, 1), opacity 0.4s ease;
+  animation: moundUp 0.8s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+.moundOn.clean .mound {
+  opacity: 0;
+  transform: scale(1.1, 0.1);
+}
+@keyframes moundUp {
+  from { opacity: 0; transform: scale(0.4, 0.05); }
+}
+.clump {
+  position: absolute;
+  width: 3.2em;
+  height: 2.2em;
+  margin: -2.2em 0 0 -1.6em;
+  opacity: 0;
+  transform: rotate(var(--r)) scale(var(--s));
+  transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.3, 1), opacity 0.45s ease;
+}
+.moundOn .clump {
+  opacity: 1;
+  transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.3, 1), opacity 0.4s ease 0.45s;
+}
+.moundOn .clump.off {
+  opacity: 0;
+  transform: translate(calc(var(--fx) * 1em), calc(var(--fy) * 1em)) rotate(calc(var(--r) + 50deg)) scale(calc(var(--s) * 0.5));
+  transition: transform 0.55s cubic-bezier(0.2, 0.7, 0.3, 1), opacity 0.45s ease;
+}
+/* kilau sihir saat gundukan muncul dari kertas */
+.magic i {
+  position: absolute;
+  width: 1.1em;
+  height: 1.1em;
+  margin: -0.55em 0 0 -0.55em;
+  background: radial-gradient(closest-side, #fff, rgba(255, 236, 170, 0.8) 45%, transparent);
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  opacity: 0;
+}
+.magic i:nth-child(1) { left: -3.6em; top: -2.6em; }
+.magic i:nth-child(2) { left: 3.2em; top: -3.4em; scale: 0.8; }
+.magic i:nth-child(3) { left: -2em; top: 0.8em; scale: 0.6; }
+.magic i:nth-child(4) { left: 2.6em; top: 0.4em; }
+.moundOn .magic i {
+  animation: twinkle 1.1s ease-out both;
+}
+.shining .magic i {
+  animation: twinkle 1.6s ease-in-out infinite;
+}
+.magic i:nth-child(2) { animation-delay: 0.15s; }
+.magic i:nth-child(3) { animation-delay: 0.3s; }
+.magic i:nth-child(4) { animation-delay: 0.45s; }
+@keyframes twinkle {
+  0%, 100% { opacity: 0; transform: scale(0.3) rotate(0deg); }
+  45% { opacity: 1; transform: scale(1.5) rotate(45deg); }
+}
+.puff {
+  position: absolute;
+  z-index: 8;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.puff i {
+  position: absolute;
+  left: -0.17em;
+  top: -0.17em;
+  width: 0.34em;
+  height: 0.34em;
+  border-radius: 50%;
+  background: #c99a5a;
+  box-shadow: 0.28em 0.18em 0 -0.04em #f8e6bb, -0.18em 0.28em 0 -0.05em #8f6a3c;
+  animation: grain 0.95s cubic-bezier(0.2, 0.7, 0.4, 1) both;
+}
+@keyframes grain {
+  from { transform: rotate(var(--a)) translateX(0.2em); opacity: 1; }
+  55% { opacity: 1; }
+  to { transform: rotate(var(--a)) translateX(var(--d)) translateY(0.8em); opacity: 0; }
+}
+
+/* ───────── gulungan, tali, segel (ukuran em Stage) ───────── */
+.rolls {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+}
+.roll {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 25em;
+  height: 4.6875em;
+  margin: -2.34375em 0 0 -12.5em;
+  transform: translateY(calc(var(--dir) * ((0.84 + 0.16 * var(--p)) * (var(--p) * 50cqh + 1.55em) + var(--p) * 3em))) scale(calc(0.84 + 0.16 * var(--p)));
+}
+.rollA {
+  --dir: -1;
+}
+.rollB {
+  --dir: 1;
+}
+.knot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 7;
+  width: 0;
+  height: 0;
+  scale: 0.92;
+  pointer-events: none;
+}
+.twine {
+  position: absolute;
+  left: -3.3em;
+  top: -3.3em;
+  width: 6.6em;
+  height: 7.04em;
+  transition: transform 0.9s cubic-bezier(0.5, 0, 0.7, 0.4), opacity 0.6s ease 0.3s;
+}
+.broken .twine {
+  transform: translate(0.6em, 7em) rotate(18deg);
+  opacity: 0;
+}
+.seal {
+  position: absolute;
+  left: -1.95em;
+  top: -1.95em;
+  width: 3.9em;
+  height: 3.9em;
+}
+.sealHalf {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.9s cubic-bezier(0.3, 0.5, 0.6, 1), opacity 0.5s ease 0.45s;
+}
+.sealA {
+  clip-path: polygon(0 0, 52% 0, 46% 18%, 56% 34%, 44% 52%, 55% 70%, 47% 86%, 52% 100%, 0 100%);
+}
+.sealB {
+  clip-path: polygon(52% 0, 100% 0, 100% 100%, 52% 100%, 47% 86%, 55% 70%, 44% 52%, 56% 34%, 46% 18%);
+}
+.broken .sealA {
+  transform: translate(-1.6em, 3.4em) rotate(-48deg);
+  opacity: 0;
+}
+.broken .sealB {
+  transform: translate(1.8em, 3.8em) rotate(40deg);
+  opacity: 0;
+}
+.crumbs i {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 0.36em;
+  height: 0.3em;
+  margin: -0.15em;
+  border-radius: 40%;
+  background: #b23a26;
+  animation: crumb 0.75s cubic-bezier(0.2, 0.7, 0.4, 1) both;
+}
+@keyframes crumb {
+  from { transform: rotate(var(--a)) translateX(0.4em); opacity: 1; }
+  to { transform: rotate(var(--a)) translateX(var(--d)) translateY(1.2em); opacity: 0; }
+}
+.tag {
+  position: absolute;
+  left: 0.3em;
+  top: 0.5em;
+  width: 8em;
+  height: 4.33em;
+  transform-origin: 16.7% 50%;
+  rotate: 28deg;
+  transition: transform 1s cubic-bezier(0.5, 0, 0.7, 0.4) 0.12s, opacity 0.5s ease 0.55s;
+  animation: tagSway 3.4s ease-in-out infinite alternate;
+}
+@keyframes tagSway {
+  from { rotate: 24deg; }
+  to { rotate: 31deg; }
+}
+.broken .tag {
+  transform: translate(0.4em, 7.5em) rotate(30deg);
+  opacity: 0;
+}
+.tagArt {
+  width: 100%;
+  height: 100%;
+}
+.tagText {
+  position: absolute;
+  left: 24%;
+  top: 20%;
+  width: 66%;
+  height: 62%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 0.95;
+  color: #3a2a18;
+  font-family: var(--font-hand, cursive);
+}
+.tagText span {
+  font-size: 0.9em;
+  font-weight: 600;
+  opacity: 0.75;
+}
+.tagText b {
+  max-width: 100%;
+  font-size: 1.7em;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.tagText b.long {
+  font-size: 1.25em;
+}
+.tagText b.xl {
+  font-size: 1em;
+}
+/* kunci yang terikat di tali: gagangnya di dekat simpul */
+.knotKey {
+  position: absolute;
+  left: -3.38em;
+  top: 0.66em;
+  width: 6.2em;
+  height: 2.48em;
+  transform-origin: 20.7% 50%;
+  rotate: 158deg;
+  animation: keySway 2.8s ease-in-out infinite alternate;
+}
+@keyframes keySway {
+  from { rotate: 152deg; }
+  to { rotate: 164deg; }
+}
+.broken .knotKey {
+  opacity: 0;
+}
+
+/* kantong kunci (pojok kiri bawah) */
+.pouch {
+  position: absolute;
+  left: 1em;
+  bottom: 1.7em;
+  z-index: 20;
+  width: 4.4em;
+  height: 4.4em;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #fbf1d8, #e2c892 70%, #c9a464);
+  border: 0.12em dashed rgba(194, 65, 45, 0.75);
+  box-shadow: inset 0 0.15em 0.5em rgba(90, 50, 16, 0.45), 0 0.5em 1em -0.3em rgba(10, 4, 0, 0.6);
+  animation: pouchIn 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+@keyframes pouchIn {
+  from { opacity: 0; transform: scale(0.4); }
+  to { opacity: 1; transform: none; }
+}
+.pouchLabel {
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  translate: -50% -0.1em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.1em;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff1d8;
+  text-shadow: 0 0.06em 0.3em rgba(20, 8, 0, 0.9);
+  white-space: nowrap;
+}
+.pouchLive::after {
+  content: '';
+  position: absolute;
+  inset: -0.2em;
+  border-radius: 50%;
+  border: 0.14em solid rgba(255, 214, 120, 0.9);
+  animation: ping 1.8s ease-out infinite;
+  pointer-events: none;
+}
+.pouchKey {
+  position: absolute;
+  inset: -0.5em;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  cursor: grab;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.35s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.pouchKey:disabled {
+  cursor: default;
+}
+.pouchKey:focus-visible {
+  outline: 0.12em dashed #ffd98a;
+  outline-offset: -0.2em;
+}
+.pouchKeyArt {
+  width: 4.4em;
+  height: 1.76em;
+  rotate: -32deg;
+  filter: drop-shadow(0 0.25em 0.25em rgba(20, 8, 0, 0.5));
+}
+.dragging {
+  transition: none;
+  cursor: grabbing;
+  z-index: 2;
+}
+.flyIn {
+  animation: keyFly 1.1s 0.25s cubic-bezier(0.4, 0, 0.3, 1) both;
+}
+@keyframes keyFly {
+  from { transform: translate(calc(50cqw - 5.5em), calc(9.5em - 50cqh)) rotate(190deg) scale(1.15); }
+  45% { transform: translate(calc(30cqw - 3em), calc(13em - 50cqh)) rotate(80deg) scale(1.3); }
+  to { transform: none; }
+}
+
+/* ───────── peti harta ───────── */
+.dim {
+  position: absolute;
+  inset: 0;
+  z-index: 14;
+  background: radial-gradient(110% 75% at 50% 64%, rgba(48, 26, 8, 0.4), rgba(22, 10, 2, 0.84));
+  opacity: 0;
+  transition: opacity 1.4s ease 0.3s;
+  pointer-events: none;
+}
+.chestOn .dim {
+  opacity: 1;
+}
+.glow {
+  position: absolute;
+  left: 50%;
+  top: calc(60% + 3.2em);
+  z-index: 15;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  transition: opacity 1s ease;
+  pointer-events: none;
+}
+.chestOn .glow {
+  opacity: 0.4;
+}
+.lidOpen .glow {
+  opacity: 1;
+}
+.glow::before {
+  content: '';
+  position: absolute;
+  left: -13em;
+  top: -13em;
+  width: 26em;
+  height: 26em;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 246, 205, 0.95), rgba(255, 214, 120, 0.62) 26%, rgba(255, 170, 70, 0.2) 58%, transparent);
+}
+.rays {
+  position: absolute;
+  left: -22em;
+  top: -22em;
+  width: 44em;
+  height: 44em;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 236, 170, 0.34) 0deg 5deg, transparent 5deg 17deg);
+  -webkit-mask-image: radial-gradient(closest-side, #000 8%, rgba(0, 0, 0, 0.5) 40%, transparent 75%);
+  mask-image: radial-gradient(closest-side, #000 8%, rgba(0, 0, 0, 0.5) 40%, transparent 75%);
+  opacity: 0;
+  transform: scale(0.5);
+  transition: opacity 1s ease, transform 1.4s cubic-bezier(0.2, 0.8, 0.3, 1);
+  animation: spin 40s linear infinite;
+}
+.lidOpen .rays {
+  opacity: 1;
+  transform: none;
+}
+@keyframes spin {
+  to { rotate: 360deg; }
+}
+.sparks i {
+  position: absolute;
+  width: 1.3em;
+  height: 1.3em;
+  margin: -0.65em 0 0 -0.65em;
+  background: radial-gradient(closest-side, #fff, rgba(255, 236, 170, 0.85) 45%, transparent);
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  opacity: 0;
+}
+.sparks i:nth-child(1) { left: -8em; top: -6em; }
+.sparks i:nth-child(2) { left: 7.4em; top: -7.6em; scale: 0.8; }
+.sparks i:nth-child(3) { left: -5.2em; top: -11em; scale: 0.6; }
+.sparks i:nth-child(4) { left: 9.4em; top: -2.4em; scale: 0.7; }
+.sparks i:nth-child(5) { left: -9.6em; top: -1.4em; scale: 0.55; }
+.sparks i:nth-child(6) { left: 3.4em; top: -12em; scale: 0.9; }
+.lidOpen .sparks i {
+  animation: twinkle 2.2s ease-in-out infinite;
+}
+.lidOpen .sparks i:nth-child(2) { animation-delay: 0.4s; }
+.lidOpen .sparks i:nth-child(3) { animation-delay: 0.9s; }
+.lidOpen .sparks i:nth-child(4) { animation-delay: 1.3s; }
+.lidOpen .sparks i:nth-child(5) { animation-delay: 1.7s; }
+.lidOpen .sparks i:nth-child(6) { animation-delay: 0.6s; }
+
+/* badan peti 520 × 340 satuan = 17em × 11.115em; tutup & isi diposisikan dalam satuan yang sama */
+.chest {
+  position: absolute;
+  left: 50%;
+  top: 60%;
+  z-index: 16;
+  width: 17em;
+  height: 11.115em;
+  margin-left: -8.5em;
+  opacity: 0;
+  pointer-events: none;
+}
+.risen {
+  opacity: 1;
+  animation: chestRise 1.4s both;
+}
+/* melompat keluar dari lubang (di 46% tinggi layar), lalu mendarat */
+@keyframes chestRise {
+  0% { opacity: 0; transform: translateY(-26cqh) scale(0.12); animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1); }
+  14% { opacity: 1; }
+  48% { transform: translateY(-31cqh) scale(0.72) rotate(-5deg); animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.5); }
+  78% { transform: translateY(0.3em) scale(1.06, 0.93); animation-timing-function: ease-out; }
+  90% { transform: translateY(-0.3em) scale(0.98, 1.02); }
+  100% { transform: none; }
+}
+.chestBody {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.lidOpenArt {
+  position: absolute;
+  left: 0;
+  top: -4.125em;
+  width: 100%;
+  height: 7.52em;
+  opacity: 0;
+  transform-origin: 50% 96.5%;
+  transform: scaleY(0.2);
+}
+.lidOpen .lidOpenArt {
+  opacity: 1;
+  transform: none;
+  transition: transform 0.6s cubic-bezier(0.3, 1.45, 0.5, 1) 0.12s, opacity 0.12s ease 0.12s;
+}
+.lidClosed {
+  position: absolute;
+  left: 0;
+  top: -1.567em;
+  width: 100%;
+  height: 7.52em;
+  transform-origin: 50% 85%;
+}
+.lidOpen .lidClosed {
+  opacity: 0;
+  transform: translateY(-1.4em) scaleY(0.25);
+  transition: transform 0.25s ease-in, opacity 0.12s ease 0.12s;
+}
+.treasure {
+  position: absolute;
+  left: 0.82em;
+  top: -1.55em;
+  width: 15.37em;
+  height: 6.21em;
+  opacity: 0;
+  transform: translateY(1.2em);
+  clip-path: inset(0 0 7% 0);
+}
+.lidOpen .treasure {
+  opacity: 1;
+  transform: none;
+  transition: transform 0.7s cubic-bezier(0.3, 1.5, 0.5, 1) 0.25s, opacity 0.3s ease 0.2s;
+}
+.scroll {
+  position: absolute;
+  left: 50%;
+  top: -0.9em;
+  width: 7.6em;
+  height: 2.71em;
+  margin-left: -3.8em;
+  rotate: -7deg;
+  opacity: 0;
+}
+.lidOpen .scroll {
+  opacity: 1;
+  transition: opacity 0.3s ease 0.4s;
+}
+.beckon {
+  animation: beckon 1.6s 0.6s ease-in-out infinite, scrollBack 0.7s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+  transform: translateY(calc(var(--tug, 0) * -3em));
+}
+@keyframes beckon {
+  0%, 100% { filter: drop-shadow(0 0 0.2em rgba(255, 236, 170, 0.5)); }
+  50% { filter: drop-shadow(0 0 0.9em rgba(255, 236, 170, 1)); }
+}
+@keyframes scrollBack {
+  from { opacity: 0; }
+}
+.pulled {
+  animation: pullOut 1.6s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes pullOut {
+  0% { transform: translateY(calc(var(--tug, 0) * -3em)); opacity: 1; }
+  40% { transform: translateY(-9em) rotate(5deg) scale(1.5); opacity: 1; }
+  100% { transform: translateY(-16em) rotate(0deg) scale(2.6); opacity: 0; }
+}
+.lock {
+  position: absolute;
+  left: 50%;
+  top: 5em;
+  width: 3.4em;
+  height: 4.53em;
+  margin-left: -1.7em;
+  transform-origin: 50% 12%;
+}
+.chestOn:not(.lidOpen) .risen .lock {
+  animation: lockJiggle 3s 1.6s ease-in-out infinite;
+}
+@keyframes lockJiggle {
+  0%, 82%, 100% { transform: none; }
+  86% { transform: rotate(-7deg); }
+  92% { transform: rotate(6deg); }
+}
+.lockOff {
+  animation: lockDrop 0.9s cubic-bezier(0.5, 0, 0.75, 0.4) both !important;
+}
+@keyframes lockDrop {
+  0% { transform: translateY(-0.4em); }
+  15% { transform: translateY(-0.9em) rotate(-10deg); opacity: 1; }
+  100% { transform: translateY(10em) rotate(46deg); opacity: 0; }
+}
+.lockArt {
+  width: 100%;
+  height: 100%;
+}
+.lockKey {
+  position: absolute;
+  left: 50%;
+  top: 67%;
+  width: 1.8em;
+  height: 1.8em;
+  margin: -0.9em 0 0 -0.9em;
+  overflow: hidden;
+  animation: keyTurn 0.75s cubic-bezier(0.3, 1.3, 0.5, 1) both;
+}
+@keyframes keyTurn {
+  0% { opacity: 0; transform: scale(1.8) rotate(-20deg); }
+  40% { opacity: 1; transform: scale(1) rotate(0deg); }
+  100% { opacity: 1; transform: rotate(90deg); }
+}
+.lockKeyArt {
+  position: absolute;
+  left: 0.01em;
+  top: 0.04em;
+  width: 4.3em;
+  height: 1.72em;
+}
+
+/* kilatan cahaya emas saat tutup terbuka */
+.flash {
+  position: absolute;
+  inset: 0;
+  z-index: 17;
+  background: radial-gradient(circle at 50% calc(60% + 3em), rgba(255, 250, 220, 0.95), rgba(255, 220, 130, 0.55) 30%, rgba(255, 190, 90, 0) 70%);
+  opacity: 0;
+  pointer-events: none;
+  animation: flash 1.1s 0.1s ease-out both;
+}
+@keyframes flash {
+  0% { opacity: 0; }
+  18% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* koin yang melompat keluar dari peti yang baru terbuka */
+.coins i {
+  position: absolute;
+  left: 50%;
+  top: 2.6em;
+  width: 1.15em;
+  height: 0.72em;
+  margin: -0.36em 0 0 -0.575em;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 36% 34%, #fff6d0, #f1d58a 38%, #c99a3e 72%, #8a6420);
+  box-shadow: inset 0 -0.09em 0 #6e4b14, 0 0 0.4em rgba(255, 220, 130, 0.7);
+  opacity: 0;
+  animation: coinPop 1.5s calc(0.25s + var(--i) * 0.05s) cubic-bezier(0.2, 0.75, 0.4, 1) both;
+}
+@keyframes coinPop {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.4); }
+  10% { opacity: 1; }
+  45% { transform: translate(calc(var(--dx) * 0.6), calc(var(--h) * -1)) rotate(calc(var(--r) * 0.5)) scale(1.1); animation-timing-function: cubic-bezier(0.5, 0, 0.8, 0.4); }
+  85% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), 4.6em) rotate(var(--r)) scale(0.9); }
+}
+
+/* ucapan utama di atas peti */
+.titleBox {
+  position: absolute;
+  left: 50%;
+  top: 29%;
+  z-index: 18;
+  width: 21.4em;
+  translate: -50% -50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35em;
+  text-align: center;
+  pointer-events: none;
+  animation: titleIn 1.1s 0.5s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+@keyframes titleIn {
+  from { opacity: 0; transform: translateY(1.6em) scale(0.9); filter: blur(0.2em); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.titleEyebrow {
+  font-size: 0.7em;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #ffd98a;
+  text-shadow: 0 0.1em 0.4em rgba(30, 14, 0, 0.8);
+}
+.title {
+  margin: 0;
+  max-width: 100%;
+  font-family: var(--font-hand, cursive);
+  font-size: 2.8em;
+  font-weight: 700;
+  line-height: 1;
+  color: #fff4d2;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  text-shadow: 0 0 0.35em rgba(255, 196, 90, 0.85), 0 0.05em 0.08em rgba(70, 30, 0, 0.7);
+}
+.title.long {
+  font-size: 2.4em;
+}
+.title.xl {
+  font-size: 2.1em;
+}
+/* selama mini-game ucapannya mundur sebentar supaya beonya tidak menutupi tulisan */
+.gaming .titleBox {
+  opacity: 0;
+  animation: none;
+  transition: opacity 0.4s ease;
+}
+
+/* beo menyambar surat: masuk dari kanan atas, menukik ke peti, lalu hinggap di kanan atas */
+.parrotFly {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-size: 1.22em;
+  z-index: 22;
+  margin: -3.6em 0 0 -3em;
+  pointer-events: none;
+  filter: drop-shadow(0 0.6em 0.6em rgba(20, 8, 0, 0.4));
+}
+.parrot_swoop {
+  animation: swoop 2.2s cubic-bezier(0.45, 0, 0.4, 1) both;
+}
+@keyframes swoop {
+  0% { transform: translate(115cqw, 4cqh) scale(-1, 1); }
+  42% { transform: translate(53cqw, 56cqh) scale(-1, 1); }
+  54% { transform: translate(52cqw, 52cqh) scale(1, 1); }
+  100% { transform: translate(74cqw, 30cqh) scale(1, 1); }
+}
+.parrot_bye {
+  animation: byeBye 2.4s cubic-bezier(0.5, 0, 0.7, 0.4) both;
+}
+@keyframes byeBye {
+  0% { transform: translate(30cqw, 30cqh) scale(-1, 1); }
+  20% { transform: translate(28cqw, 28cqh) scale(-1, 1) rotate(-6deg); }
+  100% { transform: translate(-30cqw, -12cqh) scale(-1, 1) rotate(-20deg); }
+}
+
+/* ───────── bidang sentuh ───────── */
+.hit {
+  position: absolute;
+  z-index: 12;
+  border-radius: 1.2em;
+  cursor: pointer;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.hit:focus-visible {
+  outline: 0.14em dashed rgba(255, 246, 230, 0.9);
+  outline-offset: -0.3em;
+}
+.grab {
+  cursor: grab;
+}
+.hitBundle {
+  left: 0;
+  right: 0;
+  top: calc(50% - 7.5em);
+  height: 15em;
+}
+.hitDig {
+  left: 8%;
+  right: 8%;
+  top: 27%;
+  height: 38%;
+}
+.hitChest {
+  left: 50%;
+  top: calc(60% - 4.4em);
+  z-index: 19;
+  width: 19em;
+  height: 16em;
+  margin-left: -9.5em;
+}
+
+/* ───────── keterangan di atas (ukuran em Stage) ───────── */
+.head {
+  position: absolute;
+  left: 50%;
+  top: 2.8em;
+  z-index: 24;
+  width: 19em;
+  translate: -50% 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3em;
+  text-align: center;
+  pointer-events: none;
+  animation: headIn 0.5s ease both;
+}
+.head::before {
+  content: '';
+  position: absolute;
+  inset: -1.6em -2.6em -1.8em;
+  z-index: -1;
+}
+@keyframes headIn {
+  from { opacity: 0; transform: translateY(0.5em); }
+  to { opacity: 1; transform: none; }
+}
+.headLight {
+  color: #fff4e0;
+  text-shadow: 0 0.06em 0.5em rgba(20, 8, 0, 0.85), 0 0 0.12em rgba(20, 8, 0, 0.6);
+}
+.headLight::before {
+  background: radial-gradient(closest-side, rgba(20, 10, 2, 0.55), rgba(20, 10, 2, 0.22) 60%, transparent);
+}
+.headInk {
+  color: #3a2a18;
+  text-shadow: 0 0 0.25em rgba(248, 238, 212, 0.95), 0 0 0.1em rgba(248, 238, 212, 1);
+}
+.headInk::before {
+  background: radial-gradient(closest-side, rgba(248, 236, 208, 0.9), rgba(248, 236, 208, 0.55) 60%, transparent);
+}
+.eyebrow {
+  max-width: 22em;
+  font-size: 0.68em;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  line-height: 1.3;
+  text-transform: uppercase;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.eyebrowLong {
+  font-size: 0.64em;
+  letter-spacing: 0.1em;
+}
+.headLight .eyebrow {
+  color: #ffd98a;
+}
+.headInk .eyebrow {
+  color: #b23a26;
+}
+.cap {
+  max-width: 9em;
+  font-family: var(--font-hand, cursive);
+  font-size: 2.05em;
+  font-weight: 700;
+  line-height: 1;
+  text-wrap: balance;
+}
+.capLong {
+  max-width: 10em;
+  font-size: 1.82em;
+}
+
+/* ───────── sobekan kertas petunjuk ───────── */
+.noteLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 26;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3.2em 1em 3.6em;
+  animation: fadeIn 0.3s ease both;
+}
+.noteLayer.closing {
+  animation: fadeOut 0.42s ease both;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fadeOut {
+  to { opacity: 0; }
+}
+.noteScrim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 75% at 50% 45%, rgba(40, 22, 8, 0.5), rgba(40, 22, 8, 0.28));
+  cursor: pointer;
+}
+.scrapWrap {
+  position: relative;
+  width: 19.6em;
+  max-width: 100%;
+  rotate: -1.6deg;
+  filter: drop-shadow(0 1em 1.1em rgba(40, 18, 4, 0.5));
+  animation: scrapIn 0.6s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+.closing .scrapWrap {
+  animation: scrapOut 0.42s cubic-bezier(0.5, 0, 0.8, 0.4) both;
+}
+@keyframes scrapIn {
+  from { opacity: 0; transform: translateY(2em) scale(0.6) rotate(-8deg); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes scrapOut {
+  to { opacity: 0; transform: translateY(1.5em) scale(0.35) rotate(10deg); }
+}
+.scrap {
+  composes: paper from '../kit/kit.module.css';
+  --paper: #fbf2dc;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.9em 1.3em 1.5em;
+  color: #3a2a18;
+  cursor: pointer;
+  /* tepi sobek tak rata */
+  clip-path: polygon(0 1.6%, 4% 0.4%, 9% 1.8%, 14% 0.2%, 20% 1.4%, 26% 0.6%, 31% 2%, 37% 0.5%, 43% 1.5%, 49% 0.2%, 55% 1.7%, 61% 0.4%, 66% 1.6%, 72% 0.3%, 78% 1.9%, 84% 0.6%, 89% 1.5%, 95% 0.2%, 100% 1.3%, 99.5% 24%, 100% 51%, 99.4% 77%, 100% 98.6%, 95% 99.6%, 90% 98.3%, 84% 99.8%, 78% 98.5%, 72% 99.5%, 66% 98.2%, 60% 99.7%, 54% 98.4%, 48% 99.8%, 42% 98.6%, 36% 99.6%, 30% 98.2%, 24% 99.7%, 18% 98.4%, 12% 99.6%, 6% 98.3%, 0 99.4%, 0.5% 75%, 0 50%, 0.6% 25%);
+}
+.tack {
+  position: absolute;
+  left: 50%;
+  top: -0.25em;
+  width: 1.35em;
+  height: 1.35em;
+  margin-left: -0.675em;
+  border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #ffb59a, #e2553c 38%, #a42c1a 72%, #6e1a0e);
+  box-shadow: 0.25em 0.35em 0.3em -0.1em rgba(40, 18, 4, 0.55);
+}
+.tack::after {
+  content: '';
+  position: absolute;
+  left: 28%;
+  top: 22%;
+  width: 26%;
+  height: 22%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+}
+.clueNo {
+  font-size: 0.66em;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #b23a26;
+}
+.sketch {
+  position: relative;
+  width: 14.6em;
+  margin: 1em 0 0.25em;
+  padding: 0.42em;
+  background: #fffdf6;
+  rotate: 1.6deg;
+  box-shadow: 0 0.08em 0.2em rgba(60, 30, 10, 0.2), 0 0.8em 1.2em -0.8em rgba(60, 30, 10, 0.6);
+}
+.photo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 2.9;
+  object-fit: cover;
+  filter: sepia(0.16) saturate(0.96) contrast(1.03);
+}
+.pencil {
+  position: absolute;
+  left: -0.4em;
+  top: -0.4em;
+  width: calc(100% + 0.8em);
+  height: calc(100% + 0.8em);
+  overflow: visible;
+  fill: none;
+  stroke: #4a2e18;
+  stroke-width: 1.3;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.75;
+  pointer-events: none;
+}
+.pencil path {
+  vector-effect: non-scaling-stroke;
+}
+.noPhoto {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  margin: 0.8em 0 0.1em;
+}
+.noPhoto i {
+  width: 3.4em;
+  border-top: 0.2em dotted #c2412d;
+}
+.noPhotoBoat {
+  width: 3.6em;
+  height: auto;
+}
+.clueText {
+  margin-top: 0.45em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.72em;
+  font-weight: 600;
+  line-height: 1.08;
+  text-align: center;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.clueText.long {
+  font-size: 1.54em;
+}
+.clueText.big {
+  font-size: 2.15em;
+}
+.clueText.big.long {
+  font-size: 1.86em;
+}
+.clueBtn {
+  min-height: 2.9em;
+  margin-top: 1em;
+  padding: 0.55em 1.35em 0.6em;
+  border-radius: 99em;
+  font-size: 0.9em;
+  font-weight: 800;
+  color: #fff7ea;
+  background: linear-gradient(180deg, #d9573f, #c2412d 60%, #a8331f);
+  box-shadow: inset 0 0.07em 0 rgba(255, 255, 255, 0.35), 0 0.16em 0 #7a2416, 0 0.9em 1.4em -0.8em rgba(80, 20, 10, 0.9);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+.clueBtn:active {
+  transform: translateY(0.08em) scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .charted .stop,
+  .next::before,
+  .stopX.next .xArt,
+  .flag,
+  .boatIn,
+  .crabOn .crabArt,
+  .crabOn .crabFace,
+  .crab:not(.crabOn) .crabArt,
+  .crab:not(.crabOn) .crabFace,
+  .crabPupil,
+  .crabBubble,
+  .shake,
+  .moundOn .mound,
+  .magic i,
+  .shining .holeGlow,
+  .tag,
+  .knotKey,
+  .flyIn,
+  .pouch,
+  .pouchLive::after,
+  .rays,
+  .sparks i,
+  .risen,
+  .chestOn:not(.lidOpen) .risen .lock,
+  .lockOff,
+  .lockKey,
+  .titleBox,
+  .beckon,
+  .pulled,
+  .parrot_swoop,
+  .parrot_bye,
+  .head,
+  .noteLayer,
+  .noteLayer.closing,
+  .scrapWrap,
+  .closing .scrapWrap,
+  .zonkTag {
+    animation: none !important;
+  }
+  .charted:not(.zoomed) .stop {
+    opacity: 1;
+  }
+  .coins,
+  .flash {
+    display: none;
+  }
+  .puff,
+  .crumbs {
+    display: none;
+  }
+  .lockOff,
+  .parrot_bye {
+    opacity: 0;
+  }
+  .parrot_swoop {
+    transform: translate(74cqw, 30cqh);
+  }
+  .pin .cross path {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+  .world,
+  .twine,
+  .sealHalf,
+  .tag,
+  .hole,
+  .holeGlow,
+  .moundOn .mound,
+  .clump,
+  .moundOn .clump,
+  .moundOn .clump.off,
+  .dim,
+  .glow,
+  .rays,
+  .lidOpenArt,
+  .lidOpen .lidOpenArt,
+  .lidOpen .lidClosed,
+  .treasure,
+  .lidOpen .treasure,
+  .lidOpen .scroll,
+  .zoomed .stopX,
+  .zoomed .boat,
+  .pouchKey {
+    transition-duration: 0.01s !important;
+    transition-delay: 0s !important;
+  }
+}

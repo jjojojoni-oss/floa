@@ -1,0 +1,166 @@
+/* Mini-game "Rebut lagi suratnya!": arena transparan di atas peti harta; beo hinggap di beberapa tempat.
+   Posisi dalam cqw/cqh (arena = container seukuran layar), sama dengan akhir sambaran beo di style.module.css. */
+.field {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* ── beo: lukisan + sayap + mata ── */
+.parrot {
+  position: relative;
+  display: block;
+  width: 6em;
+  height: 6.8em;
+}
+.body {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.pupil {
+  animation: glance 3.4s ease-in-out infinite;
+}
+@keyframes glance {
+  0%, 60%, 100% { transform: none; }
+  68%, 86% { transform: translateX(-3px); }
+}
+/* sayap terlipat; pangkalnya (bahu) di kanan-atas lukisan sayap */
+.wingBox {
+  position: absolute;
+  left: 0.78em;
+  top: 2.37em;
+  width: 3.3em;
+  height: 2.55em;
+  transform-origin: 89% 8%;
+}
+.wing {
+  width: 100%;
+  height: 100%;
+}
+.flapping .wingBox {
+  animation: flap 0.26s ease-in-out infinite alternate;
+}
+@keyframes flap {
+  from { transform: rotate(-4deg); }
+  to { transform: rotate(58deg); }
+}
+/* gulungan surat di cengkeraman */
+.carry {
+  position: absolute;
+  left: 1.62em;
+  top: 4.72em;
+  width: 3.2em;
+  height: auto;
+  rotate: -10deg;
+}
+
+.flier {
+  position: absolute;
+  font-size: 1.22em;
+  left: calc(var(--x) * 1cqw);
+  top: calc(var(--y) * 1cqh);
+  margin: -3.6em 0 0 -3em;
+  pointer-events: auto;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: left 0.8s cubic-bezier(0.45, 0, 0.3, 1), top 0.8s cubic-bezier(0.3, -0.4, 0.4, 1);
+  filter: drop-shadow(0 0.6em 0.6em rgba(40, 20, 8, 0.35));
+  animation: birdIn 0.3s ease both;
+}
+@keyframes birdIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+/* area sentuh lebih besar dari gambarnya */
+.flier::before {
+  content: '';
+  position: absolute;
+  inset: -1em -1.2em;
+}
+.flier .parrot {
+  animation: perch 1.6s ease-in-out infinite;
+  transform-origin: 50% 90%;
+}
+.flying .parrot {
+  animation: hop 0.4s ease-in-out infinite alternate;
+}
+.left .parrot {
+  scale: -1 1;
+}
+@keyframes perch {
+  0%, 100% { transform: rotate(-2deg); }
+  50% { transform: rotate(2.5deg) translateY(-0.1em); }
+}
+@keyframes hop {
+  from { transform: translateY(-0.3em) rotate(-8deg); }
+  to { transform: translateY(0.3em) rotate(6deg); }
+}
+
+/* surat yang dijatuhkan: jatuh berputar kembali ke peti */
+.drop {
+  position: absolute;
+  left: 50cqw;
+  top: 61cqh;
+  width: 6em;
+  height: auto;
+  margin: -1.07em 0 0 -3em;
+  filter: drop-shadow(0 0 0.8em rgba(255, 220, 140, 0.9));
+  animation: dropIn 0.95s cubic-bezier(0.5, 0, 0.6, 1) both;
+}
+@keyframes dropIn {
+  from { transform: translate(calc(var(--x) * 1cqw - 50cqw), calc(var(--y) * 1cqh - 61cqh + 1.4em)) rotate(-30deg) scale(0.55); }
+  70% { transform: translate(0, -0.6em) rotate(8deg) scale(1.05); }
+  to { transform: none; }
+}
+
+/* celetukan beo */
+.bubble {
+  position: absolute;
+  left: 50%;
+  top: 6.4em;
+  width: max-content;
+  max-width: 14.5em;
+  translate: -50% 0;
+  padding: 0.5em 0.95em 0.56em;
+  border-radius: 1em;
+  text-align: center;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.3em;
+  font-weight: 700;
+  line-height: 1.1;
+  text-wrap: balance;
+  color: #3a2a18;
+  background: #fbf2dc;
+  box-shadow: 0 0.5em 1.1em -0.4em rgba(40, 20, 8, 0.6);
+  animation: bubbleIn 0.4s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+  pointer-events: none;
+}
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(0.6em) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flier {
+    transition-duration: 0.01s;
+  }
+  .flier .parrot,
+  .flying .parrot,
+  .flapping .wingBox,
+  .pupil,
+  .drop {
+    animation: none;
+  }
+}
