@@ -44,7 +44,7 @@ const ART = ['bg-pagi', 'game-kumbang', 'buket-belakang', 'buket-daun', 'buket-d
  * bloom   → kuncup mekar satu-satu mengikuti kupu-kupu; gulungan kertas di tengah bunga ditarik untuk dibaca
  * shy     → kuncup terakhir (paling malu) ditahan sampai berani mekar
  * tie     → pita diikat
- * bee     → mini-game: usir kumbang rakus yang mau ngemil buketnya
+ * bee     → mini-game: usir lebah rakus yang mau ngemil buketnya
  * smell   → hirup wanginya
  * card    → kartu kecil terselip → Finale
  */
