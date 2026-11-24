@@ -3,6 +3,7 @@
 import { type CSSProperties, type PointerEvent, useEffect, useRef, useState } from 'react';
 import { Confetti, Finale, Hint, Sprite, Stage, TapCue, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
+import { IjazahGame } from './Game';
 import { useText } from './i18n';
 import { meta } from './meta';
 import { fmt } from '@/i18n/client';
@@ -61,6 +62,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const [ribbon, setRibbon] = useState(false);
   const [finale, setFinale] = useState(false);
   const [burst, setBurst] = useState(0);
+  /** mini-game: setelah toga dilempar, angin iseng menerbangkan ijazahnya */
+  const [game, setGame] = useState<'off' | 'on' | 'done'>('off');
   const cap = useRef<HTMLButtonElement>(null);
   const card = useRef<HTMLButtonElement>(null);
   const nextBtn = useRef<HTMLButtonElement>(null);
@@ -122,10 +125,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     haptic(25);
     later(() => sfx.success(), 600);
     later(() => setRibbon(true), 1000);
-    later(() => {
-      setPhase('scroll');
-      sfx.pop();
-    }, 2500);
+    later(() => setGame('on'), 2500);
   };
 
   const onDown = (e: PointerEvent<HTMLButtonElement>) => {
@@ -414,6 +414,17 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       <TapCue target={cap} show={phase === 'ready' && !leaving} kind="drag" dir={{ x: 0, y: -5 }} at={{ x: 0.5, y: 0.6 }} />
       <TapCue target={rolled} show={phase === 'scroll'} />
       <TapCue target={readBtn} show={phase === 'open' && !finale} delay={3800} />
+
+      {game === 'on' ? (
+        <IjazahGame
+          t={t.game}
+          onDone={() => {
+            setGame('done');
+            setPhase('scroll');
+            sfx.pop();
+          }}
+        />
+      ) : null}
 
       <Confetti burst={burst} colors={GOLD} origin={{ x: 0.5, y: 0.7 }} count={110} />
 

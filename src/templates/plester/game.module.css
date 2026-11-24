@@ -1,0 +1,194 @@
+/* "Usir awan mendung!": awan cemberut di atas hati, gerimis; satu ketukan → menangis habis → pamit malu-malu. */
+.introCloud {
+  height: 4.6em;
+  width: auto;
+}
+
+.sky {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(70, 82, 104, 0.26), rgba(70, 82, 104, 0.08) 70%);
+  transition: background 1.4s ease, opacity 1.4s ease;
+  pointer-events: none;
+}
+.skyClear {
+  background: radial-gradient(70% 45% at 50% 14%, rgba(255, 214, 120, 0.35), rgba(255, 214, 120, 0) 70%);
+}
+
+/* ───── awan ───── */
+.cloud {
+  position: absolute;
+  aspect-ratio: 280 / 170;
+  translate: -50% -50%;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 1.7s cubic-bezier(0.45, 0, 0.6, 1), opacity 1.5s ease 0.2s;
+  z-index: 2;
+}
+.cloud::before {
+  content: '';
+  position: absolute;
+  inset: -1em -0.6em -2.4em;
+}
+.cloud:disabled {
+  cursor: default;
+}
+.cloudBody {
+  position: absolute;
+  inset: 0;
+  animation: float 3.4s var(--d) ease-in-out infinite;
+}
+.cloudImg,
+.cloudFace {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(0.35em, -0.3em); }
+}
+.jolt {
+  animation: jolt 0.5s ease, cry 0.32s 0.5s ease-in-out 2 alternate;
+}
+@keyframes jolt {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.12, 0.88); }
+  55% { transform: scale(0.94, 1.06) rotate(-3deg); }
+  100% { transform: scale(1); }
+}
+@keyframes cry {
+  from { transform: rotate(-2.5deg); }
+  to { transform: rotate(2.5deg); }
+}
+.crying .cloudImg {
+  filter: brightness(0.92);
+}
+/* pamit: mengecil, memutih, melayang ke samping */
+.leaving {
+  transform: translate(calc(var(--dir) * 130%), -40%) scale(0.72);
+  opacity: 0;
+}
+.leaving .cloudImg {
+  filter: brightness(1.25) saturate(0.6);
+  transition: filter 0.6s ease;
+}
+
+/* hujan */
+.rain {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  top: 74%;
+  height: 4.2em;
+  pointer-events: none;
+  opacity: 0.7;
+}
+.rain i {
+  position: absolute;
+  top: 0;
+  left: calc(var(--r) * 17% + 2%);
+  width: 0.16em;
+  height: 0.75em;
+  border-radius: 99em;
+  background: linear-gradient(#cfe8fb, #7fb6e3);
+  animation: fall 1.05s calc(var(--r) * -0.17s) linear infinite;
+}
+.rainHard {
+  opacity: 1;
+}
+.rainHard i {
+  width: 0.2em;
+  height: 1.15em;
+  animation-duration: 0.42s;
+}
+.leaving .rain {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+@keyframes fall {
+  from { transform: translateY(-0.4em); opacity: 0; }
+  20% { opacity: 1; }
+  to { transform: translateY(3.6em); opacity: 0; }
+}
+
+/* ───── matahari yang mengintip ───── */
+.sun {
+  position: absolute;
+  left: 74%;
+  top: 21%;
+  width: 7.4em;
+  aspect-ratio: 1;
+  translate: -50% 0;
+  transform: translateY(40%) scale(0.5);
+  opacity: 0;
+  transition: transform 1.3s cubic-bezier(0.34, 1.45, 0.64, 1), opacity 0.7s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+.sunUp {
+  transform: none;
+  opacity: 1;
+}
+.sunSpin {
+  position: absolute;
+  inset: 0;
+  animation: spin 22s linear infinite;
+}
+.sunImg {
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+.sunFace {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+@keyframes spin {
+  to { rotate: 360deg; }
+}
+
+/* celetukan */
+.line {
+  position: absolute;
+  left: 50%;
+  top: 59%;
+  width: max-content;
+  max-width: calc(100% - 3em);
+  padding: 0.55em 1em 0.6em;
+  border-radius: 0.8em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.25em;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  color: #33303a;
+  background: rgba(255, 253, 248, 0.95);
+  box-shadow: 0 0.5em 1.2em -0.6em rgba(40, 40, 60, 0.45);
+  transform: translateX(-50%) rotate(-1.2deg);
+  animation: lineIn 2.6s ease both;
+  pointer-events: none;
+}
+@keyframes lineIn {
+  0% { opacity: 0; translate: 0 0.5em; }
+  10%, 82% { opacity: 1; translate: 0 0; }
+  100% { opacity: 0; translate: 0 -0.3em; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cloudBody,
+  .jolt,
+  .sunSpin,
+  .rain i {
+    animation: none;
+  }
+  .cloud,
+  .sun {
+    transition-duration: 0.3s;
+  }
+}

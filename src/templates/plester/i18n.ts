@@ -1,5 +1,6 @@
 import { useLocale } from '@/i18n/client';
 import type { Locale } from '@/i18n/config';
+import type { AwanText } from './Game';
 
 type PlesterText = {
   healedEyebrow: string;
@@ -39,6 +40,8 @@ type PlesterText = {
   sign: string;
   read: string;
   finaleEyebrow: string;
+  /** mini-game setelah pengakuan */
+  game: AwanText;
 };
 
 export const TEXT: Record<Locale, PlesterText> = {
@@ -74,6 +77,15 @@ export const TEXT: Record<Locale, PlesterText> = {
     sign: '— {name}',
     read: 'Baca suratnya →',
     finaleEyebrow: 'Dari hati yang sudah ditambal',
+    game: {
+      title: 'Usir awan mendung!',
+      how: 'Hatinya lagi mendung. Ketuk awannya satu-satu.',
+      lines: ['Udah, udah. Nangisnya selesai.', 'Awan gengsi. Pergi juga akhirnya.', 'Yang ini katanya cuma numpang lewat.'],
+      sun: 'Eh, ada yang senyum.',
+      winTitle: 'Langitnya cerah lagi.',
+      winLine: 'Nah. Sekarang lebih enak ngobrolnya.',
+      cloudAria: 'Usir awan mendung',
+    },
   },
   ms: {
     healedEyebrow: 'hatinya pulih semula',
@@ -107,6 +119,15 @@ export const TEXT: Record<Locale, PlesterText> = {
     sign: '— {name}',
     read: 'Baca suratnya →',
     finaleEyebrow: 'Dari hati yang dah ditampal',
+    game: {
+      title: 'Halau awan mendung!',
+      how: 'Hatinya tengah mendung. Ketik awannya satu-satu.',
+      lines: ['Sudah, sudah. Nangisnya dah habis.', 'Awan ego. Pergi juga akhirnya.', 'Yang ni katanya cuma lalu sahaja.'],
+      sun: 'Eh, ada yang tersenyum.',
+      winTitle: 'Langitnya cerah semula.',
+      winLine: 'Haa. Sekarang lebih senang nak berbual.',
+      cloudAria: 'Halau awan mendung',
+    },
   },
   en: {
     healedEyebrow: 'whole again',
@@ -140,6 +161,15 @@ export const TEXT: Record<Locale, PlesterText> = {
     sign: '— {name}',
     read: 'Read the letter →',
     finaleEyebrow: 'From a mended heart',
+    game: {
+      title: 'Shoo the grey clouds!',
+      how: 'This heart is a little cloudy. Tap the clouds, one by one.',
+      lines: ['There, there. All cried out.', 'The stubborn one. It left eventually.', 'This one says it was just passing by.'],
+      sun: 'Oh look, someone’s smiling.',
+      winTitle: 'Clear skies again.',
+      winLine: 'There. Now it’s easier to talk.',
+      cloudAria: 'Shoo the grey cloud',
+    },
   },
 };
 

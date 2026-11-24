@@ -1,5 +1,6 @@
 import { useLocale } from '@/i18n/client';
 import type { Locale } from '@/i18n/config';
+import type { NyaliText } from './Game';
 
 type MauText = {
   /** label tombol "Nggak" tiap kali dicoba ditekan; yang terakhir menyerah dan ikut bilang mau (jumlahnya harus sama di semua bahasa) */
@@ -43,6 +44,8 @@ type MauText = {
   finaleTitle: string;
   finaleEyebrowFrom: string;
   finaleEyebrow: string;
+  /** mini-game sebelum pertanyaan */
+  game: NyaliText;
 };
 
 export const LOCALE_TAG: Record<Locale, string> = { id: 'id-ID', ms: 'ms-MY', en: 'en-US' };
@@ -93,6 +96,17 @@ export const TEXT: Record<Locale, MauText> = {
     finaleTitle: 'Kamu bilang mau.',
     finaleEyebrowFrom: 'Pesan dari {name}',
     finaleEyebrow: 'Pesan buatmu',
+    game: {
+      titleFrom: 'Bantu {name} berani!',
+      titleAnon: 'Bantu dia berani!',
+      how: 'Ketuk hatinya beberapa kali sampai nyalinya penuh.',
+      meter: 'nyali',
+      stages: ['lutut gemeter…', 'keringet dingin…', 'oke… oke…', 'dikit lagi…!', 'BERANI!'],
+      cheer: 'Semangatin!',
+      pops: ['+nyali', 'kamu bisa!', 'tarik napas', 'ayo!', 'gas!'],
+      winTitle: 'Nyali terkumpul!',
+      winLine: 'Oke. Ada yang mau ditanyain. Dengerin, ya.',
+    },
   },
   ms: {
     noLabels: ['Tak nak', 'Pasti ke?', 'Fikir balik', 'Butang licin', 'Yang satu lagi', 'Masih cuba?', 'Okey, nak'],
@@ -139,6 +153,17 @@ export const TEXT: Record<Locale, MauText> = {
     finaleTitle: 'Awak kata nak.',
     finaleEyebrowFrom: 'Mesej daripada {name}',
     finaleEyebrow: 'Mesej untukmu',
+    game: {
+      titleFrom: 'Bantu {name} jadi berani!',
+      titleAnon: 'Bantu dia jadi berani!',
+      how: 'Ketik hatinya beberapa kali sampai beraninya penuh.',
+      meter: 'berani',
+      stages: ['lutut menggeletar…', 'peluh sejuk…', 'okey… okey…', 'sikit lagi…!', 'BERANI!'],
+      cheer: 'Beri semangat!',
+      pops: ['+berani', 'boleh!', 'tarik nafas', 'jom!', 'teruskan!'],
+      winTitle: 'Berani dah penuh!',
+      winLine: 'Okey. Ada benda nak ditanya. Dengar baik-baik.',
+    },
   },
   en: {
     noLabels: ['No', 'Sure?', 'Think again', 'Slippery button', 'Try the other one', 'Still trying?', 'Fine, yes'],
@@ -185,6 +210,17 @@ export const TEXT: Record<Locale, MauText> = {
     finaleTitle: 'You said yes.',
     finaleEyebrowFrom: 'A message from {name}',
     finaleEyebrow: 'A message for you',
+    game: {
+      titleFrom: 'Help {name} be brave!',
+      titleAnon: 'Help them be brave!',
+      how: 'Tap the heart a few times to fill up the courage.',
+      meter: 'courage',
+      stages: ['knees shaking…', 'cold sweat…', 'okay… okay…', 'almost…!', 'BRAVE!'],
+      cheer: 'Cheer them on!',
+      pops: ['+courage', 'you got this!', 'breathe', 'go!', 'nearly!'],
+      winTitle: 'Courage: full!',
+      winLine: 'Okay. There’s something to ask you. Listen closely.',
+    },
   },
 };
 

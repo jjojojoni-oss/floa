@@ -49,6 +49,21 @@ const id = {
   cardPlain: 'Catatan {i} dari {total}: {cap}. Ketuk atau geser untuk lanjut.',
   cardSpecial: 'Foto terakhir, masih tertelungkup. Ketuk untuk membaliknya.',
   cardFav: 'Foto terakhir, yang paling sering aku pandangi. Ketuk untuk menaruhnya.',
+  game: {
+    title: 'Cicak kosan!',
+    how: 'Ada cicak kos ngintip dari balik foto. Ketuk cicaknya, ya.',
+    lines: [
+      'Itu cicak yang suka nongkrong di kamar mandi.',
+      'Yang ini dulu ikut nonton tiap kita maraton drakor.',
+      'Cicak penunggu dispenser. Hormat.',
+      'Ini yang jatuh pas kita makan mi tengah malam. Ingat?',
+      'Ketua cicak kosan. Akhirnya ketangkep juga.',
+    ],
+    hide: 'Eh, dia pindah ke foto lain.',
+    winTitle: 'Kosan aman terkendali.',
+    winLine: 'Ekornya ketinggalan tiga. Tenang, nanti tumbuh lagi kok.',
+    catchAria: 'Tangkap cicaknya',
+  },
 };
 
 export const TEXT: Record<Locale, typeof id> = {
@@ -96,6 +111,21 @@ export const TEXT: Record<Locale, typeof id> = {
     cardPlain: 'Catatan {i} daripada {total}: {cap}. Ketuk atau leret untuk teruskan.',
     cardSpecial: 'Foto terakhir, masih tertiarap. Ketuk untuk menterbalikkannya.',
     cardFav: 'Foto terakhir, yang paling kerap aku tatap. Ketuk untuk meletakkannya.',
+    game: {
+      title: 'Cicak rumah sewa!',
+      how: 'Ada cicak terjengul dari belakang gambar. Ketik cicaknya, ya.',
+      lines: [
+        'Itu cicak yang suka melepak dalam bilik air.',
+        'Yang ni dulu ikut tengok setiap kali kita maraton drama.',
+        'Cicak penjaga dispenser air. Tabik.',
+        'Yang ni jatuh masa kita makan mi tengah malam. Ingat?',
+        'Ketua cicak rumah sewa. Akhirnya dapat juga.',
+      ],
+      hide: 'Eh, dia pindah ke gambar lain.',
+      winTitle: 'Rumah sewa selamat.',
+      winLine: 'Tiga ekor tertinggal. Jangan risau, nanti tumbuh semula.',
+      catchAria: 'Tangkap cicak',
+    },
   },
   en: {
     you: 'you',
@@ -140,5 +170,20 @@ export const TEXT: Record<Locale, typeof id> = {
     cardPlain: 'Note {i} of {total}: {cap}. Tap or swipe to continue.',
     cardSpecial: 'The last photo, still face down. Tap to turn it over.',
     cardFav: 'The last photo, the one I keep looking at. Tap to set it down.',
+    game: {
+      title: 'House geckos!',
+      how: 'A gecko from our old place is peeking out from behind the photos. Tap it!',
+      lines: [
+        'That one lived in the bathroom. Every. Single. Night.',
+        'This one watched every drama marathon with us.',
+        'The guardian of the water dispenser. Respect.',
+        'This is the one that fell during our midnight noodles. Remember?',
+        'The gecko boss. Finally caught.',
+      ],
+      hide: 'Oh, it moved to another photo.',
+      winTitle: 'The house is safe.',
+      winLine: 'Three tails left behind. Don’t worry, they grow back.',
+      catchAria: 'Catch the gecko',
+    },
   },
 };
