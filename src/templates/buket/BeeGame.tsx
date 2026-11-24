@@ -172,7 +172,7 @@ export function BeeGame({
       <MiniGame
         title={t.title}
         how={t.how}
-        art={<Sprite name="game-kumbang" className={s.art} />}
+        art={<Sprite name="game-lebah" className={s.art} />}
         goal={GOAL}
         score={score}
         won={gone}
@@ -197,7 +197,7 @@ export function BeeGame({
                 disabled={gone}
               >
                 <span className={s.body}>
-                  <Sprite name="game-kumbang" className={s.sprite} />
+                  <Sprite name="game-lebah" className={s.sprite} />
                   <Face mood={mood} munch={!flying && !gone} />
                 </span>
               </button>
