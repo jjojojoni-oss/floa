@@ -15,6 +15,7 @@ type Head = { kind: string; bud: string; x: number; y: number; d: number; dot: s
 const H = (kind: string, bud: string, x: number, y: number, d: number, dot: string, rot = 0): Head => ({ kind, bud, x, y, d, dot, rot });
 
 /** Indeks 2 selalu dahlia di tengah: kuncup paling malu yang mekar paling akhir. */
+/** Dua bunga bawah (susunan 5) sengaja agak tinggi: kuncupnya harus terlihat utuh di atas tepi kertas pembungkus. */
 const CENTER = 2;
 const LAYOUTS: Record<number, Head[]> = {
   3: [
@@ -32,8 +33,8 @@ const LAYOUTS: Record<number, Head[]> = {
     H('aster', 'kamboja', 170, 266, 176, '#f2a40f', -8),
     H('kenikir', 'kenikir', 430, 266, 176, '#ff9f1f', 12),
     H('dahlia', 'dahlia', 300, 180, 222, '#ee6a58', 4),
-    H('kamboja', 'pink', 224, 392, 160, '#ffcb3d', 20),
-    H('sepatu', 'sepatu', 384, 392, 176, '#c8203f', -14),
+    H('kamboja', 'pink', 232, 362, 166, '#ffcb3d', 20),
+    H('sepatu', 'sepatu', 378, 362, 180, '#c8203f', -14),
   ],
 };
 
