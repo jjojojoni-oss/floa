@@ -1,0 +1,167 @@
+/* Mini-game "Kopernya nggak mau nutup!": koper kekenyangan di atas meja berpeta, barang nongol bergantian. */
+.arena {
+  position: absolute;
+  inset: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* selubung bawah (pasangan selubung atas milik kit): bunga di sudut meredup supaya tombol "lewati" terbaca */
+.arena::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0;
+  height: 24%;
+  background: linear-gradient(transparent, color-mix(in srgb, var(--bg, #e9dcc3) 90%, transparent) 62%);
+  pointer-events: none;
+}
+
+/* koper: lukisan 320×250, barang-barangnya ada di belakang badan koper */
+.case {
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  width: 17em;
+  height: calc(17em * 250 / 320);
+  translate: -50% -40%;
+}
+.body {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: block;
+  transform-origin: 50% 100%;
+  pointer-events: none;
+}
+.bodyArt {
+  width: 100%;
+  height: 100%;
+}
+.face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.sweat {
+  animation: sweat 1.1s ease-in infinite;
+}
+@keyframes sweat {
+  0% { opacity: 0; transform: translateY(-6px); }
+  30% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(14px); }
+}
+/* selagi kepenuhan, koper kembang-kempis menahan isinya */
+.body {
+  animation: strain 0.9s ease-in-out infinite alternate;
+}
+@keyframes strain {
+  from { transform: none; }
+  to { transform: scale(1.025, 0.975); }
+}
+/* koper mengempis-mengembang tiap ada barang yang ditekan masuk */
+.bounce {
+  animation:
+    bounce 0.55s cubic-bezier(0.3, 1.6, 0.5, 1),
+    strain 0.9s 0.55s ease-in-out infinite alternate;
+}
+@keyframes bounce {
+  0% { transform: scale(1.06, 0.9); }
+  45% { transform: scale(0.97, 1.05); }
+  100% { transform: none; }
+}
+.closed .body {
+  animation: settle 0.9s 0.2s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+@keyframes settle {
+  0% { transform: scale(1.05, 0.92); }
+  40% { transform: scale(0.98, 1.04) rotate(-2deg); }
+  70% { transform: rotate(2deg); }
+  100% { transform: none; }
+}
+
+/* barang: tersembunyi di balik koper, lalu nongol dan bergoyang minta dimasukkan (kotak sentuh ≥ 100 px) */
+.item {
+  position: absolute;
+  z-index: 1;
+  top: 22%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  translate: -50% 0;
+  transform: translateY(12%) rotate(var(--rot)) scale(0.8);
+  opacity: 0;
+  /* barang yang belum/ sudah masuk tidak boleh menelan ketukan (tombol nonaktif tidak meneruskan klik) */
+  pointer-events: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition:
+    transform 0.4s cubic-bezier(0.5, 0, 0.7, 0.4),
+    opacity 0.2s ease;
+}
+.item::before {
+  content: '';
+  position: absolute;
+  inset: -1.2em -0.8em 0;
+}
+.itemArt {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 0.3em 0.35em rgba(58, 29, 18, 0.35));
+}
+.item.up {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(-78%) rotate(var(--rot));
+  transition:
+    transform 0.6s cubic-bezier(0.2, 1.5, 0.4, 1),
+    opacity 0.15s ease;
+  animation: wiggle 1s 0.6s ease-in-out infinite;
+}
+@keyframes wiggle {
+  0%, 100% { rotate: -5deg; }
+  50% { rotate: 5deg; }
+}
+/* sudah masuk: tetap di dalam */
+.item.in {
+  opacity: 0;
+  transform: translateY(20%) rotate(var(--rot)) scale(0.8);
+  transition:
+    transform 0.34s cubic-bezier(0.5, 0, 0.9, 0.5),
+    opacity 0.1s 0.3s ease;
+}
+
+.line {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  top: 5.6em;
+  width: min(20em, calc(100% - 2.4em));
+  translate: -50% 0;
+  padding: 0.6em 1em;
+  border-radius: 1em;
+  text-align: center;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.14em;
+  font-weight: 700;
+  line-height: 1.22;
+  color: #fff6e4;
+  background: rgba(58, 29, 18, 0.8);
+  pointer-events: none;
+  animation: lineIn 0.45s cubic-bezier(0.34, 1.5, 0.64, 1) both;
+}
+@keyframes lineIn {
+  from { opacity: 0; transform: translateY(0.6em) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item.up,
+  .sweat,
+  .body {
+    animation: none;
+  }
+}

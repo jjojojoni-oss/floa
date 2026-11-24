@@ -1,0 +1,1266 @@
+/* Paspor Berdua. Satu halaman dilukis di kanvas 420×596; --u = satu satuan lukisan,
+   jadi semua tempelan DOM (tulisan, foto, cap) pas di atas lukisannya. */
+.wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* lembar yang dibalik melewati tepi kiri: dipotong tanpa menjadikan adegan ini bisa digulir ke samping */
+  overflow: clip;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  /* 1em milik Stage, ditulis dalam satuan kontainer: variabel di bawah dipakai juga oleh elemen yang
+     ukuran hurufnya sendiri berbeda, dan `em` di dalam variabel akan ikut berubah di sana */
+  --em: min(calc(100cqw / 24.4), calc(100cqh / 42));
+  /* tinggi halaman: dibatasi lebar layar (28,5em ≈ 20em lebar) dan tinggi layar */
+  --ph: min(calc(var(--em) * 28.5), 57cqh);
+  --u: calc(var(--ph) / 596);
+  /* paspor ada di tengah ruang antara kepala dan kaki */
+  --top: calc(var(--em) * 5.2 + (100cqh - var(--em) * 13.9 - var(--ph)) / 2);
+}
+.wrap.ready {
+  opacity: 1;
+}
+/* selama mini-game, paspornya menepi supaya tidak membayang di balik arena */
+.gaming .book,
+.gaming .pass,
+.gaming .head {
+  opacity: 0;
+}
+
+/* ── kepala: di antara tombol musik (kiri) dan suara (kanan) ── */
+.head {
+  position: absolute;
+  left: 3.6em;
+  right: 3.6em;
+  top: 1.1em;
+  z-index: 4;
+  text-align: center;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.head > div {
+  animation: up 0.6s 0.1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.eyebrow {
+  font-size: 0.72em;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #8c2a2f;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.eyebrow.tight {
+  letter-spacing: 0.1em;
+}
+.from,
+.sub {
+  margin-top: 0.02em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.5em;
+  font-weight: 600;
+  line-height: 1.05;
+  opacity: 0.9;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+.sub {
+  font-size: 1.32em;
+}
+.from.long {
+  font-size: 1.22em;
+}
+.big {
+  margin-top: 0.1em;
+  font-family: var(--font-serif, Georgia, serif);
+  font-variation-settings: 'SOFT' 100;
+  font-size: 1.7em;
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+}
+@keyframes up {
+  from { opacity: 0; transform: translateY(0.7em); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ── buklet paspor ── */
+.book {
+  position: absolute;
+  left: calc(50% - var(--u) * 196);
+  top: var(--top);
+  width: calc(var(--u) * 420);
+  height: calc(var(--u) * 596);
+  z-index: 3;
+  perspective: calc(var(--em) * 78);
+  perspective-origin: 0 50%;
+  transform-origin: 50% 0;
+  transition:
+    transform 1s cubic-bezier(0.3, 0.7, 0.2, 1),
+    opacity 0.3s ease;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+/* bayangan paspor di atas peta */
+.book::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: calc(var(--u) * 7) calc(var(--u) * 26) calc(var(--u) * 26) calc(var(--u) * 7);
+  box-shadow:
+    0 calc(var(--u) * 3) calc(var(--u) * 8) rgba(58, 29, 18, 0.28),
+    calc(var(--u) * 16) calc(var(--u) * 30) calc(var(--u) * 46) calc(var(--u) * -14) rgba(58, 29, 18, 0.6);
+}
+/* saat boarding pass keluar, paspornya mengecil ke atas memberi tempat */
+.book.away {
+  transform: translate(calc(var(--u) * 91), calc(var(--em) * -1.6)) scale(0.5) rotate(-4deg);
+}
+.art {
+  width: 100%;
+  height: 100%;
+}
+.mirror {
+  transform: scaleX(-1);
+}
+.base {
+  position: absolute;
+  inset: 0;
+}
+.base > img {
+  position: absolute;
+  inset: 0;
+}
+/* boarding pass yang terselip di kantong: menyembul begitu halaman terakhir dibalik */
+.tucked {
+  position: absolute;
+  left: calc(var(--u) * 54);
+  top: calc(var(--u) * 274);
+  width: calc(var(--u) * 312);
+  height: calc(var(--u) * 204);
+  border-radius: calc(var(--u) * 12);
+  overflow: hidden;
+  background: #fffaf0 url('/art/tex-kertas.webp') 0 0 / calc(var(--u) * 200);
+  background-blend-mode: multiply;
+  box-shadow: 0 calc(var(--u) * 4) calc(var(--u) * 10) rgba(58, 29, 18, 0.35);
+  transform: translateY(62%);
+  transition:
+    transform 0.9s 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.1),
+    opacity 0.3s ease;
+}
+.tucked i {
+  display: block;
+  height: calc(var(--u) * 40);
+  background: #8c2a2f;
+}
+.tucked b {
+  position: absolute;
+  left: calc(var(--u) * 16);
+  top: calc(var(--u) * 11);
+  font-size: calc(var(--u) * 14);
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #fff6e6;
+}
+.tucked.peek {
+  transform: translateY(-40%) rotate(-4deg);
+}
+.tucked.gone {
+  transform: translateY(-40%) rotate(-4deg);
+  opacity: 0;
+}
+/* tebal halaman + sampul belakang yang mengintip di tepi kanan-bawah */
+.pages {
+  position: absolute;
+  inset: 0;
+  border-radius: calc(var(--u) * 4) calc(var(--u) * 24) calc(var(--u) * 24) calc(var(--u) * 4);
+  background: #efe2c4;
+  box-shadow:
+    calc(var(--u) * 2.5) calc(var(--u) * 2.5) 0 #f6ead0,
+    calc(var(--u) * 4.5) calc(var(--u) * 4.5) 0 #dccba4,
+    calc(var(--u) * 7.5) calc(var(--u) * 7.5) 0 #651d26;
+  transition: opacity 0.2s 0.5s ease;
+}
+.pagesGone {
+  opacity: 0;
+}
+
+/* satu lembar: berengsel di tepi kiri (punggung buku), dibalik ke kiri */
+.leaf {
+  position: absolute;
+  inset: 0;
+  transform-origin: 0 50%;
+  transform-style: preserve-3d;
+  transition: transform 0.95s cubic-bezier(0.45, 0.05, 0.2, 1);
+}
+.leaf.turned {
+  transform: rotateY(-176deg);
+  pointer-events: none;
+}
+.front,
+.back {
+  position: absolute;
+  inset: 0;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.back {
+  transform: rotateY(180deg);
+}
+/* sisi dalam sampul depan: kertas pelapis bermotif kawung */
+.backCover {
+  border: calc(var(--u) * 9) solid #651d26;
+  border-radius: calc(var(--u) * 26) calc(var(--u) * 7) calc(var(--u) * 7) calc(var(--u) * 26);
+  background:
+    linear-gradient(90deg, rgba(58, 29, 18, 0) 55%, rgba(58, 29, 18, 0.4)),
+    url('/art/tex-kawung.webp') 0 0 / calc(var(--u) * 120),
+    #f1dfc0;
+}
+
+/* ── sampul ── */
+.cover {
+  position: absolute;
+  inset: 0;
+  display: block;
+  border-radius: calc(var(--u) * 7) calc(var(--u) * 26) calc(var(--u) * 26) calc(var(--u) * 7);
+  overflow: hidden;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.cover:disabled {
+  cursor: default;
+}
+.cIssuer,
+.cTitle,
+.cNames {
+  position: absolute;
+  left: calc(var(--u) * 56);
+  width: calc(var(--u) * 340);
+  text-align: center;
+  font-family: var(--font-serif, Georgia, serif);
+  font-variation-settings: 'SOFT' 100;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  /* foil emas: gradasi yang dipotong mengikuti huruf, dengan bayang timbul */
+  color: #e2bd66;
+  background: linear-gradient(100deg, #f3d98e 0%, #fff3c4 28%, #d6a94a 52%, #f3d98e 78%, #b0832c 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0.03em 0.05em 0 rgba(44, 10, 16, 0.65));
+}
+.cIssuer {
+  top: calc(var(--u) * 104);
+  font-size: calc(var(--u) * 21);
+  font-weight: 700;
+  letter-spacing: 0.24em;
+}
+.cTitle {
+  top: calc(var(--u) * 418);
+  font-size: calc(var(--u) * 56);
+  font-weight: 600;
+  letter-spacing: 0.14em;
+}
+.cTitle.t7 {
+  top: calc(var(--u) * 422);
+  font-size: calc(var(--u) * 49);
+  letter-spacing: 0.12em;
+}
+.cTitle.t8 {
+  top: calc(var(--u) * 426);
+  font-size: calc(var(--u) * 43);
+  letter-spacing: 0.11em;
+}
+.cNames {
+  top: calc(var(--u) * 494);
+  font-size: calc(var(--u) * 23);
+  font-weight: 700;
+  letter-spacing: 0.26em;
+}
+.cNames i {
+  margin: 0 0.5em 0 0.28em;
+  font-style: normal;
+  font-size: 0.8em;
+}
+/* kilau yang sesekali menyapu foil sampul */
+.sheen {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.sheen::after {
+  content: '';
+  position: absolute;
+  inset: -20% -60%;
+  background: linear-gradient(112deg, transparent 43%, rgba(255, 244, 214, 0.34) 50%, transparent 57%);
+  transform: translateX(-70%);
+  animation: sheen 4.4s 1.2s ease-in-out infinite;
+}
+@keyframes sheen {
+  0%, 55% { transform: translateX(-70%); }
+  100% { transform: translateX(70%); }
+}
+
+/* ── halaman dalam ── */
+.page {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: calc(var(--u) * 2) calc(var(--u) * 22) calc(var(--u) * 22) calc(var(--u) * 2);
+  color: #2c2118;
+  cursor: pointer;
+}
+.page > img:first-child {
+  position: absolute;
+  inset: 0;
+}
+.guilloche {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke-width: 0.9;
+  pointer-events: none;
+}
+.gA {
+  stroke: rgba(140, 42, 47, 0.17);
+}
+.gB {
+  stroke: rgba(176, 131, 44, 0.24);
+}
+.pHead {
+  position: absolute;
+  left: calc(var(--u) * 42);
+  right: calc(var(--u) * 30);
+  top: calc(var(--u) * 30);
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: calc(var(--u) * 9);
+  border-bottom: calc(var(--u) * 1.4) solid rgba(140, 42, 47, 0.42);
+  font-size: calc(var(--u) * 14);
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #8c2a2f;
+}
+.pHead b {
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 1.14em;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+
+/* kilau lapisan pengaman: menyapu sekali begitu halaman identitas terbuka */
+.pageSheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(112deg, transparent 42%, rgba(255, 255, 255, 0.5) 50%, transparent 58%) 130% 0 / 320% 100% no-repeat;
+  opacity: 0;
+}
+.sheenRun {
+  animation: pageSheen 1.5s 0.8s ease-in-out both;
+}
+@keyframes pageSheen {
+  0% { opacity: 1; background-position: 130% 0; }
+  99% { opacity: 1; background-position: -30% 0; }
+  100% { opacity: 0; background-position: -30% 0; }
+}
+
+/* halaman identitas: susunannya mengalir, jadi nama sepanjang apa pun tidak saling menindih */
+.idBody {
+  position: absolute;
+  left: calc(var(--u) * 42);
+  right: calc(var(--u) * 24);
+  top: calc(var(--u) * 78);
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 19);
+}
+.idTop {
+  position: relative;
+  display: grid;
+  grid-template-columns: calc(var(--u) * 158) minmax(0, 1fr);
+  gap: calc(var(--u) * 22);
+  align-items: start;
+}
+.idPhoto {
+  position: relative;
+  height: calc(var(--u) * 202);
+  border-radius: calc(var(--u) * 10);
+  overflow: hidden;
+  background: #e9d6b0;
+  box-shadow:
+    0 0 0 calc(var(--u) * 3) #fffaf0,
+    0 calc(var(--u) * 4) calc(var(--u) * 10) rgba(58, 29, 18, 0.35);
+}
+.idPhoto img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* lapisan hologram: pita pelangi yang bergeser pelan */
+.holo {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 18%, rgba(255, 130, 190, 0.34) 30%, rgba(120, 220, 255, 0.36) 40%, rgba(255, 240, 150, 0.4) 50%, rgba(150, 255, 190, 0.3) 60%, transparent 74%);
+  background-size: 260% 260%;
+  mix-blend-mode: screen;
+  animation: holo 5s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes holo {
+  from { background-position: 0% 30%; }
+  to { background-position: 100% 70%; }
+}
+/* segel hologram berlambang kamboja, menindih sudut pas foto */
+.seal {
+  position: absolute;
+  left: calc(var(--u) * 116);
+  top: calc(var(--u) * 156);
+  width: calc(var(--u) * 64);
+  height: calc(var(--u) * 64);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(from 20deg, #ffd0e4, #c9f1ff, #fff2b8, #c8ffd9, #e4d2ff, #ffd0e4);
+  box-shadow:
+    inset 0 0 0 calc(var(--u) * 2) rgba(255, 255, 255, 0.85),
+    0 calc(var(--u) * 2) calc(var(--u) * 5) rgba(58, 29, 18, 0.3);
+  opacity: 0.9;
+  animation: sealTurn 9s linear infinite;
+}
+.seal svg {
+  width: 70%;
+  fill: rgba(255, 255, 255, 0.9);
+  stroke: rgba(140, 42, 47, 0.35);
+  stroke-width: 0.7;
+  animation: sealTurn 9s linear infinite reverse;
+}
+@keyframes sealTurn {
+  to { transform: rotate(360deg); }
+}
+.fields,
+.row {
+  margin: 0;
+  min-width: 0;
+}
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--u) * 12);
+}
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: calc(var(--u) * 14);
+}
+.fields > div,
+.row > div {
+  min-width: 0;
+}
+.fields dt,
+.row dt {
+  font-size: calc(var(--u) * 11.5);
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #9a7038;
+}
+.fields dd,
+.row dd {
+  margin: calc(var(--u) * 2) 0 0;
+  font-family: var(--font-serif, Georgia, serif);
+  font-variation-settings: 'SOFT' 100;
+  font-size: calc(var(--u) * 22);
+  font-weight: 600;
+  line-height: 1.08;
+  overflow-wrap: anywhere;
+}
+.fields dd.long {
+  font-size: calc(var(--u) * 18);
+}
+.fields dd.fName {
+  font-size: calc(var(--u) * 36);
+  letter-spacing: -0.02em;
+}
+.fields dd.fName.long {
+  font-size: calc(var(--u) * 27);
+}
+.fields dd.fName.xl {
+  font-size: calc(var(--u) * 21);
+}
+.row dd.fHand {
+  font-family: var(--font-hand, cursive);
+  font-size: calc(var(--u) * 30);
+  font-weight: 700;
+  line-height: 0.95;
+  color: #8c2a2f;
+}
+.row dd.fHand.long {
+  font-size: calc(var(--u) * 25);
+}
+.row dd.fHand.xl {
+  font-size: calc(var(--u) * 22);
+}
+.row dd.fMono {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: calc(var(--u) * 18);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+/* tanda tangan: selalu satu baris, mengecil untuk nama panjang */
+.row dd.fSign {
+  width: max-content;
+  padding: calc(var(--u) * 4) calc(var(--u) * 3) calc(var(--u) * 2) 0;
+  font-family: var(--font-hand, cursive);
+  font-size: calc(var(--u) * 38);
+  font-weight: 700;
+  line-height: 0.85;
+  max-width: calc(100% + var(--u) * 14);
+  overflow: hidden;
+  white-space: nowrap;
+  color: #2b3a67;
+  rotate: -4deg;
+  transform-origin: 0 100%;
+}
+.row dd.fSign.long {
+  font-size: calc(var(--u) * 29);
+}
+.row dd.fSign.xl {
+  font-size: calc(var(--u) * 22);
+}
+/* baris kode di kaki halaman */
+.mrz {
+  position: absolute;
+  left: calc(var(--u) * 42);
+  right: calc(var(--u) * 18);
+  bottom: calc(var(--u) * 28);
+  padding-top: calc(var(--u) * 12);
+  border-top: calc(var(--u) * 1.2) dashed rgba(44, 33, 24, 0.3);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: calc(var(--u) * 14.5);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  line-height: 1.55;
+  color: rgba(44, 33, 24, 0.76);
+  white-space: nowrap;
+  overflow: hidden;
+}
+.mrz span {
+  display: block;
+}
+
+/* halaman cap */
+.snap {
+  position: absolute;
+  left: calc(var(--u) * 64);
+  top: calc(var(--u) * 82);
+  width: calc(var(--u) * 292);
+  height: calc(var(--u) * 204);
+  padding: calc(var(--u) * 9);
+  background: #fffaf0;
+  box-shadow:
+    0 calc(var(--u) * 2) calc(var(--u) * 4) rgba(58, 29, 18, 0.2),
+    0 calc(var(--u) * 12) calc(var(--u) * 20) calc(var(--u) * -8) rgba(58, 29, 18, 0.5);
+  rotate: -2.5deg;
+}
+.snapAlt {
+  rotate: 2.5deg;
+}
+.snap > img:first-child {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.klip {
+  position: absolute;
+  left: calc(var(--u) * 36);
+  top: calc(var(--u) * -34);
+  width: calc(var(--u) * 32);
+  height: auto;
+  rotate: 8deg;
+  filter: drop-shadow(0 calc(var(--u) * 2) calc(var(--u) * 2) rgba(58, 29, 18, 0.3));
+}
+.snapAlt .klip {
+  left: auto;
+  right: calc(var(--u) * 36);
+  rotate: -8deg;
+}
+.watermark {
+  position: absolute;
+  left: calc(var(--u) * 157);
+  top: calc(var(--u) * 72);
+  width: calc(var(--u) * 106);
+  fill: rgba(140, 42, 47, 0.1);
+}
+/* jejak perjalanan: garis putus-putus antara dua kota, seperti rute di peta mejanya */
+.trail {
+  position: absolute;
+  left: calc(var(--u) * 58);
+  top: calc(var(--u) * 458);
+  width: calc(var(--u) * 304);
+  height: auto;
+  overflow: visible;
+  fill: none;
+  stroke: rgba(140, 42, 47, 0.32);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+.trail .dot,
+.trail .plane {
+  fill: rgba(140, 42, 47, 0.36);
+  stroke: none;
+}
+.watermark svg {
+  display: block;
+  width: 100%;
+}
+.spot {
+  position: absolute;
+  left: calc(var(--u) * 58);
+  top: calc(var(--u) * 318);
+  width: calc(var(--u) * 304);
+  height: calc(var(--u) * 208);
+}
+.spotMid {
+  top: calc(var(--u) * 198);
+  height: calc(var(--u) * 240);
+}
+.spotMid .inkNote {
+  font-size: calc(var(--u) * 40);
+}
+.spotMid .inkNote.long {
+  font-size: calc(var(--u) * 35);
+}
+.spotMid .inkNote.xl {
+  font-size: calc(var(--u) * 31);
+}
+.spotMid .inkTop,
+.spotMid .inkBot {
+  font-size: calc(var(--u) * 12.5);
+}
+.spotMid .oval .inkTop,
+.spotMid .oval .inkBot {
+  font-size: calc(var(--u) * 11.5);
+}
+.target {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border: calc(var(--u) * 3) dashed rgba(140, 42, 47, 0.5);
+  border-radius: calc(var(--u) * 18);
+  background: rgba(140, 42, 47, 0.04);
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  animation: target 1.8s ease-in-out infinite;
+  transition: transform 0.15s ease;
+}
+.target span {
+  font-size: calc(var(--u) * 15);
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(140, 42, 47, 0.62);
+}
+.targetPress {
+  transform: scale(0.97);
+  background: rgba(140, 42, 47, 0.1);
+  animation: none;
+}
+@keyframes target {
+  0%, 100% { background-color: rgba(140, 42, 47, 0.03); }
+  50% { background-color: rgba(140, 42, 47, 0.1); }
+}
+/* halamannya ikut tersentak saat stempel menghentak */
+.thunk {
+  animation: thunk 0.24s cubic-bezier(0.3, 0.6, 0.4, 1);
+}
+@keyframes thunk {
+  0% { transform: none; }
+  35% { transform: translateY(calc(var(--u) * 3.5)); }
+  100% { transform: none; }
+}
+/* cap tinta: warnanya dari `color`. Bingkainya dibuat tidak rata oleh mask; tulisannya tetap jelas. */
+.ink {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 6);
+  padding: 0 calc(var(--u) * 24);
+  text-align: center;
+  rotate: -5deg;
+  /* tintanya sudah ada di kertas begitu stempel terangkat: muncul cepat, lalu sedikit meresap */
+  animation: inkIn 0.5s ease-out backwards;
+}
+@keyframes inkIn {
+  0% { opacity: 0; filter: saturate(1.5) brightness(0.8); }
+  25% { opacity: 1; filter: saturate(1.5) brightness(0.8); }
+  100% { opacity: 1; filter: none; }
+}
+.ink::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: calc(var(--u) * 6) solid currentColor;
+  border-radius: calc(var(--u) * 16);
+  outline: calc(var(--u) * 1.6) solid currentColor;
+  outline-offset: calc(var(--u) * -13);
+  background: color-mix(in srgb, currentColor 7%, transparent);
+  -webkit-mask-image: url('/art/paspor-tinta.webp');
+  mask-image: url('/art/paspor-tinta.webp');
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  pointer-events: none;
+}
+.ink > * {
+  position: relative;
+}
+.inkAlt {
+  rotate: 4deg;
+}
+.ink.oval {
+  padding: 0 calc(var(--u) * 48);
+}
+.ink.oval::before {
+  border-radius: 50%;
+}
+/* cap terakhir: emas, dengan kilau yang sesekali lewat dan cahaya hangat di belakangnya */
+.ink.gold {
+  color: #8f6212;
+}
+.ink.gold::before {
+  border-style: double;
+  border-width: calc(var(--u) * 10);
+  border-color: #b8892c;
+  outline-style: dashed;
+  outline-color: #b8892c;
+  outline-offset: calc(var(--u) * -18);
+  background: rgba(243, 217, 142, 0.2);
+}
+.ink.gold::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: calc(var(--u) * 16);
+  background: linear-gradient(112deg, transparent 43%, rgba(255, 250, 224, 0.85) 50%, transparent 57%) 130% 0 / 320% 100% no-repeat;
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+  animation: goldSheen 3.4s 0.5s ease-in-out infinite;
+}
+@keyframes goldSheen {
+  0% { background-position: 130% 0; }
+  45%, 100% { background-position: -30% 0; }
+}
+.glow {
+  position: absolute;
+  inset: -22% -16%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(243, 208, 120, 0.5), rgba(243, 208, 120, 0.16) 60%, transparent);
+  pointer-events: none;
+  animation: glowIn 0.9s ease-out backwards;
+}
+@keyframes glowIn {
+  from { opacity: 0; transform: scale(0.6); }
+}
+.inkTop,
+.inkBot {
+  font-size: calc(var(--u) * 11.5);
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.oval .inkTop,
+.oval .inkBot {
+  font-size: calc(var(--u) * 10.5);
+  letter-spacing: 0.1em;
+}
+.inkBot {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 6);
+}
+.inkBot svg {
+  width: calc(var(--u) * 17);
+  fill: currentColor;
+}
+.inkNote {
+  font-family: var(--font-hand, cursive);
+  font-size: calc(var(--u) * 35);
+  font-weight: 700;
+  line-height: 0.98;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.inkNote.long {
+  font-size: calc(var(--u) * 30);
+}
+.inkNote.xl {
+  font-size: calc(var(--u) * 27);
+}
+/* stempel karet: menunggu di kanan-bawah, melayang ke atas kotak, menghentak, lalu terangkat pergi */
+.tool {
+  position: absolute;
+  right: calc(var(--u) * -30);
+  bottom: calc(var(--u) * -44);
+  width: calc(var(--u) * 132);
+  height: calc(var(--u) * 162);
+  z-index: 3;
+  pointer-events: none;
+  transform: rotate(14deg);
+  transform-origin: 50% 100%;
+  transition:
+    transform 0.3s cubic-bezier(0.5, 0, 0.3, 1),
+    opacity 0.35s ease;
+  filter: drop-shadow(calc(var(--u) * 5) calc(var(--u) * 9) calc(var(--u) * 8) rgba(58, 29, 18, 0.4));
+}
+.toolPress {
+  transform: translate(calc(var(--u) * -116), calc(var(--u) * -108)) rotate(-3deg) scale(1.05);
+}
+.toolHit {
+  transform: translate(calc(var(--u) * -116), calc(var(--u) * -88)) rotate(0deg) scale(1, 0.92);
+  transition-duration: 0.07s, 0.35s;
+  transition-timing-function: cubic-bezier(0.6, 0, 1, 0.6), ease;
+  filter: drop-shadow(calc(var(--u) * 1) calc(var(--u) * 2) calc(var(--u) * 3) rgba(58, 29, 18, 0.5));
+}
+.toolLift {
+  transform: translate(calc(var(--u) * 30), calc(var(--u) * -170)) rotate(26deg);
+  opacity: 0;
+  transition-duration: 0.6s, 0.5s;
+}
+
+/* ── boarding pass ── */
+.pass {
+  position: absolute;
+  left: 50%;
+  /* di tengah ruang antara paspor yang menepi dan petunjuk di bawah */
+  top: calc((var(--top) - var(--em) * 1.6 + var(--ph) * 0.5 + 100cqh - var(--em) * 4.8) / 2);
+  width: 22.6em;
+  z-index: 5;
+  display: flex;
+  translate: -50% -50%;
+  rotate: -1.5deg;
+  color: #2c2118;
+  perspective: 70em;
+  filter: drop-shadow(0 0.8em 0.9em rgba(58, 29, 18, 0.36));
+  transition:
+    top 0.7s cubic-bezier(0.3, 0.7, 0.2, 1),
+    translate 0.8s cubic-bezier(0.3, 0.7, 0.2, 1),
+    rotate 0.8s ease,
+    opacity 0.3s ease;
+  /* hanya keadaan awal yang dianimasikan, supaya opacity-nya tetap bisa diatur (mis. saat mini-game) */
+  animation: passIn 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.05) backwards;
+}
+@keyframes passIn {
+  from { opacity: 0; transform: translateY(-9em) scale(0.5) rotate(-7deg); }
+}
+/* setelah disobek: naik sedikit (menindih paspor) memberi tempat untuk kalimat & tombol di bawah */
+.passTorn {
+  top: calc((var(--top) - var(--em) * 6.4 + var(--ph) * 0.5 + 100cqh - var(--em) * 10.6) / 2);
+}
+/* dibalik: bagian utamanya ke tengah, ujung yang tersobek menghilang */
+.passFlip {
+  translate: calc(-50% + 3.35em) -50%;
+  rotate: 1.5deg;
+}
+.passCard {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  transform-style: preserve-3d;
+  transition: transform 0.9s cubic-bezier(0.45, 0.05, 0.2, 1);
+}
+.passFlip .passCard {
+  transform: rotateY(180deg);
+}
+.passMain,
+.passBack,
+.stub {
+  background-color: #fffaf0;
+  background-image: linear-gradient(rgba(255, 250, 240, 0.6), rgba(255, 250, 240, 0.6)), url('/art/tex-kertas.webp');
+  background-size: auto, 220px 220px;
+  background-blend-mode: normal, multiply;
+}
+.passMain,
+.passBack {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+.passMain {
+  height: 100%;
+  padding-bottom: 0.7em;
+  border-radius: 0.7em 0 0 0.7em;
+  overflow: hidden;
+  /* takik setengah lingkaran di garis sobek */
+  -webkit-mask-image: radial-gradient(circle at 100% 0, transparent 0.4em, #000 0.44em), radial-gradient(circle at 100% 100%, transparent 0.4em, #000 0.44em);
+  mask-image: radial-gradient(circle at 100% 0, transparent 0.4em, #000 0.44em), radial-gradient(circle at 100% 100%, transparent 0.4em, #000 0.44em);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+.passBand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6em;
+  padding: 0.46em 0.9em 0.5em;
+  color: #fff6e6;
+  background: #8c2a2f;
+}
+.passBand b {
+  font-size: 0.68em;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.passBand span {
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+  min-width: 0;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.14em;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+.passBand svg {
+  flex: none;
+  width: 0.8em;
+  fill: currentColor;
+}
+.route {
+  display: flex;
+  align-items: flex-start;
+  padding: 0.6em 0.9em 0.1em;
+}
+.port {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 6em;
+  line-height: 1;
+}
+.portTo {
+  text-align: right;
+}
+.port b {
+  display: block;
+  font-family: var(--font-serif, Georgia, serif);
+  font-variation-settings: 'SOFT' 100;
+  font-size: 1.95em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.port span {
+  display: block;
+  margin-top: 0.25em;
+  font-size: 0.62em;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1.15;
+  text-transform: uppercase;
+  color: #9a7038;
+  overflow-wrap: anywhere;
+}
+.fly {
+  position: relative;
+  flex: 1 0 1.5em;
+  margin: 0.98em 0.45em 0;
+  border-top: 0.12em dashed rgba(44, 33, 24, 0.4);
+}
+.fly svg {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 1.3em;
+  translate: -50% -55%;
+  rotate: 45deg;
+  fill: #8c2a2f;
+}
+.passGrid {
+  display: grid;
+  grid-template-columns: auto auto auto;
+  justify-content: space-between;
+  gap: 0.4em 1em;
+  margin: 0;
+  padding: 0.35em 0.9em 0;
+}
+.passGrid > div {
+  min-width: 0;
+}
+.passGrid dt,
+.stubLine em {
+  font-size: 0.54em;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #9a7038;
+}
+.passGrid dd {
+  margin: 0.08em 0 0;
+  font-size: 0.86em;
+  font-weight: 700;
+  line-height: 1.12;
+  white-space: nowrap;
+}
+.wide dd {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.seatNext {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 0.25em;
+  margin: 0.1em 0 0;
+  padding: 0 0.9em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.22em;
+  font-weight: 700;
+  line-height: 0.95;
+  text-align: right;
+  color: #2b3a67;
+  overflow-wrap: anywhere;
+  rotate: -1.5deg;
+}
+.seatNext.long {
+  font-size: 1.05em;
+}
+.seatNext svg {
+  flex: none;
+  width: 0.9em;
+  margin-bottom: 0.2em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.wide {
+  grid-column: 1 / -1;
+}
+.passGrid dd.dest {
+  font-family: var(--font-hand, cursive);
+  font-size: 1.42em;
+  font-weight: 700;
+  line-height: 1;
+  color: #8c2a2f;
+}
+.passGrid dd.dest.long {
+  font-size: 1.2em;
+}
+.passGrid dd.heart {
+  color: #8c2a2f;
+}
+/* sisi belakang: kertas polos dengan awal sebuah surat */
+.passBack {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.75em;
+  padding: 0.6em 1.5em 0.4em;
+  border-radius: 0.7em;
+  overflow: hidden;
+  transform: rotateY(180deg);
+}
+.passBack b {
+  font-family: var(--font-hand, cursive);
+  font-size: 2em;
+  font-weight: 700;
+  line-height: 1;
+  color: #3b2a22;
+  overflow-wrap: anywhere;
+}
+.passBack b.long {
+  font-size: 1.5em;
+}
+.passBack i {
+  display: block;
+  height: 0.1em;
+  border-radius: 99em;
+  background: rgba(59, 42, 34, 0.2);
+}
+.passBack i:last-of-type {
+  width: 62%;
+}
+/* tepi belang ala amplop pos udara */
+.airmail {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 0.42em;
+  background: repeating-linear-gradient(-55deg, #8c2a2f 0 0.7em, #fffaf0 0.7em 1.05em, #2b4c86 1.05em 1.75em, #fffaf0 1.75em 2.1em);
+  opacity: 0.85;
+}
+.backMark {
+  position: absolute;
+  right: 0.5em;
+  bottom: 0.1em;
+  width: 5.4em;
+  fill: rgba(140, 42, 47, 0.1);
+}
+/* ujung tiket yang disobek */
+.stub {
+  position: relative;
+  flex: none;
+  width: 6.7em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28em;
+  padding: 0.6em 0.55em 0.45em 0.7em;
+  border-left: 0.12em dashed rgba(44, 33, 24, 0.45);
+  border-radius: 0 0.7em 0.7em 0;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  transform-origin: 0 0;
+  /* --pull (0..1, tanpa satuan) diisi selagi ujungnya ditarik */
+  transform: translate(calc(var(--pull, 0) * 0.4em), calc(var(--pull, 0) * 0.5em)) rotate(calc(var(--pull, 0) * 5deg));
+  transition:
+    transform 0.75s cubic-bezier(0.3, 0.7, 0.3, 1),
+    opacity 0.3s ease;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-mask-image: radial-gradient(circle at 0 0, transparent 0.4em, #000 0.44em), radial-gradient(circle at 0 100%, transparent 0.4em, #000 0.44em);
+  mask-image: radial-gradient(circle at 0 0, transparent 0.4em, #000 0.44em), radial-gradient(circle at 0 100%, transparent 0.4em, #000 0.44em);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+.stub[data-drag] {
+  transition-duration: 0.06s, 0.3s;
+}
+.stub:disabled {
+  cursor: default;
+}
+.stubCode {
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 0.76em;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.stubCode i {
+  margin: 0 0.12em;
+  font-style: normal;
+  color: #8c2a2f;
+}
+.stubLine {
+  font-size: 0.72em;
+  font-weight: 700;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
+}
+.stubLine em {
+  display: block;
+  font-size: 0.75em;
+  font-style: normal;
+}
+.barcode {
+  flex: 1;
+  min-height: 1.5em;
+  margin-top: 0.15em;
+  background: repeating-linear-gradient(90deg, #2c2118 0 0.1em, transparent 0.1em 0.22em, #2c2118 0.22em 0.3em, transparent 0.3em 0.48em, #2c2118 0.48em 0.66em, transparent 0.66em 0.78em);
+  opacity: 0.85;
+}
+.tearHere {
+  font-size: 0.54em;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  text-align: center;
+  color: #8c2a2f;
+}
+.passTorn .passCard {
+  translate: -0.35em 0;
+  transition:
+    transform 0.9s cubic-bezier(0.45, 0.05, 0.2, 1),
+    translate 0.6s cubic-bezier(0.3, 0.7, 0.3, 1);
+}
+.passTorn .stub {
+  transform: translate(0.15em, 1.1em) rotate(8deg);
+}
+.passFlip .passCard {
+  translate: 0 0;
+}
+.passFlip .stub {
+  opacity: 0;
+}
+
+/* ── kaki: kalimat + tombol lanjut ── */
+.foot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1.9em;
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0 1.4em;
+  pointer-events: none;
+}
+.foot > * {
+  pointer-events: auto;
+}
+.line {
+  max-width: 19em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.36em;
+  font-weight: 600;
+  line-height: 1.12;
+  text-align: center;
+  text-wrap: balance;
+  /* cahaya krem di belakang tulisan, supaya tetap terbaca di atas mawar angin & bunga */
+  text-shadow:
+    0 0 0.35em #f1e3c6,
+    0 0 0.7em #f1e3c6,
+    0 0 1.1em #f1e3c6;
+  animation: up 0.6s 0.7s both;
+}
+.cta {
+  min-height: 3.1em;
+  padding: 0.85em 1.7em 0.9em;
+  border-radius: 99em;
+  font-size: 1em;
+  font-weight: 800;
+  color: #fff6e6;
+  background: linear-gradient(180deg, #a83a40 0%, #8c2a2f 55%, #731f26 100%);
+  box-shadow:
+    inset 0 0.07em 0 rgba(255, 255, 255, 0.3),
+    0 0.16em 0 #4d1118,
+    0 1em 1.8em -0.8em rgba(58, 29, 18, 0.8);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+  animation: up 0.55s 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.cta:active {
+  transform: translateY(0.08em) scale(0.98);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheen::after,
+  .holo,
+  .seal,
+  .seal svg,
+  .target,
+  .ink.gold::after {
+    animation: none;
+  }
+}
