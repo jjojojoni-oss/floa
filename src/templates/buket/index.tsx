@@ -38,7 +38,7 @@ const LAYOUTS: Record<number, Head[]> = {
   ],
 };
 
-const ART = ['bg-pagi', 'game-kumbang', 'buket-belakang', 'buket-daun', 'buket-depan', 'pita', 'buket-kupu', 'buket-label', 'buket-kartu', 'buket-gulungan', 'buket-gulungan-emas'];
+const ART = ['bg-pagi', 'game-lebah', 'buket-belakang', 'buket-daun', 'buket-depan', 'pita', 'buket-kupu', 'buket-label', 'buket-kartu', 'buket-gulungan', 'buket-gulungan-emas'];
 
 /**
  * tag     → label kado dibalik
