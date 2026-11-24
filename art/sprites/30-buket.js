@@ -76,7 +76,7 @@
   F.sprites['pita'] = { w: 300, h: 240, seed: 74, draw(svg, R) { bow(el('g', { transform: 'translate(150 84)' }, svg), R); } };
 
   /** Susunan kepala bunga (koordinat kanvas 600×720): [jenis, x, y, diameter] */
-  const HEADS = [['aster', 170, 266, 176], ['kenikir', 430, 266, 176], ['dahlia', 300, 180, 222], ['kamboja', 224, 392, 160], ['sepatu', 384, 392, 176]];
+  const HEADS = [['aster', 170, 266, 176], ['kenikir', 430, 266, 176], ['dahlia', 300, 180, 222], ['kamboja', 232, 362, 166], ['sepatu', 378, 362, 180]];
 
   // kartu katalog: buket utuh di atas langit pagi
   F.sprites['cover-buket'] = { w: 480, h: 600, seed: 75, draw(svg, R) {
