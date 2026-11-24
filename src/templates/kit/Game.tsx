@@ -29,7 +29,7 @@ export function MiniGame({
   onDone,
   children,
 }: {
-  /** judul game, mis. "Usir kumbang rakus!" */
+  /** judul game, mis. "Usir lebah rakus!" */
   title: string;
   /** cara main, satu kalimat */
   how: string;

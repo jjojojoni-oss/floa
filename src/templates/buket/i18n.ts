@@ -181,7 +181,7 @@ export const TEXT: Record<Locale, typeof id> = {
   },
 };
 
-/** Teks mini-game "Usir Kumbang Rakus" (lines: celetukan si kumbang setelah diusir ke-1…3). */
+/** Teks mini-game "Usir Lebah Rakus" (lines: celetukan si lebah setelah diusir ke-1…3). */
 export type GameText = {
   title: string;
   how: string;
@@ -194,21 +194,21 @@ export type GameText = {
 
 export const GAME_TEXT: Record<Locale, GameText> = {
   id: {
-    title: 'Usir kumbang rakus!',
-    how: 'Ada kumbang gendut ngemil buketmu. Ketuk dia biar pergi.',
-    winTitle: 'Kumbangnya ngambek, terus pergi.',
+    title: 'Usir lebah rakus!',
+    how: 'Ada lebah gendut ngemil buketmu. Ketuk dia biar pergi.',
+    winTitle: 'Lebahnya ngambek, terus pergi.',
     winLine: 'Buketnya utuh lagi. Semua kelopaknya buat kamu.',
     munch: 'nyam… nyam…',
-    beeLabel: 'Usir kumbangnya',
+    beeLabel: 'Usir lebahnya',
     lines: ['Eh! Cuma nyicip dikit kok…', 'Pelit amat sih… satu kelopak aja, boleh?', 'Hmph! Aku cari buket lain aja!'],
   },
   ms: {
-    title: 'Halau kumbang gelojoh!',
-    how: 'Ada kumbang gemuk sedang mengunyah jambanganmu. Ketik dia supaya pergi.',
-    winTitle: 'Kumbang tu merajuk, lalu pergi.',
+    title: 'Halau lebah gelojoh!',
+    how: 'Ada lebah gemuk sedang mengunyah jambanganmu. Ketik dia supaya pergi.',
+    winTitle: 'Lebah tu merajuk, lalu pergi.',
     winLine: 'Jambangan masih utuh. Semua kelopak untuk awak.',
     munch: 'nyam… nyam…',
-    beeLabel: 'Halau kumbang',
+    beeLabel: 'Halau lebah',
     lines: ['Eh! Rasa sikit je…', 'Kedekutnya… satu kelopak je, boleh?', 'Hmph! Aku cari jambangan lain!'],
   },
   en: {

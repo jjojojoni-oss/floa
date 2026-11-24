@@ -30,7 +30,7 @@ function useRelBox(target: RefObject<HTMLElement | null>, field: HTMLElement | n
   return box;
 }
 
-/** Wajah kumbang (digambar di atas lukisannya): makin diusir, makin cemberut. viewBox sama dengan sprite 240×200. */
+/** Wajah lebah (digambar di atas lukisannya): makin diusir, makin cemberut. viewBox sama dengan sprite 240×200. */
 function Face({ mood, munch }: { mood: number; munch: boolean }) {
   const ink = '#3a1d10';
   const eye = (x: number, y: number) => (
@@ -89,7 +89,7 @@ function Face({ mood, munch }: { mood: number; munch: boolean }) {
 }
 
 /**
- * Usir Kumbang Rakus: kumbang gendut hinggap di bunga buket untuk ngemil kelopak. Ia diam menunggu
+ * Usir Lebah Rakus: lebah gendut hinggap di bunga buket untuk ngemil kelopak. Ia diam menunggu
  * sampai diketuk (ketukan di mana saja di arena juga dihitung); tiap diusir ia pindah ke bunga lain
  * sambil makin cemberut, dan ketukan ketiga membuatnya ngambek lalu pergi.
  */
@@ -180,7 +180,7 @@ export function BeeGame({
         winLine={t.winLine}
         onDone={onDone}
       >
-        {/* ketukan di mana saja di arena juga mengusir si kumbang: tidak perlu tepat */}
+        {/* ketukan di mana saja di arena juga mengusir si lebah: tidak perlu tepat */}
         <div ref={setField} className={s.field} onClick={shoo}>
           {box ? (
             <>

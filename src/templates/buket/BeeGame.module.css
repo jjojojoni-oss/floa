@@ -31,7 +31,7 @@
   width: auto;
 }
 
-/* ── kumbang: titik (left, top) = tengah badannya ── */
+/* ── lebah: titik (left, top) = tengah badannya ── */
 .bee {
   position: absolute;
   z-index: 2;
@@ -159,7 +159,7 @@
   50% { transform: translateY(-0.25em) rotate(3deg); opacity: 1; }
 }
 
-/* celetukan si kumbang */
+/* celetukan si lebah */
 .bubble {
   position: absolute;
   left: 50%;
