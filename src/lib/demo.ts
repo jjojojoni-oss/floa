@@ -99,6 +99,11 @@ const DEMO: Record<string, DemoExtra> = {
     password: '777',
     hint: { id: 'Angka hoki, tiga kali', ms: 'Nombor bertuah, tiga kali', en: 'The lucky number, three times' },
   },
+  botol: {
+    song: { id: '1EJRWWuQokc0RgF7QCSipP', title: 'Bentang Jarak Asmara', artist: 'Man Osman & Traffic Jam' },
+    password: '1745',
+    hint: { id: 'Jam matahari terbenam (JJMM)', ms: 'Waktu matahari terbenam (JJMM)', en: 'Sunset time (HHMM)' },
+  },
 };
 
 export type DemoLock = { password: string; hint: string; shape: string | null };

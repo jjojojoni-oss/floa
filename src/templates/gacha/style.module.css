@@ -455,7 +455,8 @@
 .drawerFront::before {
   content: '';
   position: absolute;
-  inset: calc(var(--em) * -0.9) calc(var(--em) * -0.6);
+  /* area sentuh sengaja lebar ke atas (sampai corong) supaya lacinya gampang kena jari */
+  inset: calc(var(--em) * -3.4) calc(var(--em) * -0.6) calc(var(--em) * -1.4);
 }
 .drawerFront:disabled {
   cursor: default;

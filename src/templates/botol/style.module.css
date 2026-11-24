@@ -736,11 +736,12 @@
   width: 16.8em;
   height: 10.2em;
 }
+/* seluruh botol ikut jadi area sentuh: mengetuk badannya pun mencabut gabus */
 .hitCork {
-  left: 13.3em;
+  left: 2.4em;
   top: 31.2em;
-  width: 7em;
-  height: 6.6em;
+  width: 17.9em;
+  height: 10.4em;
   cursor: grab;
 }
 .hitTip {

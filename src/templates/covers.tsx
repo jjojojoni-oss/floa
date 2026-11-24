@@ -13,6 +13,7 @@ import Polaroid from './polaroid/Cover';
 import Scrapbook from './scrapbook/Cover';
 import Toga from './toga/Cover';
 import Paspor from './paspor/Cover';
+import Botol from './botol/Cover';
 import Gacha from './gacha/Cover';
 import Toples from './toples/Cover';
 import Vinyl from './vinyl/Cover';
@@ -36,4 +37,5 @@ export const COVERS: Record<string, ComponentType> = {
   bioskop: Bioskop,
   toples: Toples,
   gacha: Gacha,
+  botol: Botol,
 };
