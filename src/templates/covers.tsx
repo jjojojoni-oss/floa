@@ -16,6 +16,7 @@ import Paspor from './paspor/Cover';
 import Botol from './botol/Cover';
 import Gacha from './gacha/Cover';
 import Photobox from './photobox/Cover';
+import KotakMusik from './kotakmusik/Cover';
 import Toples from './toples/Cover';
 import Vinyl from './vinyl/Cover';
 
@@ -40,4 +41,5 @@ export const COVERS: Record<string, ComponentType> = {
   gacha: Gacha,
   botol: Botol,
   photobox: Photobox,
+  kotakmusik: KotakMusik,
 };

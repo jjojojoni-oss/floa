@@ -7,6 +7,7 @@ import { meta as bioskop } from './bioskop/meta';
 import { meta as botol } from './botol/meta';
 import { meta as buket } from './buket/meta';
 import { meta as gacha } from './gacha/meta';
+import { meta as kotakmusik } from './kotakmusik/meta';
 import { meta as lampion } from './lampion/meta';
 import { meta as lilin } from './lilin/meta';
 import { meta as mau } from './mau/meta';
@@ -21,7 +22,7 @@ import { meta as toples } from './toples/meta';
 import { meta as vinyl } from './vinyl/meta';
 
 /** Urutan di sini = urutan di katalog. Teks bawaannya Bahasa Indonesia; pakai localizeMeta untuk bahasa lain. */
-export const TEMPLATES: TemplateMeta[] = [buket, lilin, lampion, amplop, polaroid, mau, plester, toga, memories, bento, scrapbook, anniversary, vinyl, paspor, bioskop, toples, gacha, botol, photobox];
+export const TEMPLATES: TemplateMeta[] = [buket, lilin, lampion, amplop, polaroid, mau, plester, toga, memories, bento, scrapbook, anniversary, vinyl, paspor, bioskop, toples, gacha, botol, photobox, kotakmusik];
 
 const OCCASION_LABELS: Record<OccasionId, Record<Locale, string>> = {
   ultah: { id: 'Ulang tahun', ms: 'Hari jadi', en: 'Birthday' },

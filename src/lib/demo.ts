@@ -109,6 +109,11 @@ const DEMO: Record<string, DemoExtra> = {
     password: '321',
     hint: { id: 'Hitungan mundur sebelum jepret', ms: 'Kiraan sebelum gambar diambil', en: 'The countdown before the flash' },
   },
+  kotakmusik: {
+    song: { id: '5WWQGoY0FEB8NdhKiwpz2E', title: 'Selamat Ulang Tahun', artist: 'Jamrud' },
+    password: '0512',
+    hint: { id: 'Tanggal ulang tahun Bunda (DDMM)', ms: 'Tarikh hari jadi Umi (DDMM)', en: 'Mum’s birthday (DDMM)' },
+  },
 };
 
 export type DemoLock = { password: string; hint: string; shape: string | null };
