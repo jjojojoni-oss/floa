@@ -1,0 +1,191 @@
+/* Mini-game "Tangkap popcornnya!": kotak popcorn di depan deret kursi, butirnya loncat ke udara.
+   Arena transparan: layar bioskop (kartu Jeda) tetap terlihat di belakangnya. */
+.field {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.tub {
+  position: absolute;
+  left: 50%;
+  bottom: 3.6em;
+  width: 9.6em;
+  translate: -50% 0;
+  transform-origin: 50% 100%;
+  filter: drop-shadow(0 0.8em 0.9em rgba(0, 0, 0, 0.5));
+  animation: tubIn 0.6s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+.tubArt {
+  width: 100%;
+  height: auto;
+}
+.tubPop {
+  animation: tubPop 0.36s ease-out;
+}
+.tubCatch {
+  animation: tubCatch 0.5s 0.42s ease-out;
+}
+@keyframes tubIn {
+  from { opacity: 0; transform: translateY(3em); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes tubPop {
+  0% { transform: scale(1.08, 0.9); }
+  60% { transform: scale(0.96, 1.05); }
+  100% { transform: none; }
+}
+@keyframes tubCatch {
+  0% { transform: none; }
+  40% { transform: scale(1.07, 0.92); }
+  100% { transform: none; }
+}
+
+/* popcorn: berangkat dari mulut kotak, melayang di (--x, --y) */
+.kernel {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 6em;
+  margin: -2.7em 0 0 -3em;
+  z-index: 2;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+/* area sentuh lebih besar dari gambarnya */
+.kernel::before {
+  content: '';
+  position: absolute;
+  inset: -1.2em;
+}
+.kernel.in {
+  animation: jump 0.9s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+}
+.kernel.got {
+  animation: drop 0.82s cubic-bezier(0.5, 0, 0.8, 0.4) both;
+}
+@keyframes jump {
+  0% { left: 50%; top: calc(100% - 11.6em); transform: scale(0.3) rotate(-60deg); opacity: 0; }
+  20% { opacity: 1; }
+  70% { transform: scale(1.12) rotate(8deg); }
+  100% { left: var(--x); top: var(--y); transform: none; opacity: 1; }
+}
+@keyframes drop {
+  0% { transform: none; }
+  25% { transform: translateY(-1.2em) scale(1.1) rotate(-10deg); }
+  100% { left: 50%; top: calc(100% - 11em); transform: scale(0.35) rotate(40deg); opacity: 0.2; }
+}
+.bob {
+  position: relative;
+  display: block;
+  filter: drop-shadow(0 0.5em 0.5em rgba(0, 0, 0, 0.45));
+}
+.wait .bob {
+  animation: bob 1.5s ease-in-out infinite;
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-0.55em) rotate(4deg); }
+}
+.kernelArt {
+  width: 100%;
+  height: auto;
+}
+.face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+/* asap tipis di atas si gosong */
+.smoke {
+  position: absolute;
+  left: 50%;
+  top: -0.3em;
+}
+.smoke i {
+  position: absolute;
+  left: -0.5em;
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 50%;
+  background: rgba(255, 250, 240, 0.55);
+  animation: smoke 1.6s ease-out infinite;
+}
+.smoke i:last-child {
+  left: 0.4em;
+  animation-delay: 0.7s;
+}
+@keyframes smoke {
+  from { transform: translateY(0) scale(0.6); opacity: 0.7; }
+  to { transform: translateY(-1.6em) scale(1.5); opacity: 0; }
+}
+.excuse {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  margin-top: 0.3em;
+  translate: -50% 0;
+  padding: 0.3em 0.7em;
+  border-radius: 99em;
+  white-space: nowrap;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.15em;
+  font-weight: 600;
+  line-height: 1.1;
+  color: #fff3da;
+  background: rgba(30, 10, 12, 0.72);
+  animation: fadeUp 0.4s 0.3s both;
+}
+
+/* celetukan setelah tiap tangkapan: balon kata dari kotaknya, jadi tidak menutupi popcorn yang melayang */
+.bubble {
+  position: absolute;
+  left: 50%;
+  bottom: 12.1em;
+  z-index: 1;
+  width: max-content;
+  max-width: 14.6em;
+  translate: -50% 0;
+  padding: 0.55em 1em 0.6em;
+  border-radius: 1em;
+  text-align: center;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.36em;
+  font-weight: 600;
+  line-height: 1.12;
+  text-wrap: balance;
+  color: #3b2a22;
+  background: #fffaf0;
+  box-shadow: 0 0.5em 1.1em -0.4em rgba(0, 0, 0, 0.6);
+  animation: fadeUp 0.4s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+.bubble::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 0.9em;
+  height: 0.9em;
+  margin: -0.5em 0 0 -0.45em;
+  border-radius: 0.14em;
+  background: #fffaf0;
+  transform: rotate(45deg);
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(0.6em) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wait .bob {
+    animation: none;
+  }
+  .smoke {
+    display: none;
+  }
+}
