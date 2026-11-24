@@ -1,0 +1,959 @@
+/* Kotak Musik: kotak musik antik di meja rias saat senja. Latar lukisan (dinding + meja) dipasang Stage; di
+   atasnya ada "dunia" yang menempel persis pada lukisan itu: 1em di dalam .world = 32 satuan lukisan
+   (780 × 1500 satuan). Kotaknya berdiri di meja (tepi belakang meja di 29.5em), catatan mendarat di depannya. */
+.wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  /* dunia lukisan lebih lebar dari layar jangkung: dipotong tanpa menjadikan adegan ini bisa digulir ke samping */
+  overflow: clip;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  color: #3a2420;
+  /* satu satuan lukisan, mengikuti cara latar Stage menutup layar (cover, menempel di bawah) */
+  --u: max(calc(100cqw / 780), calc(100cqh / 1500));
+  /* 1em milik Stage dalam satuan kontainer + sisa tinggi di layar jangkung */
+  --em: min(calc(100cqw / 24.4), calc(100cqh / 42));
+  --extra: calc(100cqh - var(--em) * 42);
+}
+.wrap.ready {
+  opacity: 1;
+}
+.world {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 24.375em;
+  height: 46.875em;
+  margin-left: -12.1875em;
+  font-size: calc(var(--u) * 32);
+}
+/* dasar kotak / surat sudah menutupi semuanya: kotak di baliknya disembunyikan supaya animasinya tidak terus
+   berjalan dan tidak membayang di balik selubung */
+.down .world,
+.over .world {
+  visibility: hidden;
+  transition: visibility 0s 0.6s;
+}
+/* senja turun saat kotak terbuka: tepi layar meredup, bagian tengah (kotaknya) tetap terang */
+.dusk {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 78% 52% at 50% 46%, rgba(46, 16, 10, 0) 28%, rgba(46, 16, 10, 0.4) 100%),
+    linear-gradient(180deg, rgba(70, 28, 18, 0.06), rgba(70, 28, 18, 0.2));
+  opacity: 0;
+  transition: opacity 1.8s 0.3s ease;
+}
+.dim .dusk {
+  opacity: 1;
+}
+/* taplak renda + bayangan kotak (satuan lukisan yang sama dengan latar) */
+.lace {
+  position: absolute;
+  left: 0;
+  top: calc(996em / 32);
+  width: calc(780em / 32);
+  height: calc(184em / 32);
+  pointer-events: none;
+}
+.fill {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── kepala: untuk siapa + celetukan per langkah ── */
+.head {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(var(--em) * 1.7 + var(--extra) * 0.3);
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 3.4em;
+  text-align: center;
+  line-height: 1.1;
+  pointer-events: none;
+  animation: headIn 0.7s 0.2s both;
+}
+@keyframes headIn {
+  from { opacity: 0; transform: translateY(-0.6em); }
+  to { opacity: 1; transform: none; }
+}
+.eyebrow {
+  font-size: 0.62em;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #9a4a4a;
+}
+.name {
+  max-width: 100%;
+  margin-top: 0.06em;
+  font-family: var(--font-serif, Georgia, serif);
+  font-variation-settings: 'SOFT' 100;
+  font-size: 2em;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.08;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #4a221e;
+}
+.name.long {
+  font-size: 1.5em;
+}
+.name.xl {
+  font-size: 1.16em;
+}
+.say {
+  max-width: 15.5em;
+  margin-top: 0.12em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.3em;
+  font-weight: 600;
+  line-height: 1.05;
+  text-wrap: balance;
+  color: #6a3a30;
+  animation: sayIn 0.45s both;
+}
+@keyframes sayIn {
+  from { opacity: 0; transform: translateY(0.3em); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ── kotak: semua ukuran di sini dalam satuan lukisan (n em / 32) ── */
+.box {
+  position: absolute;
+  left: calc(102em / 32);
+  top: calc(366em / 32);
+  width: calc(576em / 32);
+  height: calc(716em / 32);
+  isolation: isolate;
+}
+/* tiap "krek" saat kunci diputar, seluruh kotak ikut bergetar sedikit (dua nama supaya animasinya mulai ulang) */
+.tickA {
+  animation: tickA 0.22s ease-out;
+}
+.tickB {
+  animation: tickB 0.22s ease-out;
+}
+@keyframes tickA {
+  30% { transform: translateY(-0.06em) rotate(-0.5deg); }
+}
+@keyframes tickB {
+  30% { transform: translateY(-0.06em) rotate(0.5deg); }
+}
+
+/* ── momen "wah": berkas cahaya keemasan dari dalam kotak, menyembur ke dinding saat tutup terbuka ── */
+.rays {
+  position: absolute;
+  z-index: 0;
+  left: calc(-262em / 32);
+  top: calc(-250em / 32);
+  width: calc(1100em / 32);
+  height: calc(600em / 32);
+  transform-origin: 50% 96%;
+  background:
+    radial-gradient(ellipse 46% 64% at 50% 96%, rgba(255, 244, 200, 0.95), rgba(255, 210, 120, 0.5) 40%, rgba(255, 200, 110, 0) 78%),
+    repeating-conic-gradient(from -90deg at 50% 96%, rgba(255, 214, 130, 0) 0deg 5deg, rgba(255, 226, 150, 0.75) 8.5deg, rgba(255, 214, 130, 0) 12deg 17deg);
+  -webkit-mask-image: radial-gradient(ellipse 50% 96% at 50% 96%, #000 22%, transparent 100%);
+  mask-image: radial-gradient(ellipse 50% 96% at 50% 96%, #000 22%, transparent 100%);
+  opacity: 0;
+  transform: scale(0.3, 0.12);
+  pointer-events: none;
+}
+.open .rays {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.5s 0.3s, transform 1.3s 0.3s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+.playing .rays {
+  animation: raysBreathe 3.4s 1.7s ease-in-out infinite;
+}
+@keyframes raysBreathe {
+  0%, 100% { opacity: 1; transform: none; }
+  50% { opacity: 0.72; transform: scale(1.05, 1.08); }
+}
+.open.asleep .rays {
+  opacity: 0.22;
+  transition: opacity 1.2s;
+}
+/* sinar hangat di atas mekanik: silinder & beludru tampak menyala dari dalam */
+.bloom {
+  position: absolute;
+  z-index: 3;
+  left: calc(20em / 32);
+  top: calc(262em / 32);
+  width: calc(536em / 32);
+  height: calc(180em / 32);
+  background: radial-gradient(closest-side, rgba(255, 238, 176, 0.8), rgba(255, 220, 140, 0.28) 55%, rgba(255, 220, 140, 0));
+  mix-blend-mode: screen;
+  opacity: 0;
+  pointer-events: none;
+}
+.open .bloom {
+  opacity: 0.5;
+  animation: bloomIn 1.8s 0.35s ease-out both;
+}
+@keyframes bloomIn {
+  0% { opacity: 0; }
+  22% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+.open.asleep .bloom {
+  opacity: 0.12;
+  animation: none;
+  transition: opacity 1.2s;
+}
+.body {
+  position: absolute;
+  left: 0;
+  top: calc(290em / 32);
+  width: calc(576em / 32);
+  height: calc(426em / 32);
+  z-index: 2;
+}
+
+/* tutup tertutup: engselnya di tepi belakang (atas lukisan) */
+.lidClosed {
+  position: absolute;
+  left: 0;
+  top: calc(290em / 32);
+  width: calc(576em / 32);
+  height: calc(170em / 32);
+  z-index: 8;
+  transform-origin: 50% 6%;
+  transform: scaleY(calc(1 - var(--lp, 0) * 0.3));
+  filter: drop-shadow(0 0.1em 0.12em rgba(40, 14, 8, 0.45));
+  pointer-events: none;
+}
+.open .lidClosed {
+  transform: scaleY(0.04);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.5, 0, 0.9, 0.5), opacity 0.08s 0.24s;
+}
+/* area sentuh langkah tutup: seluruh kotak (laci belum bisa dibuka), sedikit lebih tinggi dari tutupnya */
+.lidHit {
+  position: absolute;
+  left: 0;
+  top: calc(210em / 32);
+  width: calc(576em / 32);
+  height: calc(506em / 32);
+  z-index: 9;
+  cursor: grab;
+  touch-action: none;
+}
+/* tutup terbuka: engselnya di tepi bawah lukisan */
+.lidOpen {
+  position: absolute;
+  left: calc(38em / 32);
+  top: calc(4em / 32);
+  width: calc(500em / 32);
+  height: calc(310em / 32);
+  z-index: 1;
+  transform-origin: 50% 96.8%;
+  transform: scaleY(0.03);
+  opacity: 0;
+}
+.open .lidOpen {
+  transform: none;
+  opacity: 1;
+  transition: transform 0.6s 0.26s cubic-bezier(0.3, 1.35, 0.5, 1), opacity 0.1s 0.26s;
+}
+.mirror {
+  position: absolute;
+  left: calc(58em / 32);
+  top: calc(40em / 32);
+  width: calc(384em / 32);
+  height: calc(172em / 32);
+  box-sizing: border-box;
+  /* bangau kertas menjulang ke tepi bawah cermin: ukirannya duduk sedikit lebih tinggi */
+  padding: 0 calc(14em / 32) calc(34em / 32);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+/* ukiran di cermin: huruf yang digores, menyala hangat begitu kotak dibuka */
+.engraved {
+  max-width: 100%;
+  font-family: var(--font-serif, Georgia, serif);
+  font-variation-settings: 'SOFT' 100;
+  font-size: 1.36em;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1.12;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+  color: #7a2f3c;
+  text-shadow:
+    0 0.05em 0 rgba(255, 255, 255, 0.85),
+    0 -0.03em 0 rgba(90, 40, 30, 0.3);
+  opacity: 0;
+}
+.engraved.long {
+  font-size: 1.16em;
+}
+.engraved.xl {
+  font-size: 0.98em;
+}
+.open .engraved {
+  opacity: 1;
+  animation: engrave 1.6s 0.9s both, glow 3.2s 2.5s ease-in-out infinite;
+}
+@keyframes engrave {
+  0% { opacity: 0; filter: blur(0.2em); letter-spacing: 0.08em; }
+  100% { opacity: 1; filter: none; letter-spacing: 0; }
+}
+@keyframes glow {
+  0%, 100% { text-shadow: 0 0.05em 0 rgba(255, 255, 255, 0.85), 0 0 0.3em rgba(255, 226, 150, 0); }
+  50% { text-shadow: 0 0.05em 0 rgba(255, 255, 255, 0.85), 0 0 0.7em rgba(255, 214, 120, 0.95); }
+}
+
+/* silinder: pin-pin kecil yang bergulir */
+.pins {
+  position: absolute;
+  left: calc(82em / 32);
+  top: calc(332em / 32);
+  width: calc(218em / 32);
+  height: calc(44em / 32);
+  z-index: 3;
+  border-radius: 0.22em;
+  overflow: hidden;
+  opacity: 0;
+  background-image:
+    radial-gradient(circle at 38% 36%, #fffbe6 0 9%, #4a300b 11% 26%, transparent 29%),
+    radial-gradient(circle at 38% 36%, #fffbe6 0 8%, #4a300b 10% 22%, transparent 25%);
+  background-size: 0.74em 0.42em, 1.06em 0.63em;
+  background-position: 0.1em 0, 0.5em 0.2em;
+  animation: pins 1.5s linear infinite paused;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 22%, #000 74%, transparent);
+  mask-image: linear-gradient(180deg, transparent, #000 22%, #000 74%, transparent);
+}
+.open .pins {
+  opacity: 1;
+  transition: opacity 0.3s 0.5s;
+}
+.playing .pins {
+  animation-play-state: running;
+}
+@keyframes pins {
+  to { background-position: 0.1em 1.26em, 0.5em 1.46em; }
+}
+
+/* bangau kertas: berputar di atas per (kaki tangkainya tepat di per, 410,356 satuan lukisan) */
+.crane {
+  position: absolute;
+  left: calc(291em / 32);
+  top: calc(141em / 32);
+  width: calc(238em / 32);
+  height: calc(225em / 32);
+  z-index: 4;
+  pointer-events: none;
+  perspective: 22em;
+  transform-origin: 50% 96%;
+  transform: scale(0.1, 0);
+  opacity: 0;
+}
+.open .crane {
+  transform: none;
+  opacity: 1;
+  transition: transform 0.7s 0.7s cubic-bezier(0.3, 1.7, 0.5, 1), opacity 0.1s 0.7s;
+}
+.open.asleep .crane {
+  transform: rotate(9deg) scaleY(0.94);
+  transition: transform 0.9s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.craneSpin {
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 50%;
+  filter: drop-shadow(0.1em 0.2em 0.16em rgba(58, 29, 18, 0.4));
+  animation: spin 4.6s linear infinite paused;
+}
+.playing .craneSpin {
+  animation-play-state: running;
+}
+@keyframes spin {
+  to { transform: rotateY(360deg); }
+}
+
+/* not & kilau yang naik */
+.notes {
+  position: absolute;
+  left: calc(40em / 32);
+  top: 0;
+  width: calc(496em / 32);
+  height: calc(350em / 32);
+  z-index: 7;
+  pointer-events: none;
+  opacity: 0;
+}
+.open .notes {
+  opacity: 1;
+  transition: opacity 0.6s 0.9s;
+}
+.open.asleep .notes {
+  opacity: 0.35;
+  transition: opacity 0.8s;
+}
+.float {
+  position: absolute;
+  bottom: 0;
+  width: 1.9em;
+  margin-left: -0.95em;
+  opacity: 0;
+  animation: float var(--d) var(--delay) linear infinite paused;
+}
+.playing .float {
+  animation-play-state: running;
+}
+.asleep .float {
+  animation-play-state: paused;
+}
+.floatArt {
+  width: 100%;
+  height: auto;
+}
+.twinkle {
+  width: 62%;
+  margin: 0 auto;
+}
+/* --sway dan --rise tanpa satuan (dikali em di sini, di elemen yang sama) */
+@keyframes float {
+  0% { transform: translate(0, 0) scale(0.4) rotate(-10deg); opacity: 0; }
+  12% { opacity: 1; }
+  50% { transform: translate(calc(var(--sway) * 1em), calc(var(--rise) * -0.5em)) scale(1) rotate(8deg); opacity: 1; }
+  82% { opacity: 0.85; }
+  100% { transform: translate(calc(var(--sway) * -0.6em), calc(var(--rise) * -1em)) scale(0.86) rotate(-6deg); opacity: 0; }
+}
+
+/* ── laci kecil ── */
+.drawer {
+  position: absolute;
+  width: calc(200em / 32);
+  height: calc(108em / 32);
+  z-index: 5;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.drawer:disabled {
+  cursor: default;
+}
+.drawerArt {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.45s cubic-bezier(0.3, 1.5, 0.5, 1), filter 0.3s;
+}
+/* sisi atas laci yang berlapis beludru, terlihat setelah ditarik */
+.lining {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: 6%;
+  height: 24%;
+  border-radius: 0.1em 0.1em 0 0;
+  background: linear-gradient(180deg, #5c1a2c, #b5475a 70%, #d06a7c);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.slip {
+  position: absolute;
+  left: 22%;
+  top: -4%;
+  width: 46%;
+  height: 34%;
+  border-radius: 0.08em;
+  background: linear-gradient(180deg, #fffaf0, #f1e2c2);
+  box-shadow: 0 0.06em 0.12em rgba(40, 14, 8, 0.4);
+  transform: translateY(70%) rotate(-3deg);
+  opacity: 0;
+  transition: transform 0.4s 0.1s cubic-bezier(0.3, 1.5, 0.5, 1), opacity 0.2s;
+}
+.drawerOpen .drawerArt {
+  transform: translateY(15%) scale(1.07);
+  filter: drop-shadow(0 0.3em 0.24em rgba(40, 14, 8, 0.55));
+}
+.drawerOpen .lining {
+  opacity: 1;
+}
+.drawerOpen .slip {
+  transform: rotate(-3deg);
+  opacity: 1;
+}
+/* catatannya sedang di meja: tidak ada lagi yang mengintip dari laci */
+.drawerOpen.reading .slip {
+  transform: translateY(70%) rotate(-3deg);
+  opacity: 0;
+}
+/* kenop yang berkilau: laci ini masih ada isinya */
+.glint {
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  width: 1.5em;
+  height: 1.5em;
+  margin: -0.75em 0 0 -0.75em;
+  background: radial-gradient(closest-side, #fffdf0, rgba(255, 226, 150, 0.75) 45%, transparent);
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  opacity: 0;
+  pointer-events: none;
+}
+.live .glint {
+  animation: glint 2s ease-in-out infinite;
+}
+.live:nth-of-type(odd) .glint {
+  animation-delay: -1s;
+}
+@keyframes glint {
+  0%, 100% { opacity: 0; transform: scale(0.4) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.25) rotate(45deg); }
+}
+
+/* ── laci rahasia di bawah cermin ── */
+.secret {
+  position: absolute;
+  left: calc(92em / 32);
+  top: calc(236em / 32);
+  width: calc(392em / 32);
+  height: calc(62em / 32);
+  z-index: 3;
+  opacity: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.secret::before {
+  content: '';
+  position: absolute;
+  inset: -0.5em 0 -0.9em;
+}
+.secret:disabled {
+  cursor: default;
+}
+.open .secret {
+  opacity: 1;
+  transition: opacity 0.2s 0.7s;
+}
+.secretArt {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.55s cubic-bezier(0.3, 1.7, 0.5, 1), filter 0.3s;
+}
+.secretSlip {
+  position: absolute;
+  left: 30%;
+  top: 0;
+  width: 40%;
+  height: 60%;
+  border-radius: 0.08em;
+  background: linear-gradient(180deg, #fffaf0, #f6dfae);
+  box-shadow: 0 0.06em 0.12em rgba(40, 14, 8, 0.4);
+  opacity: 0;
+}
+.secretOut {
+  /* menyembul di depan mekanik, tapi tetap di belakang bangau kertas yang berdiri di atasnya */
+  z-index: 3;
+}
+.secretOut .secretArt {
+  transform: translateY(34%) scale(1.07);
+  filter: drop-shadow(0 0.34em 0.26em rgba(40, 14, 8, 0.55)) drop-shadow(0 0 0.5em rgba(255, 220, 130, 0.9));
+  animation: secretGlow 1.6s ease-in-out infinite;
+}
+@keyframes secretGlow {
+  0%, 100% { filter: drop-shadow(0 0.34em 0.26em rgba(40, 14, 8, 0.55)) drop-shadow(0 0 0.3em rgba(255, 220, 130, 0.5)); }
+  50% { filter: drop-shadow(0 0.34em 0.26em rgba(40, 14, 8, 0.55)) drop-shadow(0 0 0.8em rgba(255, 226, 150, 1)); }
+}
+.secretOpen .secretArt {
+  transform: translateY(62%) scale(1.1);
+  animation: none;
+}
+.secretOpen .secretSlip {
+  opacity: 1;
+  transform: translateY(12%) rotate(2deg);
+  transition: opacity 0.2s 0.2s;
+}
+
+/* ── penanda putaran + kunci di lubangnya ── */
+.ticks {
+  position: absolute;
+  left: calc(256em / 32);
+  top: calc(628em / 32);
+  z-index: 5;
+  pointer-events: none;
+}
+.ticks i {
+  position: absolute;
+  top: calc(-4em / 32);
+  width: calc(8em / 32);
+  height: calc(8em / 32);
+  margin-left: calc(-4em / 32);
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #fffdf2, #ffe09a 55%, #e0aa3e);
+  box-shadow: 0 0 0.3em 0.06em rgba(255, 214, 130, 0.9);
+  opacity: 0;
+  transform: scale(0.4);
+  transition: opacity 0.25s, transform 0.3s cubic-bezier(0.3, 1.8, 0.5, 1);
+}
+.ticks i:nth-child(2) { left: calc(16em / 32); }
+.ticks i:nth-child(3) { left: calc(32em / 32); }
+.ticks i:nth-child(4) { left: calc(48em / 32); }
+.ticks i:nth-child(5) { left: calc(64em / 32); }
+.ticks i.on {
+  opacity: 1;
+  transform: none;
+}
+.winder {
+  position: absolute;
+  left: calc(226em / 32);
+  top: calc(490em / 32);
+  width: calc(124em / 32);
+  height: calc(124em / 32);
+  z-index: 6;
+  opacity: 0;
+  transform: scale(1.7) translateY(1em);
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+/* area sentuh: seluruh kolom tengah dan sekitarnya */
+.winder::before {
+  content: '';
+  position: absolute;
+  inset: -1.5em -1.9em;
+  border-radius: 50%;
+}
+.winder.in {
+  opacity: 1;
+  transform: none;
+  transition: transform 0.5s 0.12s cubic-bezier(0.3, 1.5, 0.5, 1), opacity 0.2s 0.12s;
+}
+.winder.canWind {
+  cursor: grab;
+}
+.winderTurn {
+  display: block;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0.06em 0.16em 0.12em rgba(40, 14, 8, 0.6));
+}
+.winderTurn.snap {
+  transition: transform 0.26s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+.canWind .winderTurn::after {
+  content: '';
+  position: absolute;
+  inset: -12%;
+  border-radius: 50%;
+  border: 0.1em dashed rgba(255, 226, 150, 0.85);
+  animation: ringTurn 6s linear infinite;
+}
+@keyframes ringTurn {
+  to { transform: rotate(360deg); }
+}
+
+/* ── kunci rebah di meja ── */
+.key {
+  position: absolute;
+  left: 14.2em;
+  top: 35.5em;
+  width: 6.25em;
+  height: 3.44em;
+  z-index: 10;
+  cursor: grab;
+  touch-action: none;
+  filter: drop-shadow(0.12em 0.3em 0.2em rgba(58, 29, 18, 0.5));
+  transform: rotate(-8deg);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.3, 1), opacity 0.2s 0.3s;
+  animation: keyNudge 3.4s 1.6s ease-in-out infinite;
+  -webkit-tap-highlight-color: transparent;
+}
+.key::before {
+  content: '';
+  position: absolute;
+  inset: -0.9em -0.7em;
+}
+@keyframes keyNudge {
+  0%, 82%, 100% { transform: rotate(-8deg); }
+  86% { transform: rotate(-13deg) translateY(-0.12em); }
+  92% { transform: rotate(-5deg); }
+}
+.keyDrag {
+  transition: none;
+  animation: none;
+  cursor: grabbing;
+}
+/* terbang ke lubang kunci di muka kotak */
+.keyGone {
+  transform: translate(-5.1em, -8.5em) rotate(-96deg) scale(0.5);
+  opacity: 0;
+  animation: none;
+  pointer-events: none;
+}
+
+/* ── catatan dari laci: secarik kertas + pigura mungil di meja ── */
+.cardZone {
+  position: absolute;
+  left: 2.3em;
+  top: 34.5em;
+  width: 19.8em;
+  display: flex;
+  justify-content: center;
+  z-index: 11;
+  pointer-events: none;
+}
+.card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  max-width: 100%;
+  min-height: 4.6em;
+  padding: 0.6em 0.95em 0.7em 0.7em;
+  border-radius: 0.2em;
+  color: #3a2420;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 1.52em, rgba(181, 71, 90, 0.13) 1.52em 1.58em),
+    linear-gradient(170deg, #fffdf6, #f8ecd4);
+  box-shadow:
+    0 0.05em 0 rgba(255, 255, 255, 0.8) inset,
+    0.1em 0.5em 0.9em -0.2em rgba(58, 29, 18, 0.55);
+  transform: rotate(-1.4deg);
+  animation: cardIn 0.6s cubic-bezier(0.25, 1.3, 0.5, 1) both;
+}
+.cardPlain {
+  padding-left: 1.1em;
+}
+@keyframes cardIn {
+  0% { opacity: 0; transform: translateY(-5em) scale(0.3) rotate(9deg); }
+  100% { opacity: 1; transform: rotate(-1.4deg); }
+}
+.frame {
+  flex: none;
+  width: 4.3em;
+  height: 4.3em;
+  padding: 0.3em;
+  border-radius: 0.14em;
+  background: linear-gradient(135deg, #f1d58a, #c99a3e 38%, #fff4cc 52%, #a87a26 70%, #e9c66f);
+  box-shadow:
+    0 0 0 0.04em #6e4b14,
+    0.06em 0.18em 0.3em rgba(58, 29, 18, 0.5);
+  transform: rotate(-3deg);
+}
+.frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0.06em;
+  box-shadow: 0 0 0 0.04em rgba(74, 48, 11, 0.7);
+}
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 0.16em;
+  min-width: 0;
+}
+.cardTag {
+  font-size: 0.56em;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #b5475a;
+}
+.cardText {
+  font-family: var(--font-hand, cursive);
+  font-size: 1.5em;
+  font-weight: 600;
+  line-height: 1.04;
+  text-wrap: pretty;
+  overflow-wrap: anywhere;
+}
+.cardText.long {
+  font-size: 1.3em;
+}
+/* isi laci rahasia: kertas bertepi emas dengan kamboja terselip */
+.cardGold {
+  box-shadow:
+    0 0 0 0.09em #e2b85a inset,
+    0 0 0 0.16em #fffaf0 inset,
+    0 0 0 0.2em rgba(201, 154, 62, 0.6) inset,
+    0.1em 0.5em 0.9em -0.2em rgba(58, 29, 18, 0.55),
+    0 0 1.6em rgba(255, 220, 130, 0.6);
+  padding-right: 1.5em;
+}
+.cardFlower {
+  position: absolute;
+  right: -0.9em;
+  top: -1em;
+  width: 2.5em;
+  height: 2.5em;
+  transform: rotate(18deg);
+  filter: drop-shadow(0.06em 0.14em 0.14em rgba(58, 29, 18, 0.4));
+}
+
+/* ── dasar kotak dari atas ── */
+.under {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3.4em 1.2em 6.4em;
+  text-align: center;
+  color: #fff3e2;
+  background:
+    radial-gradient(70% 46% at 50% 52%, rgba(255, 214, 150, 0.22), rgba(255, 214, 150, 0)),
+    radial-gradient(120% 80% at 50% 45%, #5e2a22, #2a110d);
+  animation: underIn 0.6s both;
+}
+@keyframes underIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.underEyebrow {
+  font-size: 0.64em;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #f1d58a;
+}
+.underLine {
+  max-width: 14em;
+  min-height: 2.2em;
+  margin: 0.3em 0 0.7em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.5em;
+  font-weight: 600;
+  line-height: 1.08;
+  text-wrap: balance;
+  animation: sayIn 0.5s both;
+}
+.tray {
+  position: relative;
+  width: 21.4em;
+  aspect-ratio: 640 / 470;
+  filter: drop-shadow(0 1em 1.2em rgba(0, 0, 0, 0.5));
+  animation: trayIn 0.7s 0.1s cubic-bezier(0.2, 0.9, 0.3, 1.1) both;
+}
+@keyframes trayIn {
+  from { opacity: 0; transform: translateY(1.6em) scale(0.92); }
+  to { opacity: 1; transform: none; }
+}
+.velvet {
+  position: absolute;
+  left: 6.25%;
+  top: 8.51%;
+  width: 87.5%;
+  cursor: grab;
+  touch-action: none;
+  transform-origin: 50% 0;
+  transform: translateY(calc(var(--vp, 0) * -16%)) scaleY(calc(1 - var(--vp, 0) * 0.2));
+  -webkit-tap-highlight-color: transparent;
+}
+.velvetArt {
+  width: 100%;
+  height: auto;
+}
+.velvet.lifted {
+  transform: translateY(-118%) rotate(-7deg);
+  opacity: 0;
+  transition: transform 0.75s cubic-bezier(0.4, 0, 0.6, 1), opacity 0.3s 0.45s;
+  pointer-events: none;
+}
+
+/* ── tombol bawah ── */
+.foot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 1.5em;
+  z-index: 22;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 1.2em;
+  pointer-events: none;
+}
+.foot > * {
+  pointer-events: auto;
+}
+.cta {
+  min-height: 3em;
+  padding: 0.8em 1.5em 0.86em;
+  border-radius: 99em;
+  font-size: 0.96em;
+  font-weight: 800;
+  color: #fffaf2;
+  background: linear-gradient(180deg, #cf6477 0%, #b5475a 52%, #96354a 100%);
+  box-shadow:
+    inset 0 0.07em 0 rgba(255, 255, 255, 0.4),
+    inset 0 -0.12em 0 rgba(70, 16, 30, 0.3),
+    0 0.16em 0 #6e2236,
+    0 1em 1.8em -0.8em rgba(40, 14, 8, 0.8);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+  animation: rise 0.5s both;
+}
+.cta:active {
+  transform: translateY(0.08em) scale(0.98);
+}
+.ctaLate {
+  animation-delay: 1.6s;
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(0.8em); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .head,
+  .say,
+  .key,
+  .card,
+  .under,
+  .underLine,
+  .tray,
+  .cta,
+  .pins,
+  .tickA,
+  .tickB,
+  .rays,
+  .bloom,
+  .craneSpin,
+  .float,
+  .glint,
+  .secretOut .secretArt,
+  .canWind .winderTurn::after,
+  .open .engraved {
+    animation: none;
+  }
+  .float {
+    opacity: 0.9;
+    transform: translateY(calc(var(--rise) * -0.45em));
+  }
+  .live .glint {
+    opacity: 0.9;
+  }
+  .lidClosed,
+  .open .rays,
+  .open .lidOpen,
+  .open .crane,
+  .drawerArt,
+  .slip,
+  .secretArt,
+  .winder.in,
+  .winderTurn.snap,
+  .key,
+  .velvet.lifted {
+    transition-duration: 0.01s;
+    transition-delay: 0s;
+  }
+}

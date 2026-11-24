@@ -1,0 +1,154 @@
+/* Mini-game "Bangunin si Not!": not berwajah yang ketiduran di bantal beludru. */
+.field {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.art {
+  width: 100%;
+  height: auto;
+}
+.pillow {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  width: 13.4em;
+  translate: -50% 0;
+  filter: drop-shadow(0 0.9em 0.9em rgba(40, 14, 8, 0.45));
+  animation: pillowIn 0.6s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+@keyframes pillowIn {
+  from { opacity: 0; transform: translateY(2.4em); }
+  to { opacity: 1; transform: none; }
+}
+/* si Not: kepalanya rebah di bantal */
+.note {
+  position: absolute;
+  left: 50%;
+  top: 58%;
+  width: 9.6em;
+  margin: -7.5em 0 0 -4.4em;
+  z-index: 2;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  animation: pillowIn 0.6s 0.1s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+.note::before {
+  content: '';
+  position: absolute;
+  inset: -1.4em;
+}
+.bob {
+  position: relative;
+  display: block;
+  transform-origin: 46% 92%;
+}
+.sleep .bob {
+  animation: doze 2.6s ease-in-out infinite;
+}
+.jolt .bob {
+  animation: jolt 0.7s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+.awake .bob {
+  animation: jolt 0.7s cubic-bezier(0.3, 1.6, 0.5, 1) both, sing 1s 0.7s ease-in-out infinite;
+}
+@keyframes doze {
+  0%, 100% { transform: rotate(-13deg) scale(1.02, 0.97); }
+  50% { transform: rotate(-16deg) scale(0.98, 1.02); }
+}
+@keyframes jolt {
+  0% { transform: rotate(-14deg); }
+  35% { transform: translateY(-2.2em) rotate(6deg) scale(0.94, 1.1); }
+  70% { transform: translateY(0) rotate(-2deg) scale(1.08, 0.92); }
+  100% { transform: none; }
+}
+@keyframes sing {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: translateY(-0.4em) rotate(4deg); }
+}
+.face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.zzz {
+  position: absolute;
+  left: 78%;
+  top: 22%;
+}
+.zzz i {
+  position: absolute;
+  font-family: var(--font-hand, cursive);
+  font-style: normal;
+  font-weight: 700;
+  font-size: 1.5em;
+  color: #fffaf2;
+  text-shadow: 0 0.06em 0.2em rgba(40, 14, 8, 0.6);
+  opacity: 0;
+  animation: zzz 2.4s ease-out infinite;
+}
+.zzz i:nth-child(2) { animation-delay: 0.8s; }
+.zzz i:nth-child(3) { animation-delay: 1.6s; }
+@keyframes zzz {
+  0% { transform: translate(0, 0) scale(0.6); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translate(1.4em, -2.6em) scale(1.3) rotate(14deg); opacity: 0; }
+}
+/* celetukan si Not: balon kata di bawah bantal */
+.bubble {
+  position: absolute;
+  left: 50%;
+  top: calc(58% + 8.2em);
+  z-index: 3;
+  width: max-content;
+  max-width: 15em;
+  translate: -50% 0;
+  padding: 0.55em 1em 0.6em;
+  border-radius: 1em;
+  text-align: center;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.36em;
+  font-weight: 600;
+  line-height: 1.12;
+  text-wrap: balance;
+  color: #3a2420;
+  background: #fffaf2;
+  box-shadow: 0 0.5em 1.1em -0.4em rgba(40, 14, 8, 0.6);
+  animation: fadeUp 0.4s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+.bubble::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 0.9em;
+  height: 0.9em;
+  margin: 0 0 -0.5em -0.45em;
+  border-radius: 0.14em;
+  background: #fffaf2;
+  transform: rotate(45deg);
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(0.6em) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sleep .bob,
+  .awake .bob,
+  .jolt .bob,
+  .zzz i {
+    animation: none;
+  }
+  .sleep .bob {
+    transform: rotate(-13deg);
+  }
+  .zzz i:first-child {
+    opacity: 1;
+  }
+}
