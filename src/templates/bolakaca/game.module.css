@@ -1,0 +1,251 @@
+/* Mini-game "Usir awan iseng!": awan kecil berwajah yang menghujani rumah mungil di malam hari. */
+.field {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  /* langit malam di dalam bola, terang di atas supaya selubung judul game menyatu */
+  background:
+    radial-gradient(60% 34% at 50% 74%, rgba(255, 214, 150, 0.22), rgba(255, 214, 150, 0)),
+    linear-gradient(180deg, #cdd8ec 0%, #8e9ccc 22%, #4a5890 48%, #26305e 74%, #1b2348 100%);
+  animation: fieldIn 0.6s ease both;
+}
+@keyframes fieldIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+/* bintang kecil di langitnya */
+.field::before {
+  content: '';
+  position: absolute;
+  inset: 26% 0 30%;
+  background-image:
+    radial-gradient(circle, #fff 0 0.08em, transparent 0.12em),
+    radial-gradient(circle, #ffe9b0 0 0.06em, transparent 0.1em);
+  background-size: 5.3em 4.1em, 3.7em 5.9em;
+  background-position: 0.6em 0.4em, 2.1em 1.7em;
+  opacity: 0.7;
+  pointer-events: none;
+}
+.art {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.house {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 21em;
+  translate: -50% 0;
+  filter: drop-shadow(0 0.8em 0.8em rgba(6, 10, 30, 0.45));
+  /* tepi bawah gundukan melebur ke langit malam */
+  -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent 98%);
+  mask-image: linear-gradient(180deg, #000 70%, transparent 98%);
+  animation: rise 0.6s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(2em); }
+  to { opacity: 1; transform: none; }
+}
+/* jendela rumah yang menyala hangat (posisinya mengikuti lukisan rumah) */
+.lamp {
+  position: absolute;
+  left: 41.75%;
+  top: 46.7%;
+  width: 9%;
+  height: 10%;
+  border-radius: 0.1em;
+  background:
+    linear-gradient(90deg, transparent 46%, rgba(178, 185, 212, 0.9) 46% 54%, transparent 54%),
+    linear-gradient(180deg, transparent 44%, rgba(178, 185, 212, 0.9) 44% 56%, transparent 56%),
+    radial-gradient(closest-side, #fff6d8, #ffd98a);
+  box-shadow: 0 0 1.4em 0.5em rgba(255, 210, 130, 0.55);
+}
+/* hujan dari awan ke atap */
+.drops {
+  position: absolute;
+  left: 50%;
+  top: calc(30% + 4.4em);
+  width: 8em;
+  height: calc(20% - 2.6em);
+  margin-left: -6.1em;
+  opacity: 0;
+  background-image:
+    repeating-linear-gradient(104deg, transparent 0 0.55em, rgba(200, 226, 255, 0.85) 0.55em 0.62em, transparent 0.62em 1.2em),
+    repeating-linear-gradient(98deg, transparent 0 0.9em, rgba(220, 236, 255, 0.6) 0.9em 0.96em, transparent 0.96em 1.7em);
+  background-size: 2.4em 2.2em, 3em 2.6em;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 18%, #000 80%, transparent);
+  mask-image: linear-gradient(180deg, transparent, #000 18%, #000 80%, transparent);
+  transition: opacity 0.3s;
+}
+.drops.pour {
+  opacity: 1;
+  animation: pour 0.45s linear infinite;
+}
+@keyframes pour {
+  to { background-position: -0.5em 2.2em, -0.4em 2.6em; }
+}
+.cloud {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  width: 11em;
+  /* tepat di atas atap rumah (rumahnya sedikit di kiri lukisan) */
+  margin-left: -7.6em;
+  z-index: 2;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: translate 0.6s cubic-bezier(0.3, 1.3, 0.5, 1), rotate 0.6s, scale 0.6s, opacity 0.5s;
+  animation: rise 0.6s 0.15s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+.cloud::before {
+  content: '';
+  position: absolute;
+  inset: -1.2em;
+}
+.cloud.right {
+  translate: 6.2em -0.6em;
+  rotate: 6deg;
+}
+.cloud.left {
+  translate: -6.2em -0.6em;
+  rotate: -6deg;
+}
+.cloud.gone {
+  animation: away 1.5s 0.2s cubic-bezier(0.5, 0, 0.7, 0.4) both;
+  pointer-events: none;
+}
+@keyframes away {
+  from { transform: none; opacity: 1; }
+  70% { opacity: 1; }
+  to { transform: translate(10em, -12em) scale(0.55) rotate(14deg); opacity: 0; }
+}
+.bob {
+  position: relative;
+  display: block;
+}
+.bob.rain {
+  animation: hover 2.4s ease-in-out infinite;
+}
+.bob.shoo {
+  animation: jolt 0.6s cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+.bob.bye {
+  animation: jolt 0.6s cubic-bezier(0.3, 1.6, 0.5, 1) both, wave 0.8s 0.6s ease-in-out infinite;
+}
+@keyframes hover {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  50% { transform: translateY(-0.3em) scale(1.03, 0.97); }
+}
+@keyframes jolt {
+  0% { transform: none; }
+  35% { transform: translateY(-1.4em) scale(0.9, 1.12); }
+  70% { transform: translateY(0) scale(1.08, 0.92); }
+  100% { transform: none; }
+}
+@keyframes wave {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg) translateY(-0.3em); }
+}
+.face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+/* pelangi muncul begitu awannya pamit */
+.rainbow {
+  position: absolute;
+  left: 50%;
+  top: calc(50% - 7.6em);
+  width: 22em;
+  height: 11em;
+  margin-left: -11em;
+  border-radius: 11em 11em 0 0;
+  background: radial-gradient(
+    circle at 50% 100%,
+    transparent 0 55%,
+    rgba(196, 140, 230, 0.75) 55% 59%,
+    rgba(120, 170, 255, 0.75) 59% 63%,
+    rgba(130, 220, 170, 0.75) 63% 67%,
+    rgba(255, 232, 120, 0.8) 67% 71%,
+    rgba(255, 176, 110, 0.8) 71% 75%,
+    rgba(255, 128, 150, 0.8) 75% 79%,
+    transparent 79%
+  );
+  -webkit-mask-image: linear-gradient(180deg, #000 60%, transparent);
+  mask-image: linear-gradient(180deg, #000 60%, transparent);
+  opacity: 0;
+  transform: scale(0.6);
+  transform-origin: 50% 100%;
+  transition: opacity 0.8s 0.5s, transform 1s 0.5s cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+.rainbow.show {
+  opacity: 1;
+  transform: none;
+}
+/* celetukan si Awan: balon kata di atasnya */
+.bubble {
+  position: absolute;
+  left: 50%;
+  margin-left: -1em;
+  top: calc(30% - 4.4em);
+  z-index: 3;
+  width: max-content;
+  max-width: 15em;
+  translate: -50% 0;
+  padding: 0.5em 1em 0.55em;
+  border-radius: 1em;
+  text-align: center;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.36em;
+  font-weight: 600;
+  line-height: 1.1;
+  text-wrap: balance;
+  color: #22324a;
+  background: #fffaf2;
+  box-shadow: 0 0.5em 1.1em -0.4em rgba(10, 14, 40, 0.6);
+  animation: fadeUp 0.4s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+.bubble::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 0.8em;
+  height: 0.8em;
+  margin: -0.45em 0 0 -0.4em;
+  border-radius: 0.12em;
+  background: #fffaf2;
+  transform: rotate(45deg);
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(0.6em) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field,
+  .house,
+  .cloud,
+  .bob.rain,
+  .bob.shoo,
+  .bob.bye,
+  .drops.pour,
+  .bubble {
+    animation: none;
+  }
+  .cloud.gone {
+    animation: none;
+    opacity: 0;
+  }
+  .cloud,
+  .rainbow {
+    transition-duration: 0.01s;
+    transition-delay: 0s;
+  }
+}
