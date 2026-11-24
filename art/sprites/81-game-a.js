@@ -21,10 +21,11 @@
     });
   }
 
-  /* ───────── kumbang gendut (menghadap kiri), kanvas 240×200 ─────────
-     wajah (mata, alis, mulut) digambar di DOM pada area sekitar (66..110, 80..130) */
-  F.sprites['game-kumbang'] = { w: 240, h: 200, seed: 811, draw(svg, R) {
-    const g = el('g', {}, svg);
+  /* ───────── lebah gendut (menghadap kiri), kanvas 240×244 ─────────
+     Semua digambar di koordinat 240×200 lalu diturunkan 40 supaya ujung sayapnya tidak terpotong tepi atas.
+     wajah (mata, alis, mulut) digambar di DOM pada area sekitar (66..110, 80..130) koordinat yang sama */
+  F.sprites['game-kumbang'] = { w: 240, h: 244, seed: 811, draw(svg, R) {
+    const g = el('g', { transform: 'translate(0 40)' }, svg);
     // sayap belakang (di balik badan)
     const WING = { stops: [[0, '#cfe6f2'], [0.6, '#eef8ff'], [1, '#ffffff']], shade: '#9cc3d8', light: '#ffffff' };
     const wb = el('g', { opacity: 0.78 }, g);

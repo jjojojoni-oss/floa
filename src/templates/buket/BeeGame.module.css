@@ -35,8 +35,9 @@
 .bee {
   position: absolute;
   z-index: 2;
-  aspect-ratio: 240 / 200;
-  transform: translate(-50%, -50%);
+  aspect-ratio: 240 / 244;
+  /* kanvas lukisan punya ruang 40 di atas untuk sayap: digeser supaya badannya tetap di titik yang sama */
+  transform: translate(-50%, -57.4%);
   transition:
     left 0.9s cubic-bezier(0.45, 0, 0.3, 1),
     top 0.9s cubic-bezier(0.45, -0.6, 0.3, 1.2);
@@ -95,8 +96,8 @@
   animation: huff 1.6s cubic-bezier(0.5, 0, 0.6, 1) forwards;
 }
 @keyframes huff {
-  0% { transform: translate(-50%, -50%); }
-  18% { transform: translate(-50%, -62%) scale(1.08); }
+  0% { transform: translate(-50%, -57.4%); }
+  18% { transform: translate(-50%, -67.2%) scale(1.08); }
   100% { transform: translate(160%, -420%) scale(0.5) rotate(18deg); opacity: 0; }
 }
 .chew {

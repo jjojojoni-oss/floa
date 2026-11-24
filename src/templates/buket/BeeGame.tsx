@@ -30,7 +30,7 @@ function useRelBox(target: RefObject<HTMLElement | null>, field: HTMLElement | n
   return box;
 }
 
-/** Wajah lebah (digambar di atas lukisannya): makin diusir, makin cemberut. viewBox sama dengan sprite 240×200. */
+/** Wajah lebah (digambar di atas lukisannya): makin diusir, makin cemberut. Koordinatnya sama dengan lukisan lebah (digeser 40 ke bawah di kanvas 240×244). */
 function Face({ mood, munch }: { mood: number; munch: boolean }) {
   const ink = '#3a1d10';
   const eye = (x: number, y: number) => (
@@ -41,7 +41,7 @@ function Face({ mood, munch }: { mood: number; munch: boolean }) {
     </g>
   );
   return (
-    <svg className={s.face} viewBox="0 0 240 200" aria-hidden>
+    <svg className={s.face} viewBox="0 -40 240 244" aria-hidden>
       {mood === 0 ? (
         <>
           {/* nyam-nyam, mata tertutup bahagia */}
