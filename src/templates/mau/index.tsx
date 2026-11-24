@@ -5,6 +5,7 @@ import { Confetti, Finale, Hint, Petals, Sprite, Stage, TapCue, Typewriter, cx, 
 import type { TemplateProps } from '../types';
 import { HeartIcon, Pulse } from './art';
 import { drawDayCard } from './card';
+import { NyaliGame } from './Game';
 import { LOCALE_TAG, TEXT, useText } from './i18n';
 import { fmt, useLocale } from '@/i18n/client';
 import { meta } from './meta';
@@ -48,6 +49,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
   const [saving, setSaving] = useState(false);
   const [finale, setFinale] = useState(false);
   const [burst, setBurst] = useState(0);
+  /** mini-game "meteran nyali": antara tarik napas dan pertanyaannya */
+  const [game, setGame] = useState<'off' | 'on' | 'done'>('off');
   const wrap = useRef<HTMLDivElement>(null);
   const mauRef = useRef<HTMLButtonElement>(null);
   const noRef = useRef<HTMLButtonElement>(null);
@@ -87,6 +90,13 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     if (!typed && !skip) {
       setSkip(true);
       sfx.tap();
+      return;
+    }
+    if (step + 1 === qStep && game !== 'done') {
+      // sebelum bertanya, nyalinya dikumpulkan dulu
+      sfx.tap();
+      haptic(10);
+      setGame('on');
       return;
     }
     haptic(step + 1 >= breathStep ? 14 : 8);
@@ -164,6 +174,15 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     if (best) setPos({ x: ((best.x - w.left) / w.width) * 100, y: ((best.y - w.top) / w.height) * 100 });
   };
 
+  const afterGame = () => {
+    setGame('done');
+    sfx.chime();
+    haptic(14);
+    setStep(qStep);
+    setTyped(false);
+    setSkip(false);
+  };
+
   const sayYes = () => {
     if (yes) return;
     setYes(true);
@@ -215,12 +234,12 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       ref={wrap}
       className={cx(s.wrap, ready && s.ready)}
       style={{ ['--beat' as string]: `${(60 / bpm).toFixed(3)}s` } as CSSProperties}
-      onClick={story ? advance : undefined}
-      role={story ? 'button' : undefined}
-      tabIndex={story ? 0 : undefined}
-      aria-label={story ? t.next : undefined}
+      onClick={story && game !== 'on' ? advance : undefined}
+      role={story && game !== 'on' ? 'button' : undefined}
+      tabIndex={story && game !== 'on' ? 0 : undefined}
+      aria-label={story && game !== 'on' ? t.next : undefined}
       onKeyDown={
-        story
+        story && game !== 'on'
           ? (e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
@@ -419,10 +438,12 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       ) : null}
 
       {story && !breathing ? <Hint key={`hint${step}`}>{t.tapNext}</Hint> : null}
-      {breathing && typed ? <Hint key="ready">{t.ready}</Hint> : null}
+      {breathing && typed && game !== 'on' ? <Hint key="ready">{t.ready}</Hint> : null}
 
       {/* penunjuk sentuh kalau penerima diam: layar mana saja (cerita) → tombol Mau → tombol berikutnya */}
-      <TapCue target={wrap} show={story && (typed || skip)} delay={3400} at={{ x: 0.5, y: 0.78 }} />
+      <TapCue target={wrap} show={story && (typed || skip) && game !== 'on'} delay={3400} at={{ x: 0.5, y: 0.78 }} />
+
+      {game === 'on' ? <NyaliGame t={t.game} name={data.from.trim()} onDone={afterGame} /> : null}
       <TapCue target={mauRef} show={asking} delay={3200} />
       <TapCue target={ctaRef} show={(yes && !finale) || (day && !finale)} delay={3400} />
 
