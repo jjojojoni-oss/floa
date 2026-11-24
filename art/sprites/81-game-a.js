@@ -1,6 +1,6 @@
-/* Mini-game (Buket, Tiup Lilin, Lampion, Amplop): kumbang gendut, kaus kaki & sandal jepit dari balon,
+/* Mini-game (Buket, Tiup Lilin, Lampion, Amplop): lebah gendut, kaus kaki & sandal jepit dari balon,
    bintang jatuh, pesawat kecil, dan kucing oranye yang tidur di atas amplop (tidur & bangun, kanvas sama).
-   Wajah kumbang sengaja tidak dilukis: ekspresinya (senang → kesal → ngambek) digambar di DOM. */
+   Wajah lebah sengaja tidak dilukis: ekspresinya (senang → kesal → ngambek) digambar di DOM. */
 (() => {
   const F = window.FLOA;
   const { el, painted, petal, dabs, mix, jitter } = F;
@@ -24,7 +24,7 @@
   /* ───────── lebah gendut (menghadap kiri), kanvas 240×244 ─────────
      Semua digambar di koordinat 240×200 lalu diturunkan 40 supaya ujung sayapnya tidak terpotong tepi atas.
      wajah (mata, alis, mulut) digambar di DOM pada area sekitar (66..110, 80..130) koordinat yang sama */
-  F.sprites['game-kumbang'] = { w: 240, h: 244, seed: 811, draw(svg, R) {
+  F.sprites['game-lebah'] = { w: 240, h: 244, seed: 811, draw(svg, R) {
     const g = el('g', { transform: 'translate(0 40)' }, svg);
     // sayap belakang (di balik badan)
     const WING = { stops: [[0, '#cfe6f2'], [0.6, '#eef8ff'], [1, '#ffffff']], shade: '#9cc3d8', light: '#ffffff' };
