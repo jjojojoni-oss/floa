@@ -19,6 +19,7 @@ import Photobox from './photobox/Cover';
 import KotakMusik from './kotakmusik/Cover';
 import Pintu from './pintu/Cover';
 import Mesintik from './mesintik/Cover';
+import Petaharta from './petaharta/Cover';
 import Toples from './toples/Cover';
 import Vinyl from './vinyl/Cover';
 
@@ -46,4 +47,5 @@ export const COVERS: Record<string, ComponentType> = {
   kotakmusik: KotakMusik,
   pintu: Pintu,
   mesintik: Mesintik,
+  petaharta: Petaharta,
 };

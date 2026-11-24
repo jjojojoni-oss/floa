@@ -124,6 +124,11 @@ const DEMO: Record<string, DemoExtra> = {
     password: '0214',
     hint: { id: 'Jam waktu aku mulai ngetik (JJMM)', ms: 'Waktu aku mula menaip (JJMM)', en: 'When I started typing (HHMM)' },
   },
+  petaharta: {
+    song: { id: '6WUqv9T3RPTHHNKw0zVJuM', title: 'Sahabat Sejati', artist: 'Sheila On 7' },
+    password: { id: 'harta', ms: 'harta', en: 'treasure' },
+    hint: { id: 'Yang dicari di ujung peta', ms: 'Yang dicari di hujung peta', en: 'What waits at the end of the map' },
+  },
 };
 
 export type DemoLock = { password: string; hint: string; shape: string | null };
