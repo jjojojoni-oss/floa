@@ -1,0 +1,203 @@
+/* Mini-game "Masukkan draf bandel!": arena transparan di atas meja; si bola kertas meloncat dari keranjang yang sama.
+   .world meniru dunia lukisan di style.module.css (1em = 32 satuan lukisan), jadi posisinya persis sama. */
+.field {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.world {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 24.375em;
+  height: 46.875em;
+  margin-left: -12.1875em;
+  font-size: calc(var(--u) * 32);
+  pointer-events: none;
+}
+
+/* bola kertas: lukisan + wajah (pusat bola di 110,98 dari kanvas 220×210) */
+.ball {
+  position: relative;
+  display: block;
+  width: 6em;
+  height: 5.727em;
+}
+.ballArt {
+  width: 100%;
+  height: 100%;
+}
+.face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.runner {
+  position: absolute;
+  left: calc(var(--x) * 1em);
+  top: calc(var(--y) * 1em);
+  width: 6em;
+  height: 5.727em;
+  margin: -2.673em 0 0 -3em;
+  z-index: 2;
+  cursor: pointer;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+}
+/* area sentuh lebih besar dari bolanya */
+.runner::before {
+  content: '';
+  position: absolute;
+  inset: -1.1em;
+}
+.arc,
+.bob {
+  display: block;
+  filter: drop-shadow(0 0.5em 0.45em rgba(10, 6, 4, 0.5));
+}
+.in .arc {
+  animation: hopX 0.82s linear both;
+}
+.in .bob {
+  animation: hopY 0.82s both;
+}
+@keyframes hopX {
+  from { transform: translateX(calc(var(--dx) * 1em)); }
+  to { transform: none; }
+}
+@keyframes hopY {
+  0% { transform: translateY(calc(var(--dy) * 1em)) scale(0.4) rotate(-120deg); animation-timing-function: cubic-bezier(0.2, 0.75, 0.4, 1); }
+  58% { transform: translateY(-2.2em) scale(1.06) rotate(12deg); animation-timing-function: cubic-bezier(0.5, 0, 0.6, 1); }
+  82% { transform: translateY(0.2em) scale(1.08, 0.9); }
+  100% { transform: none; }
+}
+.wait .bob {
+  animation: float 1.5s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-0.5em) rotate(5deg); }
+}
+.got .arc {
+  animation: backX 0.6s linear forwards;
+}
+.got .bob {
+  animation: backY 0.6s forwards;
+}
+@keyframes backX {
+  0%, 25% { transform: none; }
+  to { transform: translateX(calc(var(--dx) * 1em)); }
+}
+@keyframes backY {
+  0% { transform: none; animation-timing-function: ease-out; }
+  25% { transform: translateY(-1.4em) scale(1.08) rotate(-16deg); animation-timing-function: cubic-bezier(0.5, 0, 0.8, 0.5); }
+  100% { transform: translateY(calc(var(--dy) * 1em)) scale(0.35) rotate(160deg); opacity: 0; }
+}
+
+/* titik jangkar di mulut keranjang (ukuran huruf dunia); isinya boleh berukuran huruf sendiri */
+.anchor {
+  position: absolute;
+  left: calc(var(--x) * 1em);
+  top: calc(var(--y) * 1em);
+  z-index: 3;
+  width: 0;
+  height: 0;
+}
+/* celetukan si bola: balon kata yang menunjuk ke keranjang */
+.bubble {
+  position: absolute;
+  right: -1.3em;
+  bottom: 1.3em;
+  width: max-content;
+  max-width: 9.2em;
+  padding: 0.4em 0.8em 0.45em;
+  border-radius: 0.8em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.3em;
+  font-weight: 600;
+  line-height: 1.05;
+  text-align: center;
+  text-wrap: balance;
+  color: #33241c;
+  background: #fffaf0;
+  box-shadow: 0 0.4em 0.9em -0.3em rgba(0, 0, 0, 0.6);
+  animation: bubbleIn 0.4s cubic-bezier(0.3, 1.4, 0.5, 1) both;
+}
+.bubble::after {
+  content: '';
+  position: absolute;
+  right: 1em;
+  top: 100%;
+  width: 0.7em;
+  height: 0.7em;
+  margin-top: -0.4em;
+  border-radius: 0.1em;
+  background: #fffaf0;
+  transform: rotate(45deg);
+}
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(0.5em) scale(0.92); }
+  to { opacity: 1; transform: none; }
+}
+
+/* si bola akhirnya tidur di keranjang */
+.zzz {
+  position: absolute;
+  left: 0;
+  top: -0.6em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.5em;
+  font-weight: 700;
+  color: #fff3da;
+  text-shadow: 0 0.06em 0.3em rgba(0, 0, 0, 0.6);
+}
+.zzz i {
+  position: absolute;
+  left: 0;
+  top: -0.6em;
+  font-style: normal;
+  opacity: 0;
+  animation: zzz 2.4s ease-out infinite;
+}
+.zzz i:nth-child(2) {
+  animation-delay: 0.8s;
+  font-size: 0.8em;
+}
+.zzz i:nth-child(3) {
+  animation-delay: 1.6s;
+  font-size: 0.64em;
+}
+@keyframes zzz {
+  0% { opacity: 0; transform: translate(0, 0) rotate(-10deg); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(1.2em, -2.4em) rotate(10deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .in .arc,
+  .in .bob,
+  .wait .bob,
+  .bubble {
+    animation: none;
+  }
+  .got .arc,
+  .got .bob {
+    animation-duration: 0.12s;
+  }
+  .zzz i {
+    animation: none;
+    opacity: 0.8;
+  }
+  .zzz i:nth-child(2) {
+    transform: translate(0.6em, -1.1em);
+  }
+  .zzz i:nth-child(3) {
+    transform: translate(1.1em, -2em);
+  }
+}
