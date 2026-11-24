@@ -5,12 +5,13 @@ import { fmt } from '@/i18n/fmt';
 import { Confetti, cx, haptic, sfx, useKitText } from './index';
 import s from './Game.module.css';
 
-type Phase = 'intro' | 'play' | 'win';
+type Phase = 'play' | 'win';
 
 /**
- * Bingkai mini-game yang sama untuk semua template:
- * kartu pembuka ("main dulu, yuk" + aturan satu baris) → arena main dengan skor kecil di atas →
- * kartu menang dengan konfeti → `onDone`. Selalu bisa dilewati, tidak ada kalah.
+ * Bingkai interaksi kecil (mini-game) yang sama untuk semua template, dibuat ringan:
+ * arena langsung aktif dengan judul + satu baris cara main di atas (baris cara main hilang setelah
+ * sentuhan pertama) → kartu kecil berkonfeti dengan celetukan → `onDone`. Selalu bisa dilewati,
+ * tidak ada kalah.
  *
  * Template mengurus isi arenanya sendiri (`children`, dirender di kotak `position:absolute; inset:0`
  * dengan container-type size, jadi boleh pakai cqw/cqh) dan memberi tahu `won` saat game selesai.
@@ -32,7 +33,7 @@ export function MiniGame({
   title: string;
   /** cara main, satu kalimat */
   how: string;
-  /** gambar kecil di kartu pembuka */
+  /** (tidak dipakai lagi; dibiarkan supaya pemanggil lama tetap jalan) */
   art?: ReactNode;
   /** target skor untuk penghitung (opsional) */
   goal?: number;
@@ -48,7 +49,8 @@ export function MiniGame({
   children: ReactNode | ((playing: boolean) => ReactNode);
 }) {
   const k = useKitText();
-  const [phase, setPhase] = useState<Phase>('intro');
+  const [phase, setPhase] = useState<Phase>('play');
+  const [touched, setTouched] = useState(false);
   const [burst, setBurst] = useState(0);
   const left = useRef(false);
   const nextRef = useRef<HTMLButtonElement>(null);
@@ -77,48 +79,36 @@ export function MiniGame({
     onDone();
   };
 
-  const start = () => {
-    sfx.tap();
-    haptic(8);
-    setPhase('play');
+  // langsung main; onStart dipanggil sekali saat arena muncul
+  const started = useRef(false);
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
     onStart?.();
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const playing = phase === 'play';
   const field = typeof children === 'function' ? children(playing) : children;
 
   return (
-    <div className={cx(s.game, s[phase])} role="group" aria-label={title}>
-      {phase !== 'intro' ? <div className={s.field}>{field}</div> : null}
-
-      {phase === 'intro' ? (
-        <div className={s.introWrap}>
-          <div className={s.card} role="dialog" aria-label={title}>
-            <span className={s.eyebrow}>{k.gameEyebrow}</span>
-            {art ? <div className={s.art}>{art}</div> : null}
-            <h2 className={s.title}>{title}</h2>
-            <p className={s.how}>{how}</p>
-            <button type="button" className={s.play} onClick={start} autoFocus>
-              {k.gamePlay}
-            </button>
-            <button type="button" className={s.skip} onClick={finish}>
-              {k.gameSkip}
-            </button>
-          </div>
-        </div>
-      ) : null}
+    <div className={cx(s.game, s[phase])} role="group" aria-label={title} onPointerDownCapture={() => !touched && setTouched(true)}>
+      <div className={s.field}>{field}</div>
 
       {phase === 'play' ? (
         <>
           <div className={s.hud}>
-            <span className={s.hudTitle}>{title}</span>
-            {goal ? (
-              <span className={s.pips} role="status" aria-label={fmt(k.gameScore, { n: Math.min(score, goal), goal })}>
-                {Array.from({ length: goal }, (_, i) => (
-                  <i key={i} className={cx(i < score && s.on)} />
-                ))}
-              </span>
-            ) : null}
+            <div className={s.hudRow}>
+              <span className={s.hudTitle}>{title}</span>
+              {goal ? (
+                <span className={s.pips} role="status" aria-label={fmt(k.gameScore, { n: Math.min(score, goal), goal })}>
+                  {Array.from({ length: goal }, (_, i) => (
+                    <i key={i} className={cx(i < score && s.on)} />
+                  ))}
+                </span>
+              ) : null}
+            </div>
+            <p className={cx(s.hudHow, (touched || score > 0) && s.gone)}>{how}</p>
           </div>
           <button type="button" className={s.skipCorner} onClick={finish}>
             {k.gameSkip}
