@@ -24,6 +24,17 @@ const id = {
   hintTurn: 'Geser atau ketuk untuk balik halaman',
   hintLetter: 'Ketuk suratnya',
   finale: 'Surat dari halaman terakhir',
+  game: {
+    title: 'Cari hati yang ngumpet',
+    how: 'Ada 3 hati kecil kugambar di halaman ini. Ketuk aja kalau kelihatan.',
+    start: 'Ada 3 hati kecil di sini. Ketuk yang kamu lihat.',
+    found: ['Ketemu satu! Gampang, kan?', 'Dua! Matamu jeli juga.', 'Tiga! Lengkap.'],
+    decoys: { stroberi: 'Eh, itu stroberi. Mirip, sih.', persik: 'Itu buah persik. Bentuknya agak… hati, ya?', tutup: 'Tutup botol. Kok bisa nyelip di sini?' },
+    decoyLabels: { stroberi: 'Stroberi', persik: 'Buah persik', tutup: 'Tutup botol' },
+    heart: 'Hati kecil yang digambar pena',
+    winTitle: 'Ketemu semua!',
+    winLine: 'Padahal aku ngumpetinnya serius, lho.',
+  },
 };
 
 export const TEXT: Record<Locale, typeof id> = {
@@ -51,6 +62,17 @@ export const TEXT: Record<Locale, typeof id> = {
     hintTurn: 'Leret atau ketuk untuk selak halaman',
     hintLetter: 'Ketuk suratnya',
     finale: 'Surat dari halaman terakhir',
+    game: {
+      title: 'Cari hati yang tersorok',
+      how: 'Ada 3 hati kecil saya lukis di halaman ini. Ketuk saja kalau nampak.',
+      start: 'Ada 3 hati kecil di sini. Ketuk yang awak nampak.',
+      found: ['Jumpa satu! Senang, kan?', 'Dua! Mata awak tajam juga.', 'Tiga! Lengkap.'],
+      decoys: { stroberi: 'Eh, itu strawberi. Mirip, sih.', persik: 'Itu buah pic. Bentuknya agak… hati, kan?', tutup: 'Penutup botol. Macam mana boleh terselit di sini?' },
+      decoyLabels: { stroberi: 'Strawberi', persik: 'Buah pic', tutup: 'Penutup botol' },
+      heart: 'Hati kecil yang dilukis dengan pen',
+      winTitle: 'Jumpa semua!',
+      winLine: 'Padahal saya sorokkannya bersungguh-sungguh, tau.',
+    },
   },
   en: {
     you: 'you',
@@ -75,5 +97,16 @@ export const TEXT: Record<Locale, typeof id> = {
     hintTurn: 'Swipe or tap to turn the page',
     hintLetter: 'Tap the letter',
     finale: 'The letter from the last page',
+    game: {
+      title: 'Find the hidden hearts',
+      how: 'I doodled 3 little hearts on this page. Tap them when you spot them.',
+      start: 'There are 3 little hearts here. Tap the ones you see.',
+      found: ['One! Easy, right?', 'Two! Sharp eyes.', 'Three! All found.'],
+      decoys: { stroberi: "Oops, that's a strawberry. Close, though.", persik: "That's a peach. It is kind of… heart-shaped?", tutup: 'A bottle cap. How did that get in here?' },
+      decoyLabels: { stroberi: 'Strawberry', persik: 'Peach', tutup: 'Bottle cap' },
+      heart: 'A little heart drawn in pen',
+      winTitle: 'Found them all!',
+      winLine: 'And I hid them really seriously, you know.',
+    },
   },
 };

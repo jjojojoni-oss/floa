@@ -1,0 +1,245 @@
+/* Mini-game "Hentikan kalendernya!": selembar kalender berputar + maskot hati di atasnya. */
+.arena {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3.4em 1.2em 3.4em;
+  /* latar sendiri supaya kalender di dinding tidak ikut kelihatan */
+  background: radial-gradient(ellipse at 50% 38%, rgba(255, 247, 230, 0.94), rgba(244, 224, 192, 0.97));
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: fadeIn 0.4s ease both;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.goal {
+  flex: none;
+  padding: 0.45em 1em 0.5em;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.3em;
+  font-weight: 700;
+  color: #3b2a22;
+  background: #ffe9a6;
+  box-shadow: 0 0.3em 0.7em -0.3em rgba(60, 30, 20, 0.45);
+  rotate: -2deg;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* kalender: seluruh lembar juga tombol stop */
+.cal {
+  position: relative;
+  flex: none;
+  margin-top: 3.4em;
+  width: 12.6em;
+  height: 13em;
+  perspective: 40em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.cal:disabled {
+  cursor: default;
+}
+.sheet {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 0.4em;
+  overflow: hidden;
+  color: #2f1a13;
+  background-color: #fbf5e6;
+  background-image: linear-gradient(rgba(251, 245, 230, 0.6), rgba(251, 245, 230, 0.6)), url('/art/tex-kertas.webp');
+  background-size: auto, 200px 200px;
+  background-blend-mode: normal, multiply;
+  box-shadow: 0 0.1em 0.2em rgba(60, 30, 20, 0.15), 0 1.4em 2.4em -1.2em rgba(40, 20, 10, 0.6);
+  transform-origin: 50% 0;
+}
+.flip {
+  animation: flip 0.14s ease-out;
+}
+@keyframes flip {
+  from { transform: rotateX(-55deg); opacity: 0.6; }
+  to { transform: none; opacity: 1; }
+}
+.band {
+  flex: none;
+  width: 100%;
+  margin-top: 0.6em;
+  height: 2em;
+  padding: 0 0.9em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(#cf3f33, #b92c23);
+  box-shadow: 0 0.12em 0 #e8c268;
+  color: #fff3da;
+}
+.band b {
+  font-size: 0.86em;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.band i {
+  font-family: var(--font-serif, Georgia, serif);
+  font-style: normal;
+  font-weight: 700;
+}
+.num {
+  margin-top: 0.12em;
+  font-family: var(--font-serif, Georgia, serif);
+  font-size: 7.2em;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: lining-nums;
+}
+.sunday {
+  color: #c8372d;
+}
+.dow {
+  font-size: 0.86em;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+.circle {
+  position: absolute;
+  left: 12%;
+  top: 24%;
+  width: 76%;
+  height: 58%;
+  overflow: visible;
+  pointer-events: none;
+}
+.circle path {
+  fill: none;
+  stroke: #c8372d;
+  stroke-width: 7;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 0.7s ease-out 0.15s forwards;
+  vector-effect: non-scaling-stroke;
+}
+@keyframes draw {
+  to { stroke-dashoffset: 0; }
+}
+.miss .sheet {
+  animation: shake 0.45s ease;
+}
+@keyframes shake {
+  25% { transform: translateX(-0.4em) rotate(-2deg); }
+  50% { transform: translateX(0.4em) rotate(2deg); }
+  75% { transform: translateX(-0.2em); }
+}
+.hit .sheet {
+  animation: land 0.6s cubic-bezier(0.34, 1.6, 0.64, 1);
+}
+@keyframes land {
+  40% { transform: scale(1.08); }
+}
+
+/* maskot hati duduk di atas kalender */
+.buddy {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: -3.3em;
+  width: 4.4em;
+  translate: -50% 0;
+  pointer-events: none;
+  animation: wobble 0.5s ease-in-out infinite;
+}
+.buddyArt {
+  width: 100%;
+  height: auto;
+  max-width: none;
+}
+@keyframes wobble {
+  0%, 100% { rotate: -6deg; }
+  50% { rotate: 6deg; }
+}
+.miss .buddy {
+  animation: none;
+}
+.happy {
+  animation: hop 0.9s cubic-bezier(0.34, 1.6, 0.64, 1) infinite;
+}
+@keyframes hop {
+  0%, 100% { transform: translateY(0) scale(1); }
+  40% { transform: translateY(-1em) scale(1.1); }
+}
+
+.line {
+  flex: none;
+  margin-top: 1em;
+  width: min(20em, 100%);
+  padding: 0.55em 1em;
+  border-radius: 1em;
+  text-align: center;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.12em;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #fff6e4;
+  background: rgba(58, 29, 18, 0.8);
+  pointer-events: none;
+  animation: lineIn 0.45s cubic-bezier(0.34, 1.5, 0.64, 1) both;
+}
+@keyframes lineIn {
+  from { opacity: 0; transform: translateY(0.6em) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+/* tombol stop besar */
+.stop {
+  position: absolute;
+  left: 50%;
+  bottom: 3.4em;
+  translate: -50% 0;
+  min-width: 10em;
+  min-height: 3.4em;
+  padding: 0.8em 2em;
+  border-radius: 99em;
+  font-size: 1.08em;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #fffaf2;
+  background: #c8372d;
+  box-shadow: 0 0.5em 1.1em -0.5em rgba(120, 20, 10, 0.8), inset 0 -0.2em 0 rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.3s ease;
+}
+.stop:active:not(:disabled) {
+  transform: scale(0.96);
+}
+.stop:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.won .cal,
+.won .stop {
+  z-index: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arena,
+  .flip,
+  .buddy,
+  .happy,
+  .miss .sheet,
+  .hit .sheet {
+    animation: none;
+  }
+}
