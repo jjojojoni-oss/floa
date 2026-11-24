@@ -118,7 +118,8 @@
   border-radius: 99em;
   font-size: 1.02em;
   font-weight: 800;
-  color: #fffaf2;
+  /* template beraksen terang (mis. emas) bisa memberi warna teks sendiri lewat --accent-ink */
+  color: var(--accent-ink, #fffaf2);
   background: var(--accent, #c8553d);
   box-shadow: 0 0.6em 1.2em -0.6em color-mix(in srgb, var(--accent, #c8553d) 80%, black);
   cursor: pointer;

@@ -1,7 +1,7 @@
 'use client';
 
-import { type CSSProperties, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, useEffect, useMemo, useRef, useState } from 'react';
-import { Confetti, Finale, Hint, Sprite, Stage, TapCue, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
+import { type PointerEvent as ReactPointerEvent, type RefObject, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { Confetti, Finale, Hint, Petals, Sprite, Stage, TapCue, cx, haptic, sfx, useArtReady, useTimers } from '../kit';
 import type { TemplateProps } from '../types';
 import { fmt, useLocale } from '@/i18n/client';
 import { type Milestone, addDays, dayDiff, elapsed, milestoneOn, milestones, parseDate, startOfDay } from './date';
@@ -11,11 +11,29 @@ import { meta } from './meta';
 import s from './style.module.css';
 
 const BACKDROP = '/art/bg-anniversary.webp';
-const ART = ['bg-anniversary', 'anniversary-papan', 'anniversary-bilah', 'anniversary-klip', 'anniversary-cap'];
-/** lembar tanggal biasa yang berkelebat di antara milestone */
-const FILL_MAX = 10;
-/** lama lembar milestone bertahan di atas (cap dihentakkan, lalu sempat terbaca) */
-const MARK_HOLD = 900;
+const ART = ['bg-anniversary', 'anniversary-jam', 'anniversary-tutup', 'anniversary-tutup-dalam', 'anniversary-rantai'];
+
+/**
+ * closed  → jam saku tertutup, tutupnya berukir inisial; mahkota ditekan untuk membuka
+ * now     → jam menunjukkan waktu sungguhan; mahkota ditahan untuk memutar balik waktu
+ * rewind  → jarum berputar mundur, tanggal & hitungan hari mundur sampai hari jadian
+ * first   → waktu berhenti di hari pertama
+ * moment  → tiap kenangan (foto bundar + catatan) tampil di dalam tutup jam
+ * forward → waktu berjalan maju lagi, berhenti sejenak di tiap milestone
+ * arrived → sampai di detik ini: jam berdetak lagi, hitungan lama bersama tampil di tutup
+ * back    → jam dibalik: ucapan utama terukir di punggungnya → mini-game → surat
+ */
+type Phase = 'closed' | 'now' | 'rewind' | 'first' | 'moment' | 'forward' | 'arrived' | 'back';
+
+type Angles = { h: number; m: number; s: number };
+type HandRefs = { h: RefObject<SVGGElement | null>; m: RefObject<SVGGElement | null>; s: RefObject<SVGGElement | null> };
+
+/** putaran penuh tiap jarum selama memutar balik waktu: posenya kembali sama, seperti "jam yang sama, di hari yang lain" */
+const TURNS: Angles = { h: 720, m: 5760, s: 12960 };
+
+const reduced = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const easeInOut = (u: number) => (u < 0.5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2);
+const initial = (name: string) => Array.from(name.trim())[0]?.toUpperCase() ?? '';
 
 export default function Anniversary(props: TemplateProps) {
   const [run, setRun] = useState(0);
@@ -26,126 +44,63 @@ export default function Anniversary(props: TemplateProps) {
   );
 }
 
-type Sheet =
-  | { kind: 'first' | 'flip' | 'today'; date: Date; mark?: Milestone | null }
-  | { kind: 'moment'; n: number; note: string; photo: string | null }
-  | { kind: 'cover' }
-  | { kind: 'end' };
-
-type Fall = { fx: number; fr: number; peek: number; sway: number; rx: number; ry: number; fast: boolean };
-
-const reduced = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-/** acak yang selalu sama untuk indeks yang sama, supaya render ulang tidak mengubah bentuk sobekan */
-function prng(seed: number) {
-  let a = (seed * 2654435761) >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) | 0;
-    let t = Math.imul(a ^ (a >>> 15), 1 | a);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+/** Jarum baja biru di atas dial lukisan. Sudutnya diatur lewat ref (per frame) supaya putarannya mulus. */
+function Hands({ refs, live }: { refs: HandRefs; live: boolean }) {
+  const id = useId().replace(/[^a-zA-Z0-9]/g, '');
+  const steel = `url(#st${id})`;
+  return (
+    <svg className={cx(s.hands, live && s.live)} viewBox="-206 -206 412 412" aria-hidden>
+      <defs>
+        <linearGradient id={`st${id}`} gradientUnits="userSpaceOnUse" x1="-8" y1="0" x2="8" y2="0">
+          <stop offset="0" stopColor="#4a72ad" />
+          <stop offset="0.5" stopColor="#27456e" />
+          <stop offset="1" stopColor="#10203c" />
+        </linearGradient>
+        <radialGradient id={`cp${id}`} gradientUnits="userSpaceOnUse" cx="-3" cy="-4" r="14">
+          <stop offset="0" stopColor="#fff4cc" />
+          <stop offset="0.6" stopColor="#c99a3e" />
+          <stop offset="1" stopColor="#6e4b14" />
+        </radialGradient>
+      </defs>
+      <g ref={refs.h} className={s.hand}>
+        <path d="M-6,20L-2.7,-62L2.7,-62L6,20Z" fill={steel} />
+        <circle cx="0" cy="-74" r="12" fill="none" stroke={steel} strokeWidth="4.6" />
+        <path d="M-2.6,-86L0,-114L2.6,-86Z" fill={steel} stroke={steel} strokeWidth="1.6" strokeLinejoin="round" />
+      </g>
+      <g ref={refs.m} className={s.hand}>
+        <path d="M-4.6,20L-2.1,-100L2.1,-100L4.6,20Z" fill={steel} />
+        <circle cx="0" cy="-112" r="11" fill="none" stroke={steel} strokeWidth="4.2" />
+        <path d="M-2.4,-123L0,-170L2.4,-123Z" fill={steel} stroke={steel} strokeWidth="1.5" strokeLinejoin="round" />
+      </g>
+      <g ref={refs.s} className={cx(s.hand, s.sec)}>
+        <path d="M0,46L0,-184" stroke="#b8322a" strokeWidth="2.4" strokeLinecap="round" />
+        <circle cx="0" cy="34" r="7" fill="#b8322a" />
+      </g>
+      <circle r="11" fill={`url(#cp${id})`} stroke="#47300b" strokeOpacity="0.6" />
+    </svg>
+  );
 }
 
-/** tepi atas bergerigi bekas sobekan */
-function jagged(seed: number) {
-  const r = prng(seed + 11);
-  const n = 22;
-  const pts = ['0% 0.44em'];
-  for (let i = 1; i <= n; i++) pts.push(`${((i / n) * 100).toFixed(1)}% ${(i % 2 ? 0.06 + r() * 0.14 : 0.34 + r() * 0.3).toFixed(2)}em`);
-  return `polygon(${pts.join(',')},100% 100%,0% 100%)`;
-}
-
-function fallOf(i: number, fast: boolean, flyOff: boolean): Fall {
-  const r = prng(i * 7 + 3);
-  const side = i % 2 ? 1 : -1;
-  return {
-    fx: side * (fast ? 2.5 + r() * 6 : 1.2 + r() * 4.2),
-    fr: side * (6 + r() * 24) * (r() < 0.3 ? -1 : 1),
-    peek: flyOff ? -19 : 2.3 + r() * 2.9,
-    sway: r() < 0.5 ? -1 : 1,
-    // kertas berkibar: seberapa jauh lembar menekuk ke depan/belakang & memutar saat jatuh
-    rx: 30 + r() * 26,
-    ry: 14 + r() * 18,
-    fast,
-  };
-}
-
-/* ───────────── odometer: angka berputar ke nilainya, lalu berdetak mulus ───────────── */
-
-const STRIP = Array.from({ length: 30 }, (_, i) => i % 10);
-
-/** satu kolom angka; berputar maju (9 → 0 lewat putaran berikutnya, tidak mundur) */
-function Col({ d, go, dur, delay }: { d: number; go: boolean; dur: number; delay: number }) {
-  const [pos, setPos] = useState(0);
-  const [snap, setSnap] = useState(false);
-  const first = useRef(true);
+/** 0 → 1 selama `ms` sejak `active` menyala (untuk angka yang menghitung naik) */
+function useCountUp(active: boolean, ms: number) {
+  const [u, setU] = useState(0);
   useEffect(() => {
-    if (!go) return;
-    if (first.current) {
-      first.current = false;
-      setPos(10 + d);
+    if (!active) return;
+    if (reduced()) {
+      setU(1);
       return;
     }
-    setSnap(false);
-    setPos((p) => {
-      const cur = p % 10;
-      if (d === cur) return p;
-      return d > cur ? p - cur + d : p - cur + 10 + d;
-    });
-  }, [go, d]);
-  return (
-    <span className={s.col}>
-      <span
-        className={cx(s.reel, snap && s.snapNow)}
-        style={{ '--p': pos, '--dur': `${dur}ms`, '--delay': `${delay}ms` } as CSSProperties}
-        onTransitionEnd={() => {
-          if (pos >= 20) {
-            setSnap(true);
-            setPos((p) => p - 10);
-          }
-        }}
-      >
-        {STRIP.map((n, i) => (
-          <span key={i}>{n}</span>
-        ))}
-      </span>
-    </span>
-  );
-}
-
-function Roll({ value, delay = 0, spin = 1500 }: { value: string; delay?: number; spin?: number }) {
-  const [go, setGo] = useState(false);
-  const [settled, setSettled] = useState(false);
-  useEffect(() => {
-    const quick = reduced();
-    const a = setTimeout(() => setGo(true), quick ? 0 : delay + 40);
-    const b = setTimeout(() => setSettled(true), quick ? 0 : delay + spin + 400);
-    return () => {
-      clearTimeout(a);
-      clearTimeout(b);
+    let raf = 0;
+    const t0 = performance.now() + 450;
+    const tick = (now: number) => {
+      const v = Math.max(0, Math.min(1, (now - t0) / ms));
+      setU(1 - Math.pow(1 - v, 3));
+      if (v < 1) raf = requestAnimationFrame(tick);
     };
-  }, [delay, spin]);
-  const chars = [...value];
-  const digits = chars.filter((c) => /\d/.test(c)).length;
-  let k = 0;
-  return (
-    <span className={s.roll} aria-hidden>
-      {chars.map((ch, i) => {
-        const key = chars.length - i;
-        if (!/\d/.test(ch)) {
-          return (
-            <span key={`s${key}`} className={s.sep}>
-              {ch}
-            </span>
-          );
-        }
-        // kolom kanan berhenti terakhir: putaran awal sedikit berjenjang dari kiri ke kanan
-        const stagger = (k++ / Math.max(1, digits)) * 260;
-        return <Col key={`d${key}`} d={Number(ch)} go={go} dur={settled ? 420 : spin} delay={settled ? 0 : stagger} />;
-      })}
-    </span>
-  );
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [active, ms]);
+  return u;
 }
 
 function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void }) {
@@ -157,241 +112,312 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
 
   const to = data.to.trim() || t.you;
   const from = data.from.trim();
+  const title = data.title.trim();
 
-  const { sheets, start, counting } = useMemo(() => {
+  const { start, diff, counting, marks, todayMark, moments } = useMemo(() => {
     const start = parseDate(data.date);
     const today = startOfDay(new Date());
-    const counting = !!start && start.getTime() <= today.getTime();
-    const list: Sheet[] = [start ? { kind: 'first', date: start } : { kind: 'cover' }];
+    const diff = start ? dayDiff(start, today) : 0;
+    const counting = !!start && diff >= 0;
     const photos = data.photos.filter(Boolean);
     const count = Math.min(5, Math.max(data.notes.length, photos.length));
-    let n = 0;
+    const moments: { note: string; photo: string | null }[] = [];
     for (let i = 0; i < count; i++) {
       const note = (data.notes[i] ?? '').trim();
       const photo = photos[i] ?? null;
-      if (note || photo) list.push({ kind: 'moment', n: ++n, note, photo });
+      if (note || photo) moments.push({ note, photo });
     }
-    if (start && counting) {
-      const diff = dayDiff(start, today);
-      // milestone yang sungguh terlewati + lembar biasa di antaranya, urut tanggal
-      const marks = milestones(start, today);
-      const used = new Set(marks.map((m) => dayDiff(start, m.date)));
-      const k = Math.max(0, Math.min(FILL_MAX, diff - 1 - marks.length));
-      const flips: { at: number; mark: Milestone | null }[] = marks.map((m) => ({ at: dayDiff(start, m.date), mark: m }));
-      // lembar biasa tidak boleh menempel di dekat milestone (terasa seperti dobel)
-      const gap = Math.max(1, Math.floor(diff / (k + 1) / 2));
-      const near = (at: number) => marks.some((m) => Math.abs(dayDiff(start, m.date) - at) < gap);
-      for (let i = 1; i <= k; i++) {
-        const at = Math.round((diff * i) / (k + 1));
-        if (at <= 0 || at >= diff || used.has(at) || near(at)) continue;
-        used.add(at);
-        flips.push({ at, mark: null });
-      }
-      flips.sort((a, b) => a.at - b.at).forEach((f) => list.push({ kind: 'flip', date: addDays(start, f.at), mark: f.mark }));
-      list.push({ kind: 'today', date: today, mark: milestoneOn(start, today) });
-    } else list.push({ kind: 'end' });
-    return { sheets: list, start, counting };
+    return {
+      start,
+      diff,
+      counting,
+      marks: start && counting ? milestones(start, today) : [],
+      todayMark: start && counting ? milestoneOn(start, today) : null,
+      moments,
+    };
   }, [data.date, data.notes, data.photos]);
 
-  const last = sheets.length - 1;
-  const moments = sheets.filter((x) => x.kind === 'moment').length;
-  const flips = sheets.filter((x) => x.kind === 'flip').length;
-  const firstFlip = last - flips;
+  /** ada jarak waktu yang bisa diputar balik (tanpa tanggal pun tetap bisa, hanya tanpa hitungan) */
+  const rewindable = !start || diff > 0;
 
-  /** indeks lembar teratas; lembar di bawah indeks ini sudah disobek */
-  const [idx, setIdx] = useState(0);
-  const idxRef = useRef(0);
-  const [falls, setFalls] = useState<Record<number, Fall>>({});
-  const [arrived, setArrived] = useState(false);
-  const [showCounter, setShowCounter] = useState(false);
+  const [phase, setPhase] = useState<Phase>('closed');
+  /** tutup sudah selesai terbuka: mahkota boleh ditahan */
+  const [armed, setArmed] = useState(false);
+  /** hari ke berapa yang sedang ditunjukkan jam (0 = hari jadian) */
+  const [day, setDay] = useState(Math.max(0, diff));
+  const [winding, setWinding] = useState(false);
+  const [alt, setAlt] = useState(false);
+  const [mIdx, setMIdx] = useState(0);
+  const [stamp, setStamp] = useState<Milestone | null>(null);
+  const [now, setNow] = useState(() => new Date());
   const [burst, setBurst] = useState(0);
   const [finale, setFinale] = useState(false);
   /** mini-game kalender sebelum surat: off → main → selesai */
   const [game, setGame] = useState<'off' | 'on' | 'done'>('off');
-  const [now, setNow] = useState(() => new Date());
-  const [dayShown, setDayShown] = useState(0);
-  const drag = useRef<{ id: number; x0: number; y0: number; dy: number; el: HTMLElement } | null>(null);
-  const moved = useRef(false);
-  /** sobekan terakhir dari keyboard: fokus dipindah ke lembar berikutnya supaya bisa lanjut tanpa Tab */
-  const viaKeys = useRef(false);
-  const blockRef = useRef<HTMLDivElement>(null);
-  const openRef = useRef<HTMLButtonElement>(null);
-  /** lembar teratas yang bisa disobek (tombolnya berganti tiap sobekan) */
-  const topCue = useMemo(
-    () => ({
-      get current() {
-        return blockRef.current?.querySelector<HTMLButtonElement>('button') ?? null;
-      },
-    }),
-    [],
-  );
 
-  const jags = useMemo(() => sheets.map((_, i) => jagged(i)), [sheets]);
-  const lastSheet = sheets[last];
-  const isToday = lastSheet.kind === 'today';
-  const todayMark = lastSheet.kind === 'today' ? lastSheet.mark : null;
+  const hRef = useRef<SVGGElement>(null);
+  const mRef = useRef<SVGGElement>(null);
+  const sRef = useRef<SVGGElement>(null);
+  const handRefs = useMemo<HandRefs>(() => ({ h: hRef, m: mRef, s: sRef }), []);
+  const hitRef = useRef<HTMLButtonElement>(null);
+  const ctaRef = useRef<HTMLButtonElement>(null);
+  /** tengah malam saat adegan dimulai: sudut jarum dihitung dari sini supaya terus bertambah */
+  const base = useRef(startOfDay(new Date()).getTime());
+  /** sudut jarum saat waktu mulai diputar balik; null = jarum mengikuti jam sungguhan */
+  const a0 = useRef<Angles | null>(null);
+  const manual = useRef(false);
+  const wind = useRef(0);
+  const holding = useRef(false);
+  const lastT = useRef(0);
+  const raf = useRef(0);
+  const dayRef = useRef(Math.max(0, diff));
+  const click = useRef(-1);
+  const arrivedOnce = useRef(false);
 
-  const el = start && counting ? elapsed(start, now) : null;
+  const liveOn = phase === 'closed' || phase === 'now' || phase === 'arrived' || phase === 'back';
 
+  const setHands = (a: Angles) => {
+    if (hRef.current) hRef.current.style.transform = `rotate(${a.h}deg)`;
+    if (mRef.current) mRef.current.style.transform = `rotate(${a.m}deg)`;
+    if (sRef.current) sRef.current.style.transform = `rotate(${a.s}deg)`;
+  };
+  const liveAngles = (d: Date): Angles => {
+    const tot = Math.floor((d.getTime() - base.current) / 1000);
+    return { h: (tot / 43200) * 360, m: (tot / 3600) * 360, s: tot * 6 };
+  };
+  /** sudut jarum untuk kemajuan p (0 = hari jadian, 1 = sekarang) */
+  const anglesAt = (p: number): Angles => {
+    const a = a0.current ?? liveAngles(new Date());
+    return { h: a.h - TURNS.h * (1 - p), m: a.m - TURNS.m * (1 - p), s: a.s - TURNS.s * (1 - p) };
+  };
+
+  useEffect(() => () => cancelAnimationFrame(raf.current), []);
+
+  // jam sungguhan berdetak tiap detik selama jarumnya tidak sedang diputar
+  useEffect(() => {
+    if (!liveOn) return;
+    setNow(new Date());
+    const id = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(id);
+  }, [liveOn]);
+  useEffect(() => {
+    if (liveOn && !manual.current) setHands(liveAngles(now));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [now, liveOn, ready]);
+
+  // jalan pintas ketuk kalau menahan mahkota tidak memungkinkan
+  useEffect(() => {
+    if (!armed || (phase !== 'now' && phase !== 'rewind')) return;
+    const id = setTimeout(() => setAlt(true), 6000);
+    return () => clearTimeout(id);
+  }, [armed, phase]);
+
+  // lukisan punggung jam & foto kenangan disiapkan lebih dulu
+  useEffect(() => {
+    if (phase !== 'now' && phase !== 'first') return;
+    ['/art/anniversary-punggung.webp', ...moments.map((x) => x.photo)].forEach((src) => {
+      if (!src) return;
+      const img = new Image();
+      img.src = src;
+    });
+  }, [phase, moments]);
+
+  // fokus mengikuti tombol lanjut (pengguna papan ketik / pembaca layar)
+  useEffect(() => {
+    if (mode === 'preview') return;
+    if (phase === 'first' || phase === 'moment' || phase === 'arrived' || phase === 'back') {
+      const id = setTimeout(() => ctaRef.current?.focus({ preventScroll: true }), 700);
+      return () => clearTimeout(id);
+    }
+  }, [phase, mIdx, mode]);
+
+  const tween = (dur: number, frame: (u: number) => void, done?: () => void) => {
+    cancelAnimationFrame(raf.current);
+    const t0 = performance.now();
+    const step = (tNow: number) => {
+      const u = dur <= 0 ? 1 : Math.min(1, (tNow - t0) / dur);
+      frame(u);
+      if (u < 1) raf.current = requestAnimationFrame(step);
+      else done?.();
+    };
+    raf.current = requestAnimationFrame(step);
+  };
+
+  /** satu "klik" roda gigi tiap sekian derajat putaran */
+  const ratchet = (k: number) => {
+    if (k === click.current) return;
+    click.current = k;
+    sfx.tap();
+    haptic(3);
+  };
+  const showDay = (d: number) => {
+    const r = Math.round(d);
+    if (r === dayRef.current) return;
+    dayRef.current = r;
+    setDay(r);
+  };
+
+  /* ── 0. buka tutupnya ── */
+  const open = () => {
+    if (phase !== 'closed') return;
+    sfx.crack();
+    haptic(18);
+    setPhase(rewindable ? 'now' : 'first');
+    later(() => sfx.chime(), reduced() ? 80 : 620);
+    later(() => setArmed(true), reduced() ? 120 : 1150);
+  };
+
+  /* ── 1. putar balik waktu ── */
+  const applyWind = (w: number) => {
+    const e = easeInOut(w);
+    setHands(anglesAt(1 - e));
+    showDay(Math.max(0, diff) * (1 - e));
+    ratchet(Math.floor(e * 34));
+  };
+  const finishRewind = () => {
+    if (!manual.current || wind.current < 1) return;
+    cancelAnimationFrame(raf.current);
+    holding.current = false;
+    wind.current = 2; // selesai: tidak bisa dipicu dua kali
+    setWinding(false);
+    setAlt(false);
+    setHands(anglesAt(0));
+    showDay(0);
+    setPhase('first');
+    sfx.chime();
+    haptic(30);
+  };
+  const beginRewind = () => {
+    if (phase === 'now') {
+      a0.current = liveAngles(new Date());
+      manual.current = true;
+      setPhase('rewind');
+    }
+    setWinding(true);
+  };
+  const startHold = () => {
+    if (!armed || (phase !== 'now' && phase !== 'rewind') || wind.current > 1) return;
+    beginRewind();
+    // tiap tekanan sendiri sudah memutar sedikit, jadi ketuk berkali-kali pun sampai
+    wind.current = Math.min(1, wind.current + 0.07);
+    holding.current = true;
+    lastT.current = performance.now();
+    cancelAnimationFrame(raf.current);
+    const step = (tNow: number) => {
+      const dt = Math.min(64, tNow - lastT.current);
+      lastT.current = tNow;
+      // pelan di awal, kencang di tengah, pelan lagi menjelang sampai
+      if (holding.current) wind.current = Math.min(1, wind.current + (dt / (reduced() ? 900 : 3000)) * (0.55 + 1.5 * Math.sin(Math.PI * wind.current)));
+      applyWind(wind.current);
+      if (wind.current >= 1) return finishRewind();
+      if (holding.current) raf.current = requestAnimationFrame(step);
+    };
+    raf.current = requestAnimationFrame(step);
+  };
+  const stopHold = () => {
+    if (!holding.current) return;
+    holding.current = false;
+    setWinding(false);
+  };
+  const autoWind = () => {
+    if (!armed || (phase !== 'now' && phase !== 'rewind') || wind.current > 1) return;
+    beginRewind();
+    holding.current = false;
+    const w0 = wind.current;
+    tween((reduced() ? 300 : 2400) * (1 - w0), (u) => {
+      wind.current = w0 + (1 - w0) * u;
+      applyWind(wind.current);
+    }, finishRewind);
+  };
+
+  /* ── 2. kenangan di dalam tutup ── */
+  /** jarum detik menyapu satu putaran penuh: tanda satu kenangan lewat */
+  const sweep = () => {
+    if (!a0.current) return;
+    const f = anglesAt(0);
+    tween(reduced() ? 0 : 800, (u) => setHands({ ...f, s: f.s + 360 * easeInOut(u) }));
+  };
+  const toMoment = (i: number) => {
+    sfx.pop();
+    haptic(12);
+    setMIdx(i);
+    setPhase('moment');
+    sweep();
+  };
+
+  /* ── 3. waktu berjalan maju lagi ── */
   const stampSound = () => {
     sfx.crack();
     sfx.pop();
     haptic(24);
   };
-
   const arrive = () => {
-    later(() => {
-      setArrived(true);
-      if (isToday) {
-        sfx.success();
-        haptic(30);
-        later(() => setBurst((v) => v + 1), 650);
-        if (todayMark) later(stampSound, 1700);
-      } else sfx.chime();
-      later(
-        () => {
-          setNow(new Date());
-          setShowCounter(true);
-        },
-        isToday ? (todayMark ? 2500 : 2100) : 500,
-      );
-    }, 320);
+    if (arrivedOnce.current) return;
+    arrivedOnce.current = true;
+    manual.current = false;
+    a0.current = null;
+    showDay(Math.max(0, diff));
+    setStamp(null);
+    setNow(new Date());
+    setPhase('arrived');
+    sfx.success();
+    haptic(30);
+    later(() => setBurst((v) => v + 1), reduced() ? 50 : 350);
   };
-
-  const tearOne = (fast: boolean) => {
-    const i = idxRef.current;
-    if (i >= last) return;
-    idxRef.current = i + 1;
-    const cur = sheets[i];
-    // di tengah rentetan, separuh lembar biasa terbang keluar layar supaya tumpukan di bawah tidak menggunung
-    const flyOff = cur.kind === 'flip' && !cur.mark && i % 2 === 0;
-    setFalls((f) => ({ ...f, [i]: fallOf(i, fast, flyOff) }));
-    setIdx(i + 1);
-    if (cur.kind === 'flip') {
-      // rentetan: sobekan ringan + nada yang terus naik
-      sfx.tap();
-      const k = i - firstFlip;
-      if (k % 2 === 0 || cur.mark) sfx.note(Math.floor(k / 2));
-    } else {
-      sfx.crack();
-      later(() => sfx.whoosh(), 110);
-    }
-    haptic(fast ? 6 : 14);
-    const next = sheets[i + 1];
-    if (next.kind === 'flip') {
-      if (next.mark) later(stampSound, 170);
-      // pelan → cepat → pelan lagi; berhenti sejenak di tiap milestone supaya capnya terbaca
-      const k = i + 1 - firstFlip;
-      const u = flips > 1 ? k / (flips - 1) : 1;
-      const wait = next.mark ? MARK_HOLD : cur.kind === 'flip' ? 70 + 280 * Math.pow(Math.abs(2 * u - 1), 2.4) : 560;
-      later(() => tearOne(true), wait);
-    } else if (i + 1 === last) {
-      if (next.kind === 'today' && cur.kind === 'flip') {
-        // rem terakhir: jeda sebentar sebelum hari ini mendarat
-        later(arrive, 120);
-      } else arrive();
-    }
-  };
-
-  const top = sheets[idx];
-  const canTear = idx < last && top.kind !== 'flip';
-
-  const onDown = (e: ReactPointerEvent<HTMLButtonElement>) => {
-    if (e.button > 0 || !canTear) return;
-    moved.current = false;
-    const target = e.currentTarget;
-    try {
-      target.setPointerCapture(e.pointerId);
-    } catch {
-      /* pointer sudah tidak aktif */
-    }
-    drag.current = { id: e.pointerId, x0: e.clientX, y0: e.clientY, dy: 0, el: target };
-  };
-  const onMove = (e: ReactPointerEvent<HTMLButtonElement>) => {
-    const d = drag.current;
-    if (!d || d.id !== e.pointerId) return;
-    const dx = e.clientX - d.x0;
-    d.dy = e.clientY - d.y0;
-    if (Math.abs(dx) > 6 || Math.abs(d.dy) > 6) moved.current = true;
-    if (moved.current) {
-      const pull = Math.max(0, d.dy);
-      d.el.style.animation = 'none';
-      d.el.style.transition = 'none';
-      // kertas tertarik: menekuk ke depan dari tepi atasnya yang masih terjepit
-      d.el.style.transform = `perspective(40em) translate(${dx * 0.12}px, ${pull * 0.4}px) rotate(${dx / 60}deg) rotateX(${Math.min(28, pull / 6)}deg)`;
-    }
-  };
-  const onEnd = (e: ReactPointerEvent<HTMLButtonElement>, cancelled: boolean) => {
-    const d = drag.current;
-    if (!d || d.id !== e.pointerId) return;
-    drag.current = null;
-    d.el.style.animation = '';
-    d.el.style.transition = '';
-    d.el.style.transform = '';
-    if (moved.current) later(() => (moved.current = false), 80);
-    if (cancelled || !moved.current) return;
-    if (d.dy > (d.el.offsetHeight || 1) * 0.16) tearOne(false);
-  };
-  const onTap = (e: ReactMouseEvent) => {
-    // detail 0 = dari keyboard; klik yang menyusul seretan diabaikan
-    if (e.detail !== 0 && moved.current) {
-      moved.current = false;
+  const runForward = () => {
+    sfx.whoosh();
+    haptic(14);
+    setPhase('forward');
+    const quick = reduced();
+    if (!a0.current) {
+      // waktunya tidak pernah diputar balik (hari jadiannya hari ini): langsung sampai
+      later(arrive, quick ? 60 : 500);
       return;
     }
-    viaKeys.current = e.detail === 0;
-    if (canTear) tearOne(false);
-  };
-
-  useEffect(() => {
-    if (!viaKeys.current) return;
-    blockRef.current?.querySelector<HTMLButtonElement>('button')?.focus({ preventScroll: true });
-  }, [idx]);
-
-  useEffect(() => {
-    if (showCounter && viaKeys.current) openRef.current?.focus({ preventScroll: true });
-  }, [showCounter]);
-
-  // penghitung berdetak tiap detik setelah sampai di hari ini
-  useEffect(() => {
-    if (!showCounter || !counting) return;
-    const id = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(id);
-  }, [showCounter, counting]);
-
-  // "hari ke-N" menghitung naik setelah lingkaran spidol selesai digambar
-  const target = el?.dayNumber ?? 0;
-  useEffect(() => {
-    if (!arrived || !isToday || !target) return;
-    if (reduced() || target < 3) {
-      setDayShown(target);
+    if (!start || diff <= 0) {
+      tween(quick ? 200 : 1600, (u) => {
+        setHands(anglesAt(easeInOut(u)));
+        ratchet(Math.floor(u * 20));
+      }, arrive);
       return;
     }
-    let raf = 0;
-    let t0 = 0;
-    const startAt = performance.now() + 950;
-    const tick = (now: number) => {
-      if (now < startAt) {
-        raf = requestAnimationFrame(tick);
-        return;
-      }
-      t0 = t0 || now;
-      const u = Math.min(1, (now - t0) / 1300);
-      setDayShown(Math.max(1, Math.round(target * (1 - Math.pow(1 - u, 3)))));
-      if (u < 1) raf = requestAnimationFrame(tick);
+    const segs: { at: number; mark: Milestone | null }[] = [...marks.map((m) => ({ at: dayDiff(start, m.date), mark: m as Milestone | null })), { at: diff, mark: null }];
+    let fromDay = 0;
+    let k = 0;
+    const next = () => {
+      const seg = segs[k];
+      const span = (seg.at - fromDay) / diff;
+      const dur = quick ? 160 : Math.max(520, Math.min(1500, 400 + 2600 * span));
+      const d0 = fromDay;
+      tween(dur, (u) => {
+        const d = d0 + (seg.at - d0) * easeInOut(u);
+        setHands(anglesAt(d / diff));
+        showDay(d);
+        ratchet(Math.floor((d / diff) * 46));
+      }, () => {
+        fromDay = seg.at;
+        k += 1;
+        if (!seg.mark) return arrive();
+        // berhenti sejenak di tiap milestone supaya capnya terbaca
+        setStamp(seg.mark);
+        stampSound();
+        later(() => {
+          setStamp(null);
+          next();
+        }, quick ? 500 : 1050);
+      });
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [arrived, isToday, target]);
+    next();
+  };
 
-  const monthFmt = useMemo(() => new Intl.DateTimeFormat(tag, { month: 'long' }), [tag]);
-  const dowFmt = useMemo(() => new Intl.DateTimeFormat(tag, { weekday: 'long' }), [tag]);
-  const fullFmt = useMemo(() => new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'long', year: 'numeric' }), [tag]);
-  const num = (n: number) => n.toLocaleString(tag);
-  const pad = (n: number) => String(n).padStart(2, '0');
-
-  const owner = from ? `${to} & ${from}` : to;
-  const markText = (m: Milestone) => (m.kind === 'years' && m.n === 1 ? t.markYear : fmt(m.kind === 'years' ? t.markYears : t.markDays, { n: num(m.n) }));
-
+  /* ── 4. punggung jam, lalu surat ── */
+  const flip = () => {
+    if (phase !== 'arrived') return;
+    sfx.whoosh();
+    haptic(16);
+    setPhase('back');
+    later(() => sfx.chime(), reduced() ? 60 : 700);
+  };
   const openLetter = () => {
     if (finale || game === 'on') return;
     if (game === 'off') {
@@ -411,258 +437,328 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
     setFinale(true);
   };
 
-  const stamp = (m: Milestone, today: boolean) => {
-    const n = num(m.n);
-    const unit = m.kind === 'days' ? t.unitDays : m.n === 1 ? t.unitYear : t.unitYears;
-    return (
-      <span className={cx(s.stamp, today && s.stampToday, today && arrived && s.stampOn)} aria-hidden>
-        <Sprite name="anniversary-cap" className={s.stampRing} />
-        <span className={s.stampTxt}>
-          <svg viewBox="-10 -10 20 16" className={s.stampHeart}>
-            <path d="M0,5C-9,-2 -5,-9 0,-4C5,-9 9,-2 0,5Z" />
-          </svg>
-          <b className={cx(n.length > 3 && s.longNum, n.length > 5 && s.xlNum)}>{n}</b>
-          <i>{unit}</i>
-        </span>
-      </span>
+  const onPrimary = () => {
+    if (phase === 'first') return moments.length ? toMoment(0) : runForward();
+    if (phase === 'moment') return mIdx + 1 < moments.length ? toMoment(mIdx + 1) : runForward();
+    if (phase === 'arrived') return flip();
+    if (phase === 'back') return openLetter();
+  };
+
+  /* ── tampilan ── */
+  const fullFmt = useMemo(() => new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'long', year: 'numeric' }), [tag]);
+  const dowFmt = useMemo(() => new Intl.DateTimeFormat(tag, { weekday: 'long' }), [tag]);
+  const timeFmt = useMemo(() => new Intl.DateTimeFormat(tag, { hour: '2-digit', minute: '2-digit' }), [tag]);
+  const num = (n: number) => n.toLocaleString(tag);
+  const pad = (n: number) => String(n).padStart(2, '0');
+
+  const el = start && counting ? elapsed(start, now) : null;
+  const cu = useCountUp(phase === 'arrived' || phase === 'back', 1500);
+  const shown = start ? addDays(start, day) : null;
+  /** tanggal yang tampil di jendela dial */
+  const dialDate = liveOn || !shown ? now : shown;
+  const cur = phase === 'moment' ? moments[mIdx] : null;
+  const playing = game === 'on';
+  const markText = (m: Milestone) => (m.kind === 'years' && m.n === 1 ? t.markYear : fmt(m.kind === 'years' ? t.markYears : t.markDays, { n: num(m.n) }));
+
+  let head;
+  if (phase === 'closed') {
+    head = (
+      <div key="names">
+        <div className={s.eyebrow}>{fmt(t.headFor, { to })}</div>
+        {from ? <div className={s.from}>{fmt(t.headFrom, { from })}</div> : null}
+      </div>
     );
-  };
-
-  const dateSheet = (sh: Extract<Sheet, { date: Date }>) => {
-    const sunday = sh.date.getDay() === 0;
-    const day = sh.date.getDate();
-    const today = sh.kind === 'today';
-    return (
-      <>
-        <span className={s.band}>
-          <b>{monthFmt.format(sh.date)}</b>
-          <i>{sh.date.getFullYear()}</i>
-        </span>
-        <span className={s.numWrap}>
-          <span className={cx(s.num, sunday && s.sunday, day > 9 && s.two)}>{day}</span>
-          {today ? (
-            <svg className={cx(s.circle, arrived && s.drawn)} viewBox="0 0 300 220" preserveAspectRatio="none" aria-hidden>
-              <path pathLength={1} d="M158,14C246,6 290,58 280,112C268,180 168,212 86,198C20,186 -4,122 26,70C52,26 118,8 186,20" />
-            </svg>
-          ) : null}
-        </span>
-        <span className={s.dow}>{dowFmt.format(sh.date)}</span>
-        {sh.kind === 'first' ? <span className={s.scribble}>{t.firstDay}</span> : null}
-        {today && el ? (
-          <span className={cx(s.scribble, s.late, sh.mark && s.withStamp, arrived && s.shown)}>
-            {el.exact ? (el.years === 1 ? t.exactOne : fmt(t.exact, { y: el.years })) : fmt(t.dayN, { n: num(dayShown || 1) })}
-          </span>
-        ) : null}
-        {sh.mark ? stamp(sh.mark, today) : null}
-        {today ? <span className={cx(s.glint, arrived && s.glintGo)} aria-hidden /> : null}
-      </>
+  } else if (phase === 'now') {
+    head = (
+      <div key="now">
+        <div className={s.eyebrow}>{t.nowEyebrow}</div>
+        <div className={s.big}>{timeFmt.format(now)}</div>
+        <div className={s.sub}>{t.nowSub}</div>
+      </div>
     );
-  };
-
-  const body = (sh: Sheet) => {
-    if (sh.kind === 'first' || sh.kind === 'flip' || sh.kind === 'today') return dateSheet(sh);
-    if (sh.kind === 'moment') {
-      return (
-        <>
-          <span className={s.band}>
-            <b>{t.moment}</b>
-            <i>
-              {sh.n}/{moments}
-            </i>
-          </span>
-          {sh.photo ? (
-            <span className={cx(s.snap, sh.note.length > 44 && s.compact)}>
-              <Sprite name="anniversary-klip" className={s.clip} />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={sh.photo} alt="" draggable={false} />
-            </span>
-          ) : (
-            <Sprite name={sh.n % 2 ? 'bunga-kamboja-pink' : 'bunga-kamboja'} className={s.sticker} />
-          )}
-          {sh.note ? (
-            <span className={cx(s.note, !sh.photo && s.big, sh.note.length > (sh.photo ? 38 : 24) && s.long, sh.note.length > 44 && s.xl)}>{sh.note}</span>
-          ) : null}
-        </>
-      );
-    }
-    if (sh.kind === 'cover') {
-      return (
-        <>
-          <span className={s.band}>
-            <b>{t.coverBand}</b>
-            <i>floa</i>
-          </span>
-          <Sprite name="bunga-kamboja-pink" className={s.sticker} />
-          <span className={cx(s.note, s.big, to.length > 12 && s.long)}>{fmt(t.coverTitle, { to })}</span>
-          <span className={s.scribble}>{t.coverSub}</span>
-        </>
-      );
-    }
-    return (
-      <>
-        <span className={s.band}>
-          <b>{t.today}</b>
-          <i>∞</i>
-        </span>
-        <Sprite name="bunga-kamboja" className={s.sticker} />
-        <span className={cx(s.note, s.big, s.long)}>{t.endNote}</span>
-      </>
+  } else if (phase === 'rewind' || phase === 'forward') {
+    head = (
+      <div key="run">
+        <div className={s.eyebrow}>{phase === 'rewind' ? t.rewinding : t.forwarding}</div>
+        {shown ? <div className={cx(s.big, s.rolling)}>{fullFmt.format(shown)}</div> : null}
+      </div>
     );
-  };
+  } else if (phase === 'first') {
+    head = (
+      <div key="first">
+        <div className={s.eyebrow}>{start ? t.firstDay : t.firstPlain}</div>
+        {start ? <div className={s.big}>{fullFmt.format(start)}</div> : null}
+        {start ? <div className={s.sub}>{dowFmt.format(start)}</div> : null}
+      </div>
+    );
+  } else if (phase === 'moment') {
+    head = (
+      <div key={`m${mIdx}`}>
+        <div className={s.eyebrow}>{fmt(t.momentOf, { i: mIdx + 1, n: moments.length })}</div>
+        {start ? <div className={s.sub}>{fmt(t.since, { date: fullFmt.format(start) })}</div> : null}
+      </div>
+    );
+  } else if (phase === 'arrived') {
+    head = (
+      <div key="today">
+        <div className={s.eyebrow}>{t.todayEyebrow}</div>
+        <div className={s.big}>{el ? (el.exact ? (el.years === 1 ? t.exactOne : fmt(t.exact, { y: el.years })) : fmt(t.dayN, { n: num(el.dayNumber) })) : t.today}</div>
+        {el && todayMark && !el.exact ? <div className={s.sub}>{markText(todayMark)}</div> : null}
+      </div>
+    );
+  } else {
+    head = (
+      <div key="back">
+        <div className={s.eyebrow}>{t.backEyebrow}</div>
+      </div>
+    );
+  }
 
-  const label = (sh: Sheet, i: number) => {
-    let what =
-      sh.kind === 'moment'
-        ? `${fmt(t.sheetMoment, { i: sh.n, n: moments })}${sh.note ? `: ${sh.note}` : ''}`
-        : sh.kind === 'cover' || sh.kind === 'end'
-          ? t.coverBand
-          : fmt(t.sheetDate, { date: fullFmt.format(sh.date) });
-    if ((sh.kind === 'flip' || sh.kind === 'today') && sh.mark) what += ` · ${markText(sh.mark)}`;
-    return i < last ? `${what}${/[.!?…]$/.test(what) ? '' : '.'} ${t.tearLabel}` : what;
-  };
+  /** isi bagian dalam tutup jam */
+  let plate;
+  if (phase === 'closed' || phase === 'now') {
+    plate = (
+      <div key="ded" className={s.ded}>
+        <span>{t.dedFor}</span>
+        <b className={cx(to.length > 9 && s.long, to.length > 14 && s.xl)}>{to}</b>
+        {from ? <em>{fmt(t.dedFrom, { from })}</em> : null}
+      </div>
+    );
+  } else if (phase === 'moment' && cur) {
+    plate = cur.photo ? (
+      <div key={`p${mIdx}`} className={s.photo}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={cur.photo} alt={fmt(t.momentAlt, { i: mIdx + 1 })} draggable={false} />
+      </div>
+    ) : (
+      // tanpa foto: catatannya sendiri yang tertulis di dalam tutup
+      <div key={`p${mIdx}`} className={s.noPhoto}>
+        <Sprite name={mIdx % 2 ? 'bunga-kamboja' : 'bunga-kamboja-pink'} className={s.noPhotoArt} />
+        <em className={cx(cur.note.length > 34 && s.long)}>{cur.note}</em>
+      </div>
+    );
+  } else if (phase === 'forward' && stamp) {
+    const n = num(stamp.n);
+    plate = (
+      <div key={`st${stamp.kind}${stamp.n}`} className={s.stamp}>
+        <svg viewBox="-10 -10 20 16" aria-hidden>
+          <path d="M0,5C-9,-2 -5,-9 0,-4C5,-9 9,-2 0,5Z" />
+        </svg>
+        <b className={cx(n.length > 3 && s.long)}>{n}</b>
+        <i>{stamp.kind === 'days' ? t.unitDays : stamp.n === 1 ? t.unitYear : t.unitYears}</i>
+      </div>
+    );
+  } else if (phase === 'arrived' || phase === 'back') {
+    plate = el ? (
+      <div key="count" className={s.counter} role="timer" aria-label={`${t.counterLabel} ${el.years} ${t.years}, ${el.months} ${t.months}, ${el.days} ${t.days}`}>
+        <span className={s.counterLabel}>{t.together}</span>
+        <div className={s.tiles} aria-hidden>
+          {(
+            [
+              [el.years, t.years],
+              [el.months, t.months],
+              [el.days, t.days],
+            ] as const
+          ).map(([v, l], i) => (
+            <div key={i} className={s.tile}>
+              <b>{Math.round(v * cu)}</b>
+              <span>{l}</span>
+            </div>
+          ))}
+        </div>
+        <div className={s.hms} aria-hidden>
+          <b>{pad(el.hours)}</b>
+          <i>:</i>
+          <b>{pad(el.minutes)}</b>
+          <i>:</i>
+          <b key={el.seconds} className={s.tick}>
+            {pad(el.seconds)}
+          </b>
+        </div>
+        <div className={s.hmsLabel} aria-hidden>
+          <span>{t.hours}</span>
+          <span>{t.minutes}</span>
+          <span>{t.seconds}</span>
+        </div>
+      </div>
+    ) : (
+      <div key="plain" className={s.plain}>
+        <b>{t.today}</b>
+        <em>{t.endNote}</em>
+      </div>
+    );
+  } else if (start) {
+    const n = num(day + 1);
+    plate = (
+      <div key="days" className={s.days}>
+        <span>{t.dayNo}</span>
+        <b className={cx(n.length > 3 && s.long, n.length > 5 && s.xl)}>{n}</b>
+        {phase === 'first' ? <em>{t.firstLine}</em> : null}
+      </div>
+    );
+  } else {
+    plate = (
+      <div key={phase === 'first' ? 'pf' : 'pr'} className={s.plain}>
+        <em>{phase === 'first' ? t.firstLine : phase === 'forward' ? t.forwarding : t.longAgo}</em>
+      </div>
+    );
+  }
 
-  // yang dirender: semua lembar yang sudah disobek + lembar teratas + satu di bawahnya
-  const visible = sheets.map((sh, i) => ({ sh, i })).filter(({ i }) => i <= idx + 1);
-  const [pre, post] = t.total.split('{n}');
+  const cta =
+    phase === 'first'
+      ? moments.length
+        ? t.toMoments
+        : t.toForward
+      : phase === 'moment'
+        ? mIdx + 1 < moments.length
+          ? t.nextMoment
+          : t.toForward
+        : phase === 'arrived'
+          ? t.flip
+          : phase === 'back'
+            ? t.openLetter
+            : null;
+  const [preTotal, postTotal] = t.total.split('{n}');
+  const a = initial(data.to);
+  const b = initial(from);
+  const hitOn = phase === 'closed' || phase === 'now' || phase === 'rewind';
 
   return (
-    <div className={cx(s.wrap, ready && s.ready)}>
-      <div className={s.head}>
-        {top.kind === 'flip' && start ? (
-          // selama rentetan: hitungan hari ikut berlari bersama lembar yang disobek
-          <div key="run" className={cx(s.runCount, top.mark && s.runMark)} aria-hidden>
-            <span>{fmt(t.dayN, { n: '' }).trim()}</span>
-            <b>{num(dayDiff(start, top.date) + 1)}</b>
-          </div>
-        ) : (
-          <div key="names">
-            <div className={s.eyebrow}>{fmt(t.headFor, { to })}</div>
-            {from ? <div className={s.from}>{fmt(t.headFrom, { from })}</div> : null}
-          </div>
-        )}
+    <div className={cx(s.wrap, ready && s.ready, s[`ph_${phase}`], playing && s.gaming)}>
+      {phase === 'arrived' || phase === 'back' ? <Petals kinds={['putih', 'pink']} count={9} /> : null}
+
+      <div className={s.head}>{head}</div>
+
+      {/* sinar yang berputar: mundur saat waktu diputar balik, maju saat waktu berjalan lagi */}
+      <div className={cx(s.rays, winding && s.raysBack, phase === 'forward' && s.raysFwd, (phase === 'arrived' || phase === 'back') && s.raysOn)} aria-hidden>
+        <span />
       </div>
 
-      {/* cahaya hangat yang memancar dari balik kalender saat sampai di hari ini */}
-      <div className={cx(s.rays, arrived && isToday && s.raysOn)} aria-hidden>
-        <span className={s.raysSpin} />
-        <span className={s.raysGlow} />
-      </div>
+      <div className={cx(s.piece, phase === 'closed' && s.closed)}>
+        <Sprite name="anniversary-rantai" className={s.chain} />
 
-      <div className={s.cal}>
-        <Sprite name="anniversary-papan" className={s.board} />
-        <div className={s.owner}>
-          <div className={cx(s.ownerName, owner.length > 15 && s.mid, owner.length > 26 && s.small)}>{owner}</div>
-          <div className={s.ownerSince}>{start ? fmt(t.since, { date: fullFmt.format(start) }) : t.boardPlain}</div>
+        <div className={cx(s.watch, phase === 'back' && s.flipped)}>
+          <div className={s.face}>
+            <Sprite name="anniversary-jam" className={s.art} />
+            <div className={s.dial}>
+              <span className={s.dateNum}>{dialDate.getDate()}</span>
+              <Hands refs={handRefs} live={liveOn} />
+              <span className={s.glass} />
+            </div>
+            <span className={cx(s.crownFx, winding && s.crownOn)} aria-hidden />
+          </div>
+          <div className={cx(s.face, s.faceBack)} aria-hidden={phase !== 'back'}>
+            <Sprite name="anniversary-punggung" className={s.art} />
+            <div className={s.engr}>
+              <div className={cx(s.engrTitle, (title || to).length > 20 && s.long, (title || to).length > 32 && s.xl)}>{title || fmt(t.backFallback, { to })}</div>
+              <div className={cx(s.engrNames, (to + from).length > 20 && s.long)}>{from ? `${to} & ${from}` : to}</div>
+              {start ? <div className={s.engrSince}>{fmt(t.since, { date: fullFmt.format(start) })}</div> : null}
+            </div>
+          </div>
         </div>
 
-        <div className={s.block} ref={blockRef}>
-          <span className={s.edge} style={{ '--left': Math.max(0.2, 1 - idx / Math.max(1, last)) } as CSSProperties} aria-hidden />
-          {visible.map(({ sh, i }) => {
-            const torn = i < idx;
-            const isTop = i === idx;
-            const f = falls[i];
-            const style = torn
-              ? ({
-                  '--fx': `${f.fx}em`,
-                  '--fr': `${f.fr}deg`,
-                  '--peek': `${f.peek}em`,
-                  '--sway': f.sway,
-                  '--rx': `${f.rx}deg`,
-                  '--ry': `${f.ry * f.sway}deg`,
-                  zIndex: 20 + i,
-                } as CSSProperties)
-              : ({ zIndex: isTop ? 4 : 3 } as CSSProperties);
-            const inner = (
-              <>
-                <span className={s.shade} style={torn ? { clipPath: jags[i] } : undefined} aria-hidden />
-                <span className={s.paper} style={torn ? { clipPath: jags[i] } : undefined}>
-                  {body(sh)}
-                </span>
-              </>
-            );
-            return isTop && canTear ? (
-              <button
-                key={i}
-                type="button"
-                className={cx(s.sheet, s.top)}
-                style={style}
-                aria-label={label(sh, i)}
-                onPointerDown={onDown}
-                onPointerMove={onMove}
-                onPointerUp={(e) => onEnd(e, false)}
-                onPointerCancel={(e) => onEnd(e, true)}
-                onClick={onTap}
-              >
-                {inner}
-              </button>
-            ) : (
-              <div
-                key={i}
-                className={cx(s.sheet, torn && s.torn, torn && f.fast && s.fast, isTop && s.current, isTop && arrived && s.landed)}
-                style={style}
-                role={isTop ? 'img' : undefined}
-                aria-label={isTop ? label(sh, i) : undefined}
-                aria-hidden={!isTop}
-              >
-                {inner}
-              </div>
-            );
-          })}
-          <span className={cx(s.stub, idx > 0 && s.stubOn)} aria-hidden />
+        <div className={cx(s.lid, phase !== 'closed' && s.open)}>
+          <div className={s.lidFace}>
+            <Sprite name="anniversary-tutup" className={s.art} />
+            <span className={cx(s.mono, !b && s.solo)} aria-hidden>
+              {a ? (
+                b ? (
+                  <>
+                    {a}
+                    <i>&amp;</i>
+                    {b}
+                  </>
+                ) : (
+                  a
+                )
+              ) : (
+                '♥'
+              )}
+            </span>
+            <span className={s.sheen} aria-hidden />
+          </div>
+          <div className={cx(s.lidFace, s.lidIn)}>
+            <Sprite name="anniversary-tutup-dalam" className={s.art} />
+            <div className={s.plate} aria-live="polite">
+              {plate}
+            </div>
+          </div>
         </div>
-        <Sprite name="anniversary-bilah" className={s.strip} />
+
+        {hitOn ? (
+          <button
+            ref={hitRef}
+            type="button"
+            className={s.hit}
+            aria-label={phase === 'closed' ? t.openLabel : t.windLabel}
+            onClick={() => {
+              if (phase === 'closed') open();
+            }}
+            onPointerDown={(e: ReactPointerEvent<HTMLButtonElement>) => {
+              if (e.button > 0 || phase === 'closed') return;
+              try {
+                e.currentTarget.setPointerCapture(e.pointerId);
+              } catch {
+                /* pointer sudah tidak aktif */
+              }
+              startHold();
+            }}
+            onPointerUp={stopHold}
+            onPointerCancel={stopHold}
+            onContextMenu={(e) => e.preventDefault()}
+            onKeyDown={(e) => {
+              if ((e.key === ' ' || e.key === 'Enter') && !e.repeat && phase !== 'closed') startHold();
+            }}
+            onKeyUp={stopHold}
+          />
+        ) : null}
       </div>
 
-      {showCounter && game !== 'on' ? (
-        <div className={cx(s.counter, !el && s.plain)}>
-          {el ? (
-            <>
-              <div className={s.tiles} role="timer" aria-label={`${t.counterLabel} ${el.years} ${t.years}, ${el.months} ${t.months}, ${el.days} ${t.days}`}>
-                {(
-                  [
-                    [String(el.years), t.years, true],
-                    [String(el.months), t.months, true],
-                    [String(el.days), t.days, true],
-                    [pad(el.hours), t.hours, false],
-                    [pad(el.minutes), t.minutes, false],
-                    [pad(el.seconds), t.seconds, false],
-                  ] as const
-                ).map(([v, l, big], i) => (
-                  <div key={i} className={cx(s.tile, big && s.major)}>
-                    <b>
-                      <Roll value={v} delay={i * 110} />
-                    </b>
-                    <span>{l}</span>
-                  </div>
-                ))}
-              </div>
-              <div className={s.total}>
-                {pre}
-                <span className={s.totalNum}>
-                  <Roll value={num(el.totalSeconds)} delay={500} spin={1900} />
-                </span>
-                {post}
-              </div>
-            </>
+      {/* catatan kenangan: secarik kertas yang terselip di bawah tutup jam */}
+      {cur?.note && cur.photo && !playing ? (
+        <div key={mIdx} className={cx(s.slip, cur.note.length > 40 && s.slipLong)}>
+          <span>{cur.note}</span>
+        </div>
+      ) : null}
+
+      {!finale && !playing ? (
+        <div className={s.foot}>
+          {phase === 'arrived' && el ? (
+            <p key="tot" className={s.line}>
+              {preTotal}
+              <b>{num(el.totalSeconds)}</b>
+              {postTotal}
+            </p>
           ) : null}
-          <button type="button" ref={openRef} className={s.open} onClick={openLetter}>
-            {t.openLetter} <span aria-hidden>→</span>
-          </button>
+          {cta ? (
+            <button key={`${phase}${mIdx}`} ref={ctaRef} type="button" className={s.cta} onClick={onPrimary}>
+              {cta} <span aria-hidden>→</span>
+            </button>
+          ) : null}
+          {alt && (phase === 'now' || phase === 'rewind') ? (
+            <button type="button" className={s.alt} onClick={autoWind}>
+              {t.windAlt}
+            </button>
+          ) : null}
         </div>
       ) : null}
 
-      <Confetti burst={burst} shapes="hearts" count={80} origin={{ x: 0.5, y: 0.42 }} colors={['#c8372d', '#e8c268', '#fff3da', '#f29aa5', '#f2542d']} />
-      <Confetti burst={burst} count={70} origin={{ x: 0.5, y: 0.5 }} colors={['#fbf5e6', '#f4ecd8', '#c8372d', '#e8c268']} />
+      {phase === 'closed' && ready ? <Hint key="open">{t.hintOpen}</Hint> : null}
+      {phase === 'now' && armed && !alt ? <Hint key="wind">{t.hintWind}</Hint> : null}
+      {phase === 'rewind' && !winding && !alt ? <Hint key="more">{t.hintWindMore}</Hint> : null}
 
-      {idx === 0 && canTear ? <Hint key="t0">{t.hintTear}</Hint> : null}
-      {idx > 0 && canTear ? <Hint key="t1">{t.hintTearMore}</Hint> : null}
-      {finale || game === 'on' ? null : canTear ? (
-        <TapCue key={`tear${idx}`} target={topCue} kind="drag" at={{ x: 0.5, y: 0.32 }} dir={{ x: 0, y: 3.2 }} />
-      ) : showCounter ? (
-        <TapCue key="open" target={openRef} delay={4500} />
+      {finale || playing ? null : phase === 'closed' ? (
+        ready ? <TapCue key="cueOpen" target={hitRef} at={{ x: 0.467, y: 0.16 }} delay={2200} /> : null
+      ) : phase === 'now' && armed ? (
+        <TapCue key="cueWind" target={hitRef} kind="hold" at={{ x: 0.467, y: 0.16 }} delay={2600} />
+      ) : cta ? (
+        <TapCue key={`cue${phase}${mIdx}`} target={ctaRef} delay={phase === 'arrived' ? 5200 : 3600} />
       ) : null}
 
-      {game === 'on' ? <StopCalendar t={t.game} target={start ?? startOfDay(new Date())} hasDate={!!start} tag={tag} onDone={gameDone} /> : null}
+      <Confetti burst={burst} shapes="hearts" count={80} origin={{ x: 0.5, y: 0.4 }} colors={['#e3b24f', '#fff3da', '#f29aa5', '#c8372d', '#ffd98a']} />
+      <Confetti burst={burst} count={60} origin={{ x: 0.5, y: 0.46 }} colors={['#fbf5e6', '#e3b24f', '#f1d58a', '#f29aa5']} />
+
+      {playing ? <StopCalendar t={t.game} target={start ?? startOfDay(new Date())} hasDate={!!start} tag={tag} onDone={gameDone} /> : null}
 
       {finale ? (
         <Finale
@@ -670,7 +766,7 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
           mode={mode}
           eyebrow={t.finale}
           flower="bunga-kamboja-pink"
-          theme={{ bg: `url(${BACKDROP}) center bottom / cover no-repeat`, ink: meta.palette.ink, paper: '#fffaf0', paperInk: '#3b2a22' }}
+          theme={{ backdrop: BACKDROP, ink: '#fbf0d9', paper: '#fffaf0', paperInk: '#3b2a22' }}
           onReplay={onReplay}
         >
           {el ? <div className={s.finaleCount}>{fmt(t.finaleCount, { n: num(el.dayNumber) })}</div> : null}
