@@ -2,6 +2,7 @@ import type { ComponentType } from 'react';
 import Amplop from './amplop/Cover';
 import Anniversary from './anniversary/Cover';
 import Bento from './bento/Cover';
+import Bioskop from './bioskop/Cover';
 import Buket from './buket/Cover';
 import Lampion from './lampion/Cover';
 import Lilin from './lilin/Cover';
@@ -26,4 +27,5 @@ export const COVERS: Record<string, ComponentType> = {
   mau: Mau,
   plester: Plester,
   toga: Toga,
+  bioskop: Bioskop,
 };

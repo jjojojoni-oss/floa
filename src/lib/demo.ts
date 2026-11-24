@@ -74,6 +74,11 @@ const DEMO: Record<string, DemoExtra> = {
     password: '140223',
     hint: { id: 'Tanggal jadian kita (DDMMYY)', ms: 'Tarikh kita mula bersama (DDMMYY)', en: 'The day it all started (DDMMYY)' },
   },
+  bioskop: {
+    song: { id: '2BCYKFDWnZi9PMkZiemQh1', title: 'Film Favorit', artist: 'Sheila On 7' },
+    password: '1915',
+    hint: { id: 'Jam film pertama kita (JJMM)', ms: 'Waktu wayang pertama kita (JJMM)', en: 'Showtime of our first movie (HHMM)' },
+  },
 };
 
 export type DemoLock = { password: string; hint: string; shape: string | null };

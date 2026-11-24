@@ -31,6 +31,7 @@ const PLAYERS: Record<string, ComponentType<TemplateProps>> = {
   mau: dynamic(() => import('./mau'), { ssr: false, loading: Loading }),
   plester: dynamic(() => import('./plester'), { ssr: false, loading: Loading }),
   toga: dynamic(() => import('./toga'), { ssr: false, loading: Loading }),
+  bioskop: dynamic(() => import('./bioskop'), { ssr: false, loading: Loading }),
 };
 
 /** Pemuat kode tiap template, untuk dipanaskan selagi kalimat pembuka tampil. */
@@ -47,6 +48,7 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
   mau: () => import('./mau'),
   plester: () => import('./plester'),
   toga: () => import('./toga'),
+  bioskop: () => import('./bioskop'),
 };
 
 /**
