@@ -37,6 +37,7 @@ const PLAYERS: Record<string, ComponentType<TemplateProps>> = {
   toples: dynamic(() => import('./toples'), { ssr: false, loading: Loading }),
   gacha: dynamic(() => import('./gacha'), { ssr: false, loading: Loading }),
   botol: dynamic(() => import('./botol'), { ssr: false, loading: Loading }),
+  photobox: dynamic(() => import('./photobox'), { ssr: false, loading: Loading }),
 };
 
 /** Pemuat kode tiap template, untuk dipanaskan selagi kalimat pembuka tampil. */
@@ -59,6 +60,7 @@ const LOADERS: Record<string, () => Promise<unknown>> = {
   toples: () => import('./toples'),
   gacha: () => import('./gacha'),
   botol: () => import('./botol'),
+  photobox: () => import('./photobox'),
 };
 
 /**

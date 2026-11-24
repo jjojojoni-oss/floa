@@ -104,6 +104,11 @@ const DEMO: Record<string, DemoExtra> = {
     password: '1745',
     hint: { id: 'Jam matahari terbenam (JJMM)', ms: 'Waktu matahari terbenam (JJMM)', en: 'Sunset time (HHMM)' },
   },
+  photobox: {
+    song: { id: '6WUqv9T3RPTHHNKw0zVJuM', title: 'Sahabat Sejati', artist: 'Sheila On 7' },
+    password: '321',
+    hint: { id: 'Hitungan mundur sebelum jepret', ms: 'Kiraan sebelum gambar diambil', en: 'The countdown before the flash' },
+  },
 };
 
 export type DemoLock = { password: string; hint: string; shape: string | null };

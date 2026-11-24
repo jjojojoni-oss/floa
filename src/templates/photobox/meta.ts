@@ -33,7 +33,7 @@ export const meta: TemplateMeta = {
     { key: 'message', label: 'Surat di balik strip', hint: 'Muncul setelah stripnya dibalik.', max: 900, multiline: true },
   ],
   sample: {
-    to: 'Wulan',
+    to: 'Tiara',
     from: 'Jihan',
     title: 'Sahabat sampai tua, titik.',
     notes: [
@@ -43,7 +43,7 @@ export const meta: TemplateMeta = {
       'Lulus juga! Togamu miring, btw.',
     ],
     message:
-      'Empat tahun, Lan. Dari kenalan gara-gara salah masuk kelas, sampai sekarang kamu hafal pesanan baksoku: tanpa seledri, sambal dua sendok, kuah dipisah.\n\nMakasih sudah jadi orang pertama yang kukabari tiap ada kabar baik, kabar buruk, dan kabar nggak penting sama sekali. Terutama yang nggak penting.\n\nHabis ini kita beda kota, tapi janji ya: tiap ketemu, wajib foto di photobox. Muka jelek tetap dihitung. Selamat wisuda, sahabatku.',
+      'Empat tahun, Ra. Dari kenalan gara-gara salah masuk kelas, sampai sekarang kamu hafal pesanan baksoku: tanpa seledri, sambal dua sendok, kuah dipisah.\n\nMakasih sudah jadi orang pertama yang kukabari tiap ada kabar baik, kabar buruk, dan kabar nggak penting sama sekali. Terutama yang nggak penting.\n\nHabis ini kita beda kota, tapi janji ya: tiap ketemu, wajib foto di photobox. Muka jelek tetap dihitung. Selamat wisuda, sahabatku.',
     photos: PHOTOS,
   },
   i18n: {
