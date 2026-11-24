@@ -256,6 +256,9 @@
   flex-direction: column;
   align-items: center;
   padding: 3.6em 1.5em 2.4em;
+  /* daun hiasan surat menjulur sedikit lewat tepi layar: dipotong di sini supaya layar surat
+     tidak ikut bergeser ke samping saat paragraf baru digulir ke pandangan */
+  overflow-x: clip;
 }
 .eyebrow {
   font-size: 0.72em;
