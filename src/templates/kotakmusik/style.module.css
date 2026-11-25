@@ -57,7 +57,22 @@
   width: calc(780em / 32);
   height: calc(184em / 32);
   pointer-events: none;
+  /* ikut mengecil bersama kotak, berporos di titik kaki kotak (y 1082 lukisan) supaya bayangannya tetap pas */
+  transform-origin: 50% 46.7%;
+  scale: var(--fit, 1);
 }
+
+/* Lukisan menempel di bawah layar. Di layar yang lebih pendek (rasio tinggi:lebar di bawah ~1.85) kotaknya ikut
+   naik, dan tutup yang terbuka menabrak nama + celetukan di kepala. Kotak (dan taplaknya) dikecilkan bertahap
+   supaya cermin di tutupnya selalu berada di bawah kepala. Angkanya dihitung dari tinggi kepala (2 baris
+   celetukan) di tepi bawah tiap rentang rasio. */
+@container (min-aspect-ratio: 100 / 185) { .wrap { --fit: 0.95; } }
+@container (min-aspect-ratio: 100 / 178) { .wrap { --fit: 0.89; } }
+@container (min-aspect-ratio: 100 / 170) { .wrap { --fit: 0.8; } }
+@container (min-aspect-ratio: 100 / 160) { .wrap { --fit: 0.72; } }
+@container (min-aspect-ratio: 100 / 150) { .wrap { --fit: 0.63; } }
+@container (min-aspect-ratio: 100 / 140) { .wrap { --fit: 0.54; } }
+@container (min-aspect-ratio: 100 / 130) { .wrap { --fit: 0.46; } }
 .fill {
   width: 100%;
   height: 100%;
@@ -134,6 +149,9 @@
   width: calc(576em / 32);
   height: calc(716em / 32);
   isolation: isolate;
+  /* mengecil di layar pendek (lihat --fit), kakinya tetap menapak di taplak */
+  transform-origin: 50% 100%;
+  scale: var(--fit, 1);
 }
 /* tiap "krek" saat kunci diputar, seluruh kotak ikut bergetar sedikit (dua nama supaya animasinya mulai ulang) */
 .tickA {
