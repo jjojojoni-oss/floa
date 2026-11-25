@@ -218,7 +218,8 @@ function Scene({ data, mode, onReplay }: TemplateProps & { onReplay: () => void 
       ),
     );
     later(() => setSmoke(true), ms(3600, 0.15));
-    later(() => !reduce.current && setZoom(true), 4700);
+    // (dulu kamera mendekat ke papan nama di sini; di HP terasa seperti layar tiba-tiba ter-zoom, jadi ditiadakan:
+    // judulnya tetap tertulis huruf demi huruf di papan, kameranya diam)
     later(() => setEngraving(true), ms(5800, 0.15));
   };
   const light = (i: number) => {
