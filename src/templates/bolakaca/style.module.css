@@ -50,8 +50,22 @@
   margin-left: -12.1875em;
   font-size: calc(var(--u) * 32);
   transform-origin: calc(390em / 32) calc(922em / 32);
+  /* layar pendek: bola, bayangan, cahaya dan lampionnya mengecil bersama (lihat --fit) dengan alas tetap duduk di
+     ambang jendela (y 1012): poros zoom ada di y 922, jadi turunkan (1012 − 922) × (1 − fit) */
+  scale: var(--fit, 1);
+  translate: 0 calc(90em / 32 * (1 - var(--fit, 1)));
   transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
+/* Lukisan menempel di bawah layar. Di layar yang lebih pendek (rasio tinggi:lebar di bawah ~1.85) bola kacanya ikut
+   naik dan tulisan di langit bola menabrak nama + celetukan di kepala. Bola dikecilkan bertahap supaya puncak
+   kacanya selalu di bawah kepala (2 baris celetukan + titik-titik). */
+@container (min-aspect-ratio: 100 / 185) { .wrap { --fit: 0.96; } }
+@container (min-aspect-ratio: 100 / 178) { .wrap { --fit: 0.89; } }
+@container (min-aspect-ratio: 100 / 170) { .wrap { --fit: 0.79; } }
+@container (min-aspect-ratio: 100 / 160) { .wrap { --fit: 0.7; } }
+@container (min-aspect-ratio: 100 / 150) { .wrap { --fit: 0.6; } }
+@container (min-aspect-ratio: 100 / 140) { .wrap { --fit: 0.5; } }
+@container (min-aspect-ratio: 100 / 130) { .wrap { --fit: 0.45; } }
 /* pelat kuningan diukir: kamera mendekat sebentar */
 .world.zoom {
   transform: scale(1.22);

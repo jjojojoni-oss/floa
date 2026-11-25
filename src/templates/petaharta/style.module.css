@@ -41,10 +41,19 @@
   margin-left: -12.1875em;
   font-size: calc(var(--u) * 32);
   transform-origin: 9.375em 10.5625em;
-  transition: transform 1.9s cubic-bezier(0.55, 0, 0.22, 1);
+  /* layar pendek: peta mengecil (lihat --fit) dengan tepi bawah-tengahnya tetap di tempat. Porosnya tetap tanda X
+     (untuk zoom), jadi pergeserannya dikembalikan: (titik bawah-tengah − poros) × (1 − fit) */
+  scale: var(--fit, 1);
+  translate: calc(2.8125em * (1 - var(--fit, 1))) calc(36.3125em * (1 - var(--fit, 1)));
+  transition:
+    transform 1.9s cubic-bezier(0.55, 0, 0.22, 1),
+    scale 1.9s cubic-bezier(0.55, 0, 0.22, 1),
+    translate 1.9s cubic-bezier(0.55, 0, 0.22, 1);
 }
-/* mendekat ke tanda X: X ditaruh di tengah layar, sedikit di atas */
+/* mendekat ke tanda X: X ditaruh di tengah layar, sedikit di atas (ukuran penuh lagi, persis seperti semula) */
 .zoomed .world {
+  scale: 1;
+  translate: 0 0;
   transform: translate(2.8125em, calc(36.3125em - 54cqh)) scale(2.1);
 }
 .over .world {
@@ -610,7 +619,22 @@
   inset: 0;
   z-index: 6;
   pointer-events: none;
+  /* selebar kertas petanya di layar pendek; hanya menyempit ke samping supaya tetap mengikuti tepi gulungan */
+  scale: var(--fit, 1) 1;
 }
+
+/* Peta (780 × 1500) menutup layar dan menempel di bawah. Di layar yang lebih pendek (rasio tinggi:lebar di bawah
+   ~1.92) bagian atasnya terpotong: pulau X keluar layar dan tertimpa kepala. Peta dikecilkan bertahap sehingga
+   puncak pulau teratas (y ≈ 250) selalu di bawah kepala; di kiri-kanannya terlihat meja kayu. Angka dari
+   pengukuran kepala di 390 × 532…847. */
+@container (min-aspect-ratio: 100 / 192) { .wrap { --fit: 0.97; } }
+@container (min-aspect-ratio: 100 / 185) { .wrap { --fit: 0.91; } }
+@container (min-aspect-ratio: 100 / 178) { .wrap { --fit: 0.86; } }
+@container (min-aspect-ratio: 100 / 170) { .wrap { --fit: 0.81; } }
+@container (min-aspect-ratio: 100 / 160) { .wrap { --fit: 0.75; } }
+@container (min-aspect-ratio: 100 / 150) { .wrap { --fit: 0.71; } }
+@container (min-aspect-ratio: 100 / 140) { .wrap { --fit: 0.65; } }
+@container (min-aspect-ratio: 100 / 130) { .wrap { --fit: 0.6; } }
 .roll {
   position: absolute;
   left: 50%;
