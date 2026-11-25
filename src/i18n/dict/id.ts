@@ -258,8 +258,7 @@ export const id = {
     show: 'Tampilkan pemutar musik',
     hide: 'Kecilkan pemutar musik',
     tapToPlay: 'Ketuk ▶ untuk memutar lagunya',
-    autoplay: 'Putar otomatis',
-    autoplaySub: 'Lagu mulai sendiri saat penerima mengetuk kadonya. Kalau dimatikan, penerima menekan tombol musik sendiri.',
+    autoplaySub: 'Lagunya mulai sendiri begitu penerima mengetuk kadonya.',
     playSong: 'Putar lagu',
   },
   lock: {

@@ -54,12 +54,15 @@ function loadSpotify(): Promise<IFrameAPI> {
 }
 
 /**
- * Lagu latar kado dari Spotify. Pemutarnya disimpan sebagai tombol bulat kecil di kiri atas;
- * lagu mulai pada ketukan pertama penerima (browser melarang suara sebelum ada ketukan), atau langsung
- * kalau `start="now"` (mis. setelah kado terkunci dibuka, karena ketukan "Buka" sudah dihitung).
- * Kalau browser tetap menolak memutar otomatis, pemutarnya dibuka supaya penerima bisa menekan ▶ sendiri.
+ * Lagu latar kado dari Spotify, selalu diputar otomatis. Pemutarnya disimpan sebagai tombol bulat kecil di kiri
+ * atas; lagu mulai pada ketukan pertama penerima (browser melarang suara sebelum ada ketukan), atau langsung
+ * kalau `start="now"` (mis. setelah kado terkunci dibuka, karena ketukan "Buka" sudah dihitung). Kalau Spotify
+ * belum siap atau browser menolak, ketukan-ketukan berikutnya di kado mencoba lagi sampai lagunya pernah berbunyi;
+ * kalau tetap tidak bisa, pemutarnya dibuka (sekali) supaya penerima bisa menekan ▶ sendiri.
+ * `armed={false}`: pemutarnya sudah dimuat (tersembunyi, mis. selama layar kunci demo) tapi belum boleh berbunyi,
+ * supaya begitu kuncinya terbuka lagunya bisa langsung mulai tanpa menunggu Spotify dimuat.
  */
-export function MusicPlayer({ music, start = 'tap' }: { music: GiftMusic; start?: 'tap' | 'now' }) {
+export function MusicPlayer({ music, start = 'tap', armed = true }: { music: GiftMusic; start?: 'tap' | 'now'; armed?: boolean }) {
   const t = useT();
   const hostRef = useRef<HTMLDivElement>(null);
   const ctrlRef = useRef<Controller | null>(null);
@@ -70,8 +73,10 @@ export function MusicPlayer({ music, start = 'tap' }: { music: GiftMusic; start?
   const [open, setOpen] = useState(false);
   const [needsTap, setNeedsTap] = useState(false);
   const [failed, setFailed] = useState(false);
-  const [begun, setBegun] = useState(false);
-  const autoplay = music.autoplay !== false;
+  /** lagunya sudah pernah benar-benar berbunyi: setelah itu ketukan tidak lagi memutar ulang (penerima bebas menjeda) */
+  const everPlayed = useRef(false);
+  const lastTry = useRef(0);
+  const nudged = useRef(false);
   const muted = useSyncExternalStore(subscribeMuted, isMuted, () => false);
   const mutedRef = useRef(muted);
   mutedRef.current = muted;
@@ -88,15 +93,17 @@ export function MusicPlayer({ music, start = 'tap' }: { music: GiftMusic; start?
     }
     if (mutedRef.current) return;
     started.current = true;
-    setBegun(true);
+    lastTry.current = Date.now();
     c.play();
-    // kalau setelah beberapa detik masih belum bunyi, minta penerima menekan ▶ di pemutarnya
+    // ketukan berikutnya akan mencoba lagi; kalau setelah 8 detik tetap belum bunyi, buka pemutarnya supaya penerima
+    // bisa menekan ▶ sendiri (cukup sekali, dan ditutup lagi begitu lagunya jalan)
     window.setTimeout(() => {
-      if (!playingRef.current) {
+      if (!playingRef.current && !everPlayed.current && !nudged.current) {
+        nudged.current = true;
         setNeedsTap(true);
         setOpen(true);
       }
-    }, 3500);
+    }, 8000);
   };
 
   // pasang pemutar Spotify
@@ -127,7 +134,12 @@ export function MusicPlayer({ music, start = 'tap' }: { music: GiftMusic; start?
             if (!alive) return;
             const isPlaying = !e.data.isPaused;
             setPlaying(isPlaying);
-            if (isPlaying) setNeedsTap(false);
+            if (isPlaying) {
+              // pemutar yang tadi dibuka karena lagunya tak kunjung bunyi: tutup lagi
+              if (!everPlayed.current && nudged.current) setOpen(false);
+              everPlayed.current = true;
+              setNeedsTap(false);
+            }
           });
         });
       })
@@ -141,18 +153,30 @@ export function MusicPlayer({ music, start = 'tap' }: { music: GiftMusic; start?
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [music.type, music.id]);
 
-  // mulai: ketukan pertama di mana pun di kado, atau langsung (hanya kalau pembuatnya memilih putar otomatis)
+  // mulai: langsung (kado terkunci baru dibuka) atau pada ketukan pertama di mana pun di kado. Selama lagunya belum
+  // pernah berbunyi (Spotify masih dimuat, atau browser menolak), tiap ketukan berikutnya mencoba lagi; jedanya
+  // dijaga supaya lagu yang sedang memuat tidak diulang dari awal.
+  // Didengarkan saat jari DIANGKAT (pointerup), bukan saat menyentuh: di layar sentuh hanya pointerup/touchend/click
+  // yang dihitung browser sebagai izin memutar suara (pointerdown hanya berlaku untuk mouse). Inilah sebabnya dulu
+  // lagunya otomatis di desktop tapi di HP penerima harus menekan ▶ sendiri.
   useEffect(() => {
-    if (!autoplay) return;
-    if (start === 'now') {
+    if (!armed) return;
+    if (start === 'now') tryPlay();
+    const onTap = (e: Event) => {
+      if (e instanceof KeyboardEvent && e.key !== 'Enter' && e.key !== ' ') return;
+      if (everPlayed.current || playingRef.current) return;
+      if (started.current && Date.now() - lastTry.current < 1200) return;
       tryPlay();
-      return;
-    }
-    const onFirst = () => tryPlay();
-    document.addEventListener('pointerdown', onFirst, { capture: true, once: true });
-    return () => document.removeEventListener('pointerdown', onFirst, { capture: true });
+    };
+    const opts = { capture: true } as const;
+    document.addEventListener('pointerup', onTap, opts);
+    document.addEventListener('keydown', onTap, opts);
+    return () => {
+      document.removeEventListener('pointerup', onTap, opts);
+      document.removeEventListener('keydown', onTap, opts);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [start, autoplay]);
+  }, [start, armed]);
 
   // tombol suara di pojok kanan atas juga mengatur musiknya
   useEffect(() => {
@@ -169,20 +193,17 @@ export function MusicPlayer({ music, start = 'tap' }: { music: GiftMusic; start?
   if (failed) return null;
 
   return (
-    <div className="pointer-events-none absolute inset-x-3 top-3 z-[70] flex flex-col items-start gap-2">
+    <div className={'pointer-events-none absolute inset-x-3 top-3 z-[70] flex flex-col items-start gap-2' + (armed ? '' : ' invisible')} aria-hidden={!armed || undefined}>
       <button
         type="button"
         onClick={(e) => {
           e.stopPropagation();
-          // tanpa putar otomatis: ketukan pertama di tombol ini yang memulai lagunya
-          if (!begun && !autoplay) tryPlay();
-          else setOpen((v) => !v);
+          setOpen((v) => !v);
         }}
-        aria-label={!begun && !autoplay ? t.music.playSong : open ? t.music.hide : t.music.show}
+        aria-label={open ? t.music.hide : t.music.show}
         aria-expanded={open}
         className={
-          'pointer-events-auto relative flex h-11 items-center justify-center gap-2 rounded-full before:absolute before:-inset-1.5 bg-[#1e1b18]/45 text-white shadow-[0_6px_16px_-6px_rgba(0,0,0,0.5)] backdrop-blur-md transition-transform active:scale-95 ' +
-          (!begun && !autoplay ? 'pl-3.5 pr-4' : 'w-11')
+          'pointer-events-auto relative flex h-11 w-11 items-center justify-center gap-2 rounded-full before:absolute before:-inset-1.5 bg-[#1e1b18]/45 text-white shadow-[0_6px_16px_-6px_rgba(0,0,0,0.5)] backdrop-blur-md transition-transform active:scale-95'
         }
       >
         {playing ? (
@@ -196,7 +217,6 @@ export function MusicPlayer({ music, start = 'tap' }: { music: GiftMusic; start?
             <path d="M19 3v12.2A3.5 3.5 0 1 1 17 12V7.3l-8 1.6v8.3A3.5 3.5 0 1 1 7 14V5.6z" />
           </svg>
         )}
-        {!begun && !autoplay ? <span className="text-[13px] font-extrabold">{t.music.playSong}</span> : null}
       </button>
 
       {/* pemutar tetap terpasang (supaya lagunya tidak berhenti), hanya disembunyikan saat dikecilkan */}

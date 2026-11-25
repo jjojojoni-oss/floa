@@ -260,8 +260,7 @@ export const en: Dict = {
     show: 'Show music player',
     hide: 'Minimize music player',
     tapToPlay: 'Tap ▶ to play the song',
-    autoplay: 'Autoplay',
-    autoplaySub: 'The song starts on its own when your recipient taps the gift. Turn it off to let them press the music button themselves.',
+    autoplaySub: 'The song starts on its own as soon as your recipient taps the gift.',
     playSong: 'Play song',
   },
   lock: {

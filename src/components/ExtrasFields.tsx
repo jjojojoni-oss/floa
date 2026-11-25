@@ -140,7 +140,7 @@ export function MusicField({ music, onChange }: { music: GiftMusic | null | unde
     setError(null);
     try {
       const r = await api<{ type: MusicKind; id: string; title?: string }>(`/api/music?url=${encodeURIComponent(v)}`);
-      onChange({ provider: 'spotify', type: r.type, id: r.id, ...(r.title ? { title: r.title } : {}), autoplay: music?.autoplay ?? true });
+      onChange({ provider: 'spotify', type: r.type, id: r.id, ...(r.title ? { title: r.title } : {}), autoplay: true });
       setLink('');
     } catch (e) {
       // server tak terjangkau tapi link-nya jelas: tetap dipakai (judulnya saja yang tidak ada)
@@ -172,13 +172,7 @@ export function MusicField({ music, onChange }: { music: GiftMusic | null | unde
             allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
             className="block rounded-[14px] border-0 bg-[#282828]"
           />
-          <Switch
-            className="mt-2.5"
-            title={t.music.autoplay}
-            sub={t.music.autoplaySub}
-            checked={music.autoplay !== false}
-            onChange={(on) => onChange({ ...music, autoplay: on })}
-          />
+          <p className="mt-2 text-[12.5px] font-semibold leading-snug text-ink-2">{t.music.autoplaySub}</p>
           <div className="mt-2 flex items-start justify-between gap-3">
             <p className="text-[12.5px] leading-snug text-muted">{t.music.previewNote}</p>
             <button type="button" onClick={() => onChange(null)} className="btn btn-ghost h-9 flex-none px-3.5 text-[13px]">

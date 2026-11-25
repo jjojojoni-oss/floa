@@ -260,8 +260,7 @@ export const ms: Dict = {
     show: 'Tunjukkan pemain muzik',
     hide: 'Kecilkan pemain muzik',
     tapToPlay: 'Ketik ▶ untuk memainkan lagu',
-    autoplay: 'Main secara automatik',
-    autoplaySub: 'Lagu bermula sendiri apabila penerima mengetik hadiahnya. Jika dimatikan, penerima menekan butang muzik sendiri.',
+    autoplaySub: 'Lagu bermula sendiri sebaik sahaja penerima mengetik hadiahnya.',
     playSong: 'Main lagu',
   },
   lock: {
