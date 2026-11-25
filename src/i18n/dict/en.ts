@@ -32,7 +32,6 @@ export const en: Dict = {
     h1a: 'Digital gifts that make them',
     h1b: 'smile',
     sub: 'Pick a template, change the names and message, pay by card. Your gift link is ready in minutes.',
-    chips: ['No account needed', 'Ready in minutes', 'From {price}'],
     all: 'All',
     tryDemo: 'Try demo',
     tryDemoOf: 'Try the {name} demo',

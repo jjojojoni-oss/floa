@@ -30,7 +30,6 @@ export const id = {
     h1a: 'Kado digital yang bikin dia',
     h1b: 'senyum',
     sub: 'Pilih template, ganti nama dan pesannya, bayar pakai QRIS atau kartu. Link kadomu langsung jadi.',
-    chips: ['Tanpa daftar akun', 'Beres dalam hitungan menit', 'Mulai {price}'],
     all: 'Semua',
     tryDemo: 'Coba demo',
     tryDemoOf: 'Coba demo {name}',

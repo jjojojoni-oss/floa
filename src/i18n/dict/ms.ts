@@ -32,7 +32,6 @@ export const ms: Dict = {
     h1a: 'Hadiah digital yang buat dia',
     h1b: 'tersenyum',
     sub: 'Pilih templat, tukar nama dan mesejnya, bayar dengan kad atau QRIS. Pautan hadiahmu terus siap.',
-    chips: ['Tak perlu daftar akaun', 'Siap dalam beberapa minit', 'Dari {price}'],
     all: 'Semua',
     tryDemo: 'Cuba demo',
     tryDemoOf: 'Cuba demo {name}',

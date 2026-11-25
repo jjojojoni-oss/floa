@@ -1,13 +1,11 @@
 import { Catalog } from '@/components/Catalog';
 import { SiteFooter, SiteHeader } from '@/components/SiteChrome';
-import { fmt } from '@/i18n/fmt';
 import { dictOf } from '@/i18n/server';
-import { cheapestLabel } from '@/lib/site';
 
 const STEP_ART = ['kuncup-pink', 'bunga-kamboja', 'pita'];
 
 export default async function Home({ params }: { params: Promise<{ lang: string }> }) {
-  const { locale, t } = await dictOf(params);
+  const { t } = await dictOf(params);
   return (
     <div className="relative overflow-x-clip">
       {/* lukisan pembuka: langit senja + rangkaian bunga tropis */}
@@ -45,13 +43,6 @@ export default async function Home({ params }: { params: Promise<{ lang: string 
           <p className="mt-3 max-w-[19rem] text-[15px] font-medium leading-snug text-ink-2 sm:mx-auto sm:mt-5 sm:max-w-xl sm:text-lg">
             {t.home.sub}
           </p>
-          <ul className="mt-3.5 flex flex-wrap gap-1.5 text-[12px] font-bold sm:mt-6 sm:justify-center sm:text-[13px]">
-            {t.home.chips.map((c) => (
-              <li key={c} className="glass rounded-full px-3 py-1.5">
-                {fmt(c, { price: cheapestLabel(locale) })}
-              </li>
-            ))}
-          </ul>
         </section>
 
         <Catalog />
