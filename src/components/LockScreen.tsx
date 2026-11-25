@@ -24,16 +24,23 @@ export function LockScreen({
   lock,
   onOpen,
   demo,
+  onGesture,
 }: {
   slug: string;
   lock: Lock;
   onOpen: (d: GiftData) => void;
+  /** Demo saja: dipanggil DI DALAM ketukan yang pasti membuka kunci (kata sandinya diketahui di perangkat), supaya
+   *  lagunya bisa mulai di ketukan itu juga. HP hanya mengizinkan suara dari dalam ketukan, bukan sesudah animasi. */
+  onGesture?: () => void;
   /** halaman demo: kata sandinya ditampilkan dan dicek di perangkat, tanpa server */
   demo?: { password: string; data: GiftData };
 }) {
   const t = useT();
   const digits = lock.shape && /^d[3-8]$/.test(lock.shape) ? Number(lock.shape.slice(1)) : 0;
   const [value, setValue] = useState('');
+  const valueRef = useRef(value);
+  valueRef.current = value;
+  const isDemoPass = (v: string) => !!demo && v.trim().toLowerCase() === demo.password.toLowerCase();
   const [phase, setPhase] = useState<Phase>('idle');
   const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
@@ -103,6 +110,9 @@ export function LockScreen({
       sfx.tap();
       haptic(6);
       setError(null);
+      // angka terakhir yang melengkapi kata sandi demo: lagunya dimulai sekarang, masih di dalam ketukan
+      const cur = valueRef.current;
+      if (cur.length < digits && cur.length + 1 === digits && isDemoPass(cur + d)) onGesture?.();
       setValue((v) => {
         if (v.length >= digits) return v;
         const next = v + d;
@@ -111,7 +121,7 @@ export function LockScreen({
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [busy, digits, submit],
+    [busy, digits, submit, onGesture],
   );
 
   const erase = useCallback(() => {
@@ -135,6 +145,7 @@ export function LockScreen({
 
   const onText = (e: FormEvent) => {
     e.preventDefault();
+    if (!busy && isDemoPass(value)) onGesture?.();
     void submit(value);
   };
 
@@ -171,6 +182,7 @@ export function LockScreen({
               aria-label={`${t.lock.demoFill}: ${demo.password}`}
               onClick={() => {
                 if (busy) return;
+                onGesture?.();
                 sfx.tap();
                 setError(null);
                 setValue(demo.password);

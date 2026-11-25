@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { type MutableRefObject, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useT } from '@/i18n/client';
 import { spotifyUri } from '@/lib/music';
 import { isMuted, subscribeMuted } from '@/templates/kit/sfx';
@@ -61,8 +61,20 @@ function loadSpotify(): Promise<IFrameAPI> {
  * kalau tetap tidak bisa, pemutarnya dibuka (sekali) supaya penerima bisa menekan ▶ sendiri.
  * `armed={false}`: pemutarnya sudah dimuat (tersembunyi, mis. selama layar kunci demo) tapi belum boleh berbunyi,
  * supaya begitu kuncinya terbuka lagunya bisa langsung mulai tanpa menunggu Spotify dimuat.
+ * `primeRef`: diisi fungsi untuk memulai lagu dari dalam sebuah ketukan, juga selagi belum `armed` (demo: ketukan
+ * yang membuka kunci), karena HP hanya mengizinkan suara yang dimulai di dalam ketukan itu sendiri.
  */
-export function MusicPlayer({ music, start = 'tap', armed = true }: { music: GiftMusic; start?: 'tap' | 'now'; armed?: boolean }) {
+export function MusicPlayer({
+  music,
+  start = 'tap',
+  armed = true,
+  primeRef,
+}: {
+  music: GiftMusic;
+  start?: 'tap' | 'now';
+  armed?: boolean;
+  primeRef?: MutableRefObject<(() => void) | null>;
+}) {
   const t = useT();
   const hostRef = useRef<HTMLDivElement>(null);
   const ctrlRef = useRef<Controller | null>(null);
@@ -159,13 +171,29 @@ export function MusicPlayer({ music, start = 'tap', armed = true }: { music: Gif
   // Didengarkan saat jari DIANGKAT (pointerup), bukan saat menyentuh: di layar sentuh hanya pointerup/touchend/click
   // yang dihitung browser sebagai izin memutar suara (pointerdown hanya berlaku untuk mouse). Inilah sebabnya dulu
   // lagunya otomatis di desktop tapi di HP penerima harus menekan ▶ sendiri.
+  // dipanggil dari dalam ketukan pembuka kunci (lihat primeRef)
+  useEffect(() => {
+    if (!primeRef) return;
+    primeRef.current = () => {
+      if (!everPlayed.current && !playingRef.current) tryPlay();
+    };
+    return () => {
+      primeRef.current = null;
+    };
+  });
+
   useEffect(() => {
     if (!armed) return;
-    if (start === 'now') tryPlay();
+    // (kalau ketukan pembuka kunci baru saja memulainya, jangan diulang dari awal)
+    if (start === 'now' && !everPlayed.current && !playingRef.current && !(started.current && Date.now() - lastTry.current < 400)) tryPlay();
     const onTap = (e: Event) => {
       if (e instanceof KeyboardEvent && e.key !== 'Enter' && e.key !== ' ') return;
       if (everPlayed.current || playingRef.current) return;
-      if (started.current && Date.now() - lastTry.current < 1200) return;
+      // Jeda sangat pendek: hanya untuk ketukan yang sama (atau dua ketukan beruntun) selagi Spotify belum sempat
+      // melapor. Lagu yang benar-benar diterima Spotify langsung terlihat lewat playingRef (status putar), jadi jeda
+      // yang lebih panjang tidak perlu dan justru melewatkan ketukan pita yang datang cepat sesudah percobaan yang
+      // ditolak (itu yang membuat beberapa template di HP baru berbunyi jauh sesudahnya).
+      if (started.current && Date.now() - lastTry.current < 400) return;
       tryPlay();
     };
     const opts = { capture: true } as const;
@@ -193,7 +221,7 @@ export function MusicPlayer({ music, start = 'tap', armed = true }: { music: Gif
   if (failed) return null;
 
   return (
-    <div className={'pointer-events-none absolute inset-x-3 top-3 z-[70] flex flex-col items-start gap-2' + (armed ? '' : ' invisible')} aria-hidden={!armed || undefined}>
+    <div className="pointer-events-none absolute inset-x-3 top-3 z-[70] flex flex-col items-start gap-2" aria-hidden={!armed || undefined}>
       <button
         type="button"
         onClick={(e) => {
@@ -203,7 +231,8 @@ export function MusicPlayer({ music, start = 'tap', armed = true }: { music: Gif
         aria-label={open ? t.music.hide : t.music.show}
         aria-expanded={open}
         className={
-          'pointer-events-auto relative flex h-11 w-11 items-center justify-center gap-2 rounded-full before:absolute before:-inset-1.5 bg-[#1e1b18]/45 text-white shadow-[0_6px_16px_-6px_rgba(0,0,0,0.5)] backdrop-blur-md transition-transform active:scale-95'
+          'pointer-events-auto relative flex h-11 w-11 items-center justify-center gap-2 rounded-full before:absolute before:-inset-1.5 bg-[#1e1b18]/45 text-white shadow-[0_6px_16px_-6px_rgba(0,0,0,0.5)] backdrop-blur-md transition-transform active:scale-95' +
+          (armed ? '' : ' invisible')
         }
       >
         {playing ? (
