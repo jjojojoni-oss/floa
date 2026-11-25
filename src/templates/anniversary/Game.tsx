@@ -1,154 +1,152 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { MiniGame, Sprite, cx, haptic, sfx, useTimers } from '../kit';
-import { fmt } from '@/i18n/client';
-import { addDays } from './date';
-import type { TEXT } from './i18n';
+import { useEffect, useRef, useState } from 'react';
+import { MiniGame, Sprite, TapCue, cx, haptic, sfx, useTimers } from '../kit';
+import type { AnnivText } from './i18n';
 import g from './game.module.css';
 
-type GameText = (typeof TEXT)['id']['game'];
-type Mode = 'spin' | 'miss' | 'spin2' | 'brake' | 'hit';
+type GameText = AnnivText['game'];
+type Mood = 'sleep' | 'grumpy' | 'sneeze' | 'happy';
+const GOAL = 3;
 
-/** lembar yang berputar: selisih hari dari tanggal tujuan (0 = tanggal tujuan) */
-const OFFSETS = [0, 4, -1, 11, 1, -6, 23, -2, 7, -13];
+/** Wajah di pelat krem bundar pada ketel lokomotif mainan (viewBox −50..50). */
+function Face({ mood }: { mood: Mood }) {
+  const ink = '#3a1d12';
+  return (
+    <svg className={g.face} viewBox="-50 -50 100 100" aria-hidden>
+      <ellipse cx={-27} cy={12} rx={9} ry={5.5} fill="#ff8f86" opacity={mood === 'happy' ? 0.8 : 0.55} />
+      <ellipse cx={27} cy={12} rx={9} ry={5.5} fill="#ff8f86" opacity={mood === 'happy' ? 0.8 : 0.55} />
+      {mood === 'sleep' ? (
+        <>
+          <path d="M-24,-4q8,7 16,0M8,-4q8,7 16,0" fill="none" stroke={ink} strokeWidth={4} strokeLinecap="round" />
+          <ellipse cx={0} cy={18} rx={4.5} ry={5.5} fill={ink} />
+        </>
+      ) : mood === 'grumpy' ? (
+        <>
+          <ellipse cx={-16} cy={-1} rx={6} ry={6.5} fill={ink} />
+          <ellipse cx={16} cy={-1} rx={6} ry={6.5} fill={ink} />
+          <path d="M-25,-9H-7M7,-9H25" stroke={ink} strokeWidth={4.5} strokeLinecap="round" />
+          <path d="M-8,21q8,-7 16,0" fill="none" stroke={ink} strokeWidth={4} strokeLinecap="round" />
+        </>
+      ) : mood === 'sneeze' ? (
+        <>
+          <path d="M-24,-8l10,6l-10,6M24,-8l-10,6l10,6" fill="none" stroke={ink} strokeWidth={4} strokeLinecap="round" strokeLinejoin="round" />
+          <ellipse cx={0} cy={18} rx={8} ry={9} fill={ink} />
+        </>
+      ) : (
+        <>
+          <ellipse cx={-16} cy={-3} rx={7} ry={8.5} fill={ink} />
+          <ellipse cx={16} cy={-3} rx={7} ry={8.5} fill={ink} />
+          <circle cx={-18.5} cy={-6.5} r={2.6} fill="#fff" />
+          <circle cx={13.5} cy={-6.5} r={2.6} fill="#fff" />
+          <path d="M-14,13q14,15 28,0" fill="#7a2a2a" stroke={ink} strokeWidth={3.6} strokeLinecap="round" strokeLinejoin="round" />
+        </>
+      )}
+    </svg>
+  );
+}
 
 /**
- * "Hentikan kalendernya!": kalender berputar cepat dengan maskot hati yang pusing di atasnya.
- * Ketukan pertama selalu berhenti di tanggal lain yang lucu (dengan celetukannya), ketukan kedua
- * mengerem pelan-pelan sampai pas di tanggal tujuan. Mainan, bukan ujian.
+ * Bangunkan keretanya: lokomotif mainan gempal ketiduran di peron Stasiun Hari Ini. Ketukan pertama:
+ * dia menggerutu lalu tidur lagi; kedua: bersin uap; ketiga: peluitnya berbunyi dan dia melaju pergi.
+ * Tidak bisa kalah, selalu bisa dilewati.
  */
-export function StopCalendar({ t, target, hasDate, tag, onDone }: { t: GameText; target: Date; hasDate: boolean; tag: string; onDone: () => void }) {
+export function SleepyEngine({ t, onDone }: { t: GameText; onDone: () => void }) {
   const later = useTimers();
-  const dates = useMemo(() => OFFSETS.map((o) => addDays(target, o)), [target]);
-  const [i, setI] = useState(1);
-  const [mode, setModeState] = useState<Mode>('spin');
-  const modeRef = useRef<Mode>('spin');
-  const setMode = (m: Mode) => {
-    modeRef.current = m;
-    setModeState(m);
-  };
-  const [line, setLine] = useState<{ k: number; text: string } | null>(null);
+  const [score, setScore] = useState(0);
   const [won, setWon] = useState(false);
-  const idx = useRef(1);
+  const [mood, setMood] = useState<Mood>('sleep');
+  const [act, setAct] = useState<'idle' | 'shake' | 'sneeze' | 'go'>('idle');
+  const [line, setLine] = useState<{ k: number; text: string } | null>(null);
+  const busy = useRef(false);
+  const engRef = useRef<HTMLButtonElement>(null);
   const reduce = useRef(false);
-
-  const dayFmt = useMemo(() => new Intl.DateTimeFormat(tag, { day: 'numeric', month: 'long' }), [tag]);
-  const monthFmt = useMemo(() => new Intl.DateTimeFormat(tag, { month: 'long' }), [tag]);
-  const dowFmt = useMemo(() => new Intl.DateTimeFormat(tag, { weekday: 'long' }), [tag]);
 
   useEffect(() => {
     reduce.current = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }, []);
 
-  const step = () => {
-    idx.current = (idx.current + 1) % dates.length;
-    setI(idx.current);
-  };
-
-  // putaran biasa: cepat dulu, lalu lebih pelan setelah meleset
-  useEffect(() => {
-    if (mode !== 'spin' && mode !== 'spin2') return;
-    const ms = (mode === 'spin' ? 150 : 260) * (reduce.current ? 3 : 1);
-    const id = setInterval(() => {
-      step();
-      if (!reduce.current) sfx.tap();
-    }, ms);
-    return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode]);
-
-  const say = (text: string) => setLine((l) => ({ k: (l?.k ?? 0) + 1, text }));
-
-  const stop = () => {
-    const m = modeRef.current;
-    if (m === 'spin') {
-      // ketukan pertama: selalu meleset ke tanggal lain yang lucu
-      if (idx.current === 0) step();
-      const off = OFFSETS[idx.current];
-      setMode('miss');
-      sfx.wahwah();
-      haptic(20);
-      say(off === -1 ? t.early : off === 1 ? t.late : t.misses[(idx.current * 7) % t.misses.length]);
+  const poke = () => {
+    if (busy.current || score >= GOAL) return;
+    busy.current = true;
+    const k = score + 1;
+    setScore(k);
+    setLine({ k, text: t.lines[k - 1] });
+    const q = reduce.current;
+    if (k === 1) {
+      sfx.bonk();
+      haptic(14);
+      setMood('grumpy');
+      setAct('shake');
       later(() => {
-        if (modeRef.current !== 'miss') return;
-        setMode('spin2');
-        say(t.again);
-      }, 2400);
-      return;
-    }
-    if (m === 'spin2' || m === 'miss') {
-      // ketukan kedua: mengerem pelan-pelan sampai pas di tanggal tujuan
-      setMode('brake');
-      sfx.tap();
-      haptic(10);
-      let left = (dates.length - idx.current) % dates.length;
-      if (left < 3) left += dates.length;
-      let wait = 140;
-      const tick = () => {
-        step();
-        sfx.tap();
-        left -= 1;
-        if (left <= 0) {
-          setMode('hit');
-          sfx.success();
-          haptic(30);
-          say(t.hit);
-          later(() => setWon(true), 1300);
-          return;
-        }
-        wait = Math.min(520, wait * 1.22);
-        later(tick, reduce.current ? 60 : wait);
-      };
-      later(tick, 120);
+        setMood('sleep');
+        setAct('idle');
+        busy.current = false;
+      }, q ? 300 : 1200);
+    } else if (k === 2) {
+      sfx.blow();
+      sfx.squeak();
+      haptic(16);
+      setMood('sneeze');
+      setAct('sneeze');
+      later(() => {
+        setMood('grumpy');
+        setAct('idle');
+        busy.current = false;
+      }, q ? 300 : 1100);
+    } else {
+      sfx.note(2);
+      sfx.note(4);
+      later(() => sfx.note(4), 260);
+      haptic(26);
+      setMood('happy');
+      setAct('go');
+      later(() => setWon(true), q ? 400 : 1500);
     }
   };
-
-  const d = dates[i];
-  const spinning = mode === 'spin' || mode === 'spin2' || mode === 'brake';
-  const sunday = d.getDay() === 0;
 
   return (
-    <MiniGame
-      title={t.title}
-      how={hasDate ? t.how : t.howToday}
-      art={<Sprite name="game-hati-pusing" style={{ width: '5em', height: 'auto', maxHeight: 'none' }} />}
-      won={won}
-      winTitle={t.winTitle}
-      winLine={t.winLine}
-      onDone={onDone}
-    >
-      <div className={cx(g.arena, won && g.won)}>
-        <p className={g.goal}>{fmt(t.target, { date: hasDate ? dayFmt.format(target) : t.today })}</p>
-
-        <button type="button" className={cx(g.cal, mode === 'hit' && g.hit, mode === 'miss' && g.miss)} onClick={stop} disabled={mode === 'hit' || mode === 'brake'} aria-label={t.stop}>
-          <span className={cx(g.buddy, mode === 'hit' && g.happy)} aria-hidden>
-            <Sprite name={spinning ? 'game-hati-pusing' : 'game-hati-imut'} className={g.buddyArt} />
-          </span>
-          <span key={i} className={cx(g.sheet, spinning && !reduce.current && g.flip)}>
-            <span className={g.band}>
-              <b>{monthFmt.format(d)}</b>
-              <i>{d.getFullYear()}</i>
-            </span>
-            <span className={cx(g.num, sunday && g.sunday)}>{d.getDate()}</span>
-            <span className={g.dow}>{dowFmt.format(d)}</span>
-            {mode === 'hit' ? (
-              <svg className={g.circle} viewBox="0 0 300 220" preserveAspectRatio="none" aria-hidden>
-                <path pathLength={1} d="M158,14C246,6 290,58 280,112C268,180 168,212 86,198C20,186 -4,122 26,70C52,26 118,8 186,20" />
-              </svg>
+    <MiniGame title={t.title} how={t.how} goal={GOAL} score={score} won={won} winTitle={t.winTitle} winLine={t.winLine} onDone={onDone}>
+      {/* ketukan di mana saja ikut membangunkannya */}
+      <div className={g.field} onClick={poke}>
+        <span className={g.track} aria-hidden />
+        <button
+          ref={engRef}
+          type="button"
+          className={cx(g.engine, g[act])}
+          onClick={(e) => {
+            e.stopPropagation();
+            poke();
+          }}
+          disabled={act === 'go'}
+          aria-label={t.engineLabel}
+        >
+          <span className={g.body}>
+            <Sprite name="game-anniversary-kereta" className={g.art} />
+            <Face mood={mood} />
+            {mood === 'sleep' ? (
+              <span className={g.zzz} aria-hidden>
+                <i>z</i>
+                <i>z</i>
+                <i>Z</i>
+              </span>
+            ) : null}
+            {act === 'sneeze' || act === 'go' ? (
+              <span className={cx(g.puff, act === 'go' && g.puffGo)} aria-hidden>
+                <i />
+                <i />
+                <i />
+                <i />
+              </span>
             ) : null}
           </span>
         </button>
-
-        {line && !won ? (
-          <p key={line.k} className={g.line} role="status">
+        {line ? (
+          <div key={line.k} className={g.bubble} role="status">
             {line.text}
-          </p>
+          </div>
         ) : null}
-
-        <button type="button" className={g.stop} onClick={stop} disabled={mode === 'hit' || mode === 'brake'}>
-          {t.stop}
-        </button>
+        <TapCue target={engRef} show={score === 0} at={{ x: 0.54, y: 0.5 }} delay={1600} />
       </div>
     </MiniGame>
   );

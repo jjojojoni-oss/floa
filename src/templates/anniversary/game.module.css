@@ -1,245 +1,223 @@
-/* Mini-game "Hentikan kalendernya!": selembar kalender berputar + maskot hati di atasnya. */
-.arena {
+/* Mini-game "Bangunkan keretanya!": lokomotif mainan gempal tertidur di atas sepotong rel di peron.
+   Arena transparan: Stasiun Hari Ini tetap terlihat (diredupkan selubung kit) di belakangnya. */
+.field {
   position: absolute;
   inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 3.4em 1.2em 3.4em;
-  /* latar sendiri supaya kalender di dinding tidak ikut kelihatan */
-  background: radial-gradient(ellipse at 50% 38%, rgba(255, 247, 230, 0.94), rgba(244, 224, 192, 0.97));
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  animation: fadeIn 0.4s ease both;
+  cursor: pointer;
   user-select: none;
   -webkit-user-select: none;
-}
-.goal {
-  flex: none;
-  padding: 0.45em 1em 0.5em;
-  font-family: var(--font-hand, cursive);
-  font-size: 1.3em;
-  font-weight: 700;
-  color: #3b2a22;
-  background: #ffe9a6;
-  box-shadow: 0 0.3em 0.7em -0.3em rgba(60, 30, 20, 0.45);
-  rotate: -2deg;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-/* kalender: seluruh lembar juga tombol stop */
-.cal {
-  position: relative;
-  flex: none;
-  margin-top: 3.4em;
-  width: 12.6em;
-  height: 13em;
-  perspective: 40em;
-  cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
-.cal:disabled {
-  cursor: default;
-}
-.sheet {
+
+/* sepotong rel: dua batang besi di atas bantalan kayu */
+.track {
   position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  border-radius: 0.4em;
-  overflow: hidden;
-  color: #2f1a13;
-  background-color: #fbf5e6;
-  background-image: linear-gradient(rgba(251, 245, 230, 0.6), rgba(251, 245, 230, 0.6)), url('/art/tex-kertas.webp');
-  background-size: auto, 200px 200px;
-  background-blend-mode: normal, multiply;
-  box-shadow: 0 0.1em 0.2em rgba(60, 30, 20, 0.15), 0 1.4em 2.4em -1.2em rgba(40, 20, 10, 0.6);
-  transform-origin: 50% 0;
-}
-.flip {
-  animation: flip 0.14s ease-out;
-}
-@keyframes flip {
-  from { transform: rotateX(-55deg); opacity: 0.6; }
-  to { transform: none; opacity: 1; }
-}
-.band {
-  flex: none;
-  width: 100%;
-  margin-top: 0.6em;
-  height: 2em;
-  padding: 0 0.9em;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: linear-gradient(#cf3f33, #b92c23);
-  box-shadow: 0 0.12em 0 #e8c268;
-  color: #fff3da;
-}
-.band b {
-  font-size: 0.86em;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-.band i {
-  font-family: var(--font-serif, Georgia, serif);
-  font-style: normal;
-  font-weight: 700;
-}
-.num {
-  margin-top: 0.12em;
-  font-family: var(--font-serif, Georgia, serif);
-  font-size: 7.2em;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  font-variant-numeric: lining-nums;
-}
-.sunday {
-  color: #c8372d;
-}
-.dow {
-  font-size: 0.86em;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  opacity: 0.7;
-}
-.circle {
-  position: absolute;
-  left: 12%;
-  top: 24%;
-  width: 76%;
-  height: 58%;
-  overflow: visible;
-  pointer-events: none;
-}
-.circle path {
-  fill: none;
-  stroke: #c8372d;
-  stroke-width: 7;
-  stroke-linecap: round;
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: draw 0.7s ease-out 0.15s forwards;
-  vector-effect: non-scaling-stroke;
-}
-@keyframes draw {
-  to { stroke-dashoffset: 0; }
-}
-.miss .sheet {
-  animation: shake 0.45s ease;
-}
-@keyframes shake {
-  25% { transform: translateX(-0.4em) rotate(-2deg); }
-  50% { transform: translateX(0.4em) rotate(2deg); }
-  75% { transform: translateX(-0.2em); }
-}
-.hit .sheet {
-  animation: land 0.6s cubic-bezier(0.34, 1.6, 0.64, 1);
-}
-@keyframes land {
-  40% { transform: scale(1.08); }
+  left: -1em;
+  right: -1em;
+  top: calc(58% + 4.7em);
+  height: 1.1em;
+  background:
+    linear-gradient(#cfd6e6, #6a7490 45%, #2a3046) 0 0 / 100% 0.26em no-repeat,
+    linear-gradient(#cfd6e6, #6a7490 45%, #2a3046) 0 0.62em / 100% 0.26em no-repeat,
+    repeating-linear-gradient(90deg, transparent 0 0.5em, #5a3a22 0.5em 1.5em, transparent 1.5em 2.2em) 0 0.05em / 100% 1em no-repeat;
+  filter: drop-shadow(0 0.4em 0.5em rgba(0, 0, 0, 0.5));
+  animation: fadeUp 0.5s both;
 }
 
-/* maskot hati duduk di atas kalender */
-.buddy {
+.engine {
   position: absolute;
-  z-index: 2;
   left: 50%;
-  top: -3.3em;
-  width: 4.4em;
-  translate: -50% 0;
-  pointer-events: none;
-  animation: wobble 0.5s ease-in-out infinite;
+  top: 58%;
+  width: 15.4em;
+  margin: -6em 0 0 -7.6em;
+  z-index: 2;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  animation: engIn 0.7s cubic-bezier(0.3, 1.3, 0.5, 1) both;
 }
-.buddyArt {
+.engine::before {
+  content: '';
+  position: absolute;
+  inset: -1.2em;
+}
+@keyframes engIn {
+  from { opacity: 0; transform: translateX(-4em); }
+  to { opacity: 1; transform: none; }
+}
+.body {
+  position: relative;
+  display: block;
+  transform-origin: 50% 90%;
+  animation: breathe 2.6s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%, 100% { transform: scale(1, 1); }
+  50% { transform: scale(1.015, 0.985); }
+}
+.art {
   width: 100%;
   height: auto;
-  max-width: none;
 }
-@keyframes wobble {
-  0%, 100% { rotate: -6deg; }
-  50% { rotate: 6deg; }
-}
-.miss .buddy {
-  animation: none;
-}
-.happy {
-  animation: hop 0.9s cubic-bezier(0.34, 1.6, 0.64, 1) infinite;
-}
-@keyframes hop {
-  0%, 100% { transform: translateY(0) scale(1); }
-  40% { transform: translateY(-1em) scale(1.1); }
+.face {
+  position: absolute;
+  left: 39.5%;
+  top: 33.5%;
+  width: 28.2%;
+  height: 36.5%;
 }
 
-.line {
-  flex: none;
-  margin-top: 1em;
-  width: min(20em, 100%);
-  padding: 0.55em 1em;
+.shake .body {
+  animation: grumble 0.5s ease-in-out 2;
+}
+@keyframes grumble {
+  0%, 100% { transform: none; }
+  25% { transform: rotate(-3deg) translateX(-0.2em); }
+  75% { transform: rotate(3deg) translateX(0.2em); }
+}
+.sneeze .body {
+  animation: achoo 0.7s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+@keyframes achoo {
+  0% { transform: none; }
+  30% { transform: scale(0.94, 1.06) translateX(-0.4em); }
+  55% { transform: scale(1.08, 0.94) translateX(0.5em); }
+  100% { transform: none; }
+}
+/* berangkat: bergoyang chug-chug lalu melaju ke kanan */
+.go {
+  animation: depart 1.6s 0.25s cubic-bezier(0.55, 0, 0.8, 0.4) both;
+}
+.go .body {
+  animation: chug 0.24s ease-in-out infinite;
+}
+@keyframes chug {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-0.18em) rotate(-0.6deg); }
+}
+@keyframes depart {
+  0% { transform: none; }
+  20% { transform: translateX(-0.8em); }
+  100% { transform: translateX(26em); }
+}
+
+/* zzz yang melayang dari cerobong */
+.zzz {
+  position: absolute;
+  left: 76%;
+  top: -4%;
+}
+.zzz i {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-family: var(--font-hand, cursive);
+  font-size: 1.6em;
+  font-weight: 700;
+  font-style: normal;
+  color: #fff3da;
+  text-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  animation: zz 3s ease-out infinite;
+}
+.zzz i:nth-child(2) {
+  animation-delay: 1s;
+}
+.zzz i:nth-child(3) {
+  animation-delay: 2s;
+  font-size: 2em;
+}
+@keyframes zz {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(1.6em, -2.6em) scale(1.1); }
+}
+
+/* kepulan uap: dari cerobong saat bersin, berderet di belakang saat berangkat */
+.puff {
+  position: absolute;
+  left: 78%;
+  top: 4%;
+}
+.puff i {
+  position: absolute;
+  width: 2.4em;
+  height: 2.4em;
+  margin: -1.2em 0 0 -1.2em;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 38%, #ffffff, #f1ecf6 55%, rgba(225, 220, 240, 0));
+  opacity: 0;
+  animation: puff 1s ease-out both;
+}
+.puff i:nth-child(2) { animation-delay: 0.08s; --px: -1.6em; --py: -1.4em; }
+.puff i:nth-child(3) { animation-delay: 0.16s; --px: 1.4em; --py: -1.8em; }
+.puff i:nth-child(4) { animation-delay: 0.24s; --px: -0.2em; --py: -2.8em; }
+@keyframes puff {
+  0% { opacity: 0.95; transform: translate(0, 0) scale(0.3); }
+  100% { opacity: 0; transform: translate(var(--px, 0.4em), var(--py, -2.2em)) scale(1.8); }
+}
+.puffGo i {
+  animation: puffGo 0.9s ease-out infinite;
+}
+@keyframes puffGo {
+  0% { opacity: 0.9; transform: translate(0, 0) scale(0.4); }
+  100% { opacity: 0; transform: translate(-3.4em, -2.4em) scale(1.9); }
+}
+
+/* celetukan si lokomotif */
+.bubble {
+  position: absolute;
+  left: 50%;
+  top: calc(58% - 10.6em);
+  z-index: 3;
+  width: max-content;
+  max-width: 15.6em;
+  translate: -50% 0;
+  padding: 0.55em 1em 0.6em;
   border-radius: 1em;
   text-align: center;
   font-family: var(--font-hand, cursive);
-  font-size: 1.12em;
-  font-weight: 700;
-  line-height: 1.25;
-  color: #fff6e4;
-  background: rgba(58, 29, 18, 0.8);
-  pointer-events: none;
-  animation: lineIn 0.45s cubic-bezier(0.34, 1.5, 0.64, 1) both;
+  font-size: 1.36em;
+  font-weight: 600;
+  line-height: 1.12;
+  text-wrap: balance;
+  color: #3b2a22;
+  background: #fffaf0;
+  box-shadow: 0 0.5em 1.1em -0.4em rgba(0, 0, 0, 0.6);
+  animation: fadeUp 0.4s cubic-bezier(0.3, 1.4, 0.5, 1) both;
 }
-@keyframes lineIn {
-  from { opacity: 0; transform: translateY(0.6em) scale(0.96); }
+.bubble::after {
+  content: '';
+  position: absolute;
+  left: 56%;
+  top: 100%;
+  width: 0.9em;
+  height: 0.9em;
+  margin: -0.5em 0 0 -0.45em;
+  border-radius: 0.14em;
+  background: #fffaf0;
+  transform: rotate(45deg);
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(0.6em) scale(0.94); }
   to { opacity: 1; transform: none; }
 }
 
-/* tombol stop besar */
-.stop {
-  position: absolute;
-  left: 50%;
-  bottom: 3.4em;
-  translate: -50% 0;
-  min-width: 10em;
-  min-height: 3.4em;
-  padding: 0.8em 2em;
-  border-radius: 99em;
-  font-size: 1.08em;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  color: #fffaf2;
-  background: #c8372d;
-  box-shadow: 0 0.5em 1.1em -0.5em rgba(120, 20, 10, 0.8), inset 0 -0.2em 0 rgba(0, 0, 0, 0.15);
-  cursor: pointer;
-  transition: transform 0.12s ease, opacity 0.3s ease;
-}
-.stop:active:not(:disabled) {
-  transform: scale(0.96);
-}
-.stop:disabled {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.won .cal,
-.won .stop {
-  z-index: 0;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .arena,
-  .flip,
-  .buddy,
-  .happy,
-  .miss .sheet,
-  .hit .sheet {
+  .body,
+  .shake .body,
+  .sneeze .body,
+  .go .body,
+  .zzz i,
+  .puffGo i {
     animation: none;
+  }
+  .zzz i {
+    opacity: 0.8;
+  }
+  .zzz i:nth-child(2) { transform: translate(0.8em, -1.2em); }
+  .zzz i:nth-child(3) { transform: translate(1.6em, -2.6em); }
+  .go {
+    animation-duration: 0.01s;
   }
 }
