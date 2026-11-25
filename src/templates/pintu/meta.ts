@@ -1,17 +1,17 @@
 import type { TemplateMeta } from '../types';
 
 /** foto ke-i ditempel di sebelah garis ke-i (urut dari kecil sampai sekarang) */
-const PHOTOS = ['/contoh/melati.webp', '/contoh/kue-lilin.webp', '/contoh/sepeda.webp', '/contoh/nasi-kotak.webp', '/contoh/meja-belajar.webp', '/contoh/topi-wisuda.webp'];
+const PHOTOS = ['/contoh/sepeda.webp', '/contoh/kue-lilin.webp', '/contoh/nasi-kotak.webp', '/contoh/meja-belajar.webp', '/contoh/bioskop.webp', '/contoh/gandengan.webp'];
 
 export const meta: TemplateMeta = {
   id: 'pintu',
   name: 'Setinggi Ini',
   tagline: 'Garis-garis pensil di kusen pintu rumah: gores satu per satu dari kecil sampai sekarang, lalu temukan surat yang terselip di kusennya.',
   steps: ['Ambil pensilnya', 'Gores tiap garis', 'Tarik surat dari kusen'],
-  occasions: ['ortu', 'ultah', 'wisuda'],
+  occasions: ['anniv', 'ortu', 'ultah', 'wisuda'],
   palette: { bg: '#cfdcc0', ink: '#2f3327', accent: '#d9643a' },
   fields: [
-    { key: 'to', label: 'Untuk siapa', placeholder: 'Ibu', max: 20 },
+    { key: 'to', label: 'Untuk siapa', placeholder: 'Nama dia', max: 20 },
     { key: 'from', label: 'Dari', placeholder: 'Namamu', max: 20 },
     {
       key: 'notes',
@@ -34,19 +34,19 @@ export const meta: TemplateMeta = {
     { key: 'message', label: 'Surat', hint: 'Surat yang terselip di kusen pintu, dibaca paling akhir.', max: 900, multiline: true },
   ],
   sample: {
-    to: 'Ibu',
-    from: 'Arum',
-    title: 'Terima kasih sudah menungguiku tumbuh',
+    to: 'Satria',
+    from: 'Ajeng',
+    title: 'Dari segini sampai segini, tetap kamu.',
     notes: [
-      'Baru bisa jalan. Ke mana-mana megangin daster Ibu.',
-      'Ulang tahun kelima. Kuenya Ibu bikin sendiri sampai subuh.',
-      'Lepas roda bantu. Ibu lari di belakang, pura-pura masih megang.',
-      'Bekal tiap pagi. Sayurnya kusisihkan, Ibu pura-pura nggak tahu.',
-      'Belajar sampai malam. Teh hangat selalu muncul sendiri di meja.',
-      'Sudah lebih tinggi dari Ibu. Tetap nyari Ibu tiap pulang.',
+      'Umur lima, tetangga baru. Sepedamu kupinjam, kamu nangis.',
+      'Ulang tahunmu ketujuh. Lilinnya kutiup duluan. Kamu ngambek.',
+      'Kelas empat. Telur dadarku kamu tukar tempe, tiap hari.',
+      'SMP. Katanya belajar bareng. Aku belajar, kamu nyontek.',
+      'SMA. Kamu mendadak lebih tinggi, lalu ngajak nonton berdua.',
+      'Kamu masih sejengkal lebih tinggi. Bedanya, sekarang kamu pacarku.',
     ],
     message:
-      'Bu, garis-garis di kusen itu masih ada. Aku cek kemarin. Yang paling bawah sudah hampir pudar, tapi aku masih ingat Ibu menggoresnya sambil bilang, "Cepat banget sih kamu gedenya."\n\nDulu kukira yang diukur itu cuma tinggiku. Ternyata tiap garis juga mencatat Ibu: yang bangun paling pagi, yang pura-pura sudah kenyang, yang menunggu di depan pintu sampai aku pulang.\n\nSekarang aku sudah nggak nambah tinggi, Bu. Tapi tiap pulang, aku masih berdiri di kusen itu sebentar. Bukan buat ngukur. Buat ingat siapa yang bikin aku bisa setinggi ini.\n\nTerima kasih, Bu. Untuk semua garisnya.',
+      'Sat, kemarin aku mampir ke rumahmu, dan garis-garis di kusen itu masih ada. Ibumu dulu ngukur kita berdua tiap Lebaran, gantian, sambil bilang, "Ajeng, jangan jinjit."\n\nDulu yang kita ributin cuma siapa yang lebih tinggi. Kamu kalah terus sampai kelas enam, lalu tiba-tiba menang dan nggak pernah kalah lagi. Aku sebel. Diam-diam aku juga senang.\n\nTernyata kusen itu nyatet lebih dari tinggi badan. Dia nyatet orang yang selalu ada di sebelahku, dari yang nangis rebutan sepeda sampai yang sekarang nganterin aku pulang, padahal rumah kita cuma beda tiga pintu.\n\nTinggi kita udah lama berhenti nambah. Tapi kalau sayang bisa diukur di kusen, garisku buat kamu udah dari dulu tembus plafon.',
     photos: PHOTOS,
   },
   i18n: {
@@ -55,7 +55,7 @@ export const meta: TemplateMeta = {
       tagline: 'Garis-garis pensel pada bingkai pintu rumah: lukis satu demi satu dari kecil sampai sekarang, kemudian jumpa surat yang terselit di bingkainya.',
       steps: ['Ambil penselnya', 'Lukis setiap garis', 'Tarik surat dari bingkai'],
       fields: {
-        to: { label: 'Untuk siapa', placeholder: 'Mak' },
+        to: { label: 'Untuk siapa', placeholder: 'Nama dia' },
         from: { label: 'Daripada', placeholder: 'Nama awak' },
         notes: {
           label: 'Kenangan pada setiap garis, dari kecil sampai sekarang',
@@ -70,19 +70,19 @@ export const meta: TemplateMeta = {
         message: { label: 'Surat', hint: 'Surat yang terselit di bingkai pintu, dibaca paling akhir.' },
       },
       sample: {
-        to: 'Mak',
-        from: 'Qistina',
-        title: 'Terima kasih sebab tunggu saya membesar',
+        to: 'Aqil',
+        from: 'Nadhirah',
+        title: 'Dari kecil sampai sekarang, tetap awak.',
         notes: [
-          'Baru pandai berjalan. Ke mana-mana pegang kain batik Mak.',
-          'Hari jadi kelima. Keknya Mak buat sendiri sampai subuh.',
-          'Buka roda bantu. Mak lari di belakang, pura-pura masih pegang.',
-          'Bekal setiap pagi. Sayurnya saya asingkan, Mak buat-buat tak nampak.',
-          'Belajar sampai malam. Teh panas selalu muncul sendiri atas meja.',
-          'Dah lebih tinggi daripada Mak. Balik rumah, tetap cari Mak dulu.',
+          'Umur lima, jiran baru. Saya pinjam basikal, awak menangis.',
+          'Hari jadi awak ketujuh. Saya tiup lilin dulu. Awak merajuk.',
+          'Darjah empat. Telur dadar saya awak tukar dengan sardin.',
+          'Tingkatan dua. Konon belajar sama-sama. Saya buat, awak tiru.',
+          'Tingkatan empat. Awak tiba-tiba tinggi, lalu ajak tengok wayang.',
+          'Awak masih sejengkal lebih tinggi. Bezanya, kini awak kekasih saya.',
         ],
         message:
-          'Mak, garis-garis pada bingkai pintu tu masih ada. Saya tengok semalam. Yang paling bawah dah hampir pudar, tapi saya masih ingat Mak melukisnya sambil cakap, "Cepatnya anak Mak ni membesar."\n\nDulu saya ingat yang diukur tu cuma tinggi saya. Rupa-rupanya setiap garis turut mencatat Mak: yang bangun paling awal, yang pura-pura dah kenyang, yang tunggu di depan pintu sampai saya balik.\n\nSekarang saya dah tak bertambah tinggi, Mak. Tapi setiap kali balik, saya masih berdiri di bingkai pintu tu sekejap. Bukan nak ukur. Nak ingat siapa yang buat saya boleh jadi setinggi ini.\n\nTerima kasih, Mak. Untuk semua garisnya.',
+          'Aqil, semalam saya singgah rumah awak, dan garis-garis pada bingkai pintu tu masih ada. Mak awak dulu ukur kita berdua setiap Raya, bergilir-gilir, sambil cakap, "Nadhirah, jangan jengket."\n\nDulu yang kita gaduhkan cuma siapa lebih tinggi. Awak kalah setiap tahun sampai darjah enam, kemudian tiba-tiba menang dan tak pernah kalah lagi. Saya geram. Diam-diam saya suka juga.\n\nRupa-rupanya bingkai pintu tu mencatat lebih daripada tinggi. Ia mencatat orang yang sentiasa ada di sebelah saya, daripada budak yang menangis berebut basikal sampailah orang yang sekarang hantar saya balik, padahal rumah kita cuma selang tiga pintu.\n\nTinggi kita dah lama berhenti. Tapi kalau sayang boleh diukur pada bingkai pintu, garis saya untuk awak dah lama tembus siling.',
         photos: PHOTOS,
       },
     },
@@ -91,7 +91,7 @@ export const meta: TemplateMeta = {
       tagline: 'Pencil height marks on the door frame back home: draw them one by one, from little to now, then find the letter tucked into the frame.',
       steps: ['Take the pencil', 'Draw each mark', 'Pull the letter from the frame'],
       fields: {
-        to: { label: "Who it's for", placeholder: 'Mom' },
+        to: { label: "Who it's for", placeholder: 'Their name' },
         from: { label: 'From', placeholder: 'Your name' },
         notes: {
           label: 'A memory for each mark, from little to now',
@@ -106,19 +106,19 @@ export const meta: TemplateMeta = {
         message: { label: 'Letter', hint: 'The letter tucked into the door frame, read at the very end.' },
       },
       sample: {
-        to: 'Mom',
-        from: 'Ellie',
-        title: 'Thank you for watching me grow',
+        to: 'Charlie',
+        from: 'Rosie',
+        title: 'From this tall to this tall, still you.',
         notes: [
-          'Just learned to walk. Never let go of the hem of your dress.',
-          'Turning five. You stayed up till dawn baking that cake.',
-          'Training wheels off. You ran behind me, pretending to hold on.',
-          'A packed lunch every morning. I hid the veggies. You let me.',
-          'Studying late. Warm tea kept appearing on my desk by itself.',
-          'Taller than you now. Still look for you first when I get home.',
+          'Age five, new neighbors. I borrowed your bike. You cried.',
+          'Your seventh birthday. I blew out your candles. You sulked.',
+          'Fourth grade. You "borrowed" half my lunch every single day.',
+          'Middle school. "Studying together": I studied, you copied.',
+          'Junior year. You shot up overnight, then asked me to a movie.',
+          'Still a hand taller than me. The difference is, now you are mine.',
         ],
         message:
-          'Mom, the pencil marks on the door frame are still there. I checked yesterday. The lowest one has nearly faded, but I still remember you drawing it and saying, "Slow down, will you?"\n\nI used to think those lines only measured my height. Turns out every one of them recorded you too: the one who woke up first, who pretended she was already full, who waited by the door until I came home.\n\nI have stopped getting taller, Mom. But every time I visit, I still stand against that frame for a second. Not to measure. Just to remember who got me to be this tall.\n\nThank you, Mom. For every single line.',
+          'Charlie, I stopped by your house yesterday, and the pencil marks on the door frame are still there. Your mom used to measure us both every summer, one after the other, saying, "Rosie, heels down."\n\nBack then, all we fought about was who was taller. You lost every year until sixth grade, then shot past me and never lost again. I was furious. Secretly, I was also glad.\n\nTurns out that frame measured more than height. It kept a record of the person who was always next to me, from the boy crying over his bike to the one who still walks me home, even though we live three doors apart.\n\nWe stopped growing a long time ago. But if love could be marked on a door frame, my line for you would have gone through the ceiling years ago.',
         photos: PHOTOS,
       },
     },

@@ -1,6 +1,6 @@
 import type { TemplateMeta } from '../types';
 
-const PHOTOS = ['/contoh/peron-stasiun.webp', '/contoh/meja-belajar.webp', '/contoh/perpustakaan.webp', '/contoh/kopi-hitam.webp', '/contoh/topi-wisuda.webp'];
+const PHOTOS = ['/contoh/perpustakaan.webp', '/contoh/meja-belajar.webp', '/contoh/peron-stasiun.webp', '/contoh/kopi-hitam.webp', '/contoh/topi-wisuda.webp'];
 
 export const meta: TemplateMeta = {
   id: 'toga',
@@ -26,20 +26,20 @@ export const meta: TemplateMeta = {
     { key: 'message', label: 'Isi gulungan', max: 900, multiline: true },
   ],
   sample: {
-    to: 'Fajar, S.Kom.',
-    from: 'Ayah & Ibu',
-    title: 'Selamat wisuda, Nak!',
+    to: 'Anindya, S.Psi.',
+    from: 'Gibran',
+    title: 'Selamat wisuda, Sayang!',
     notes: [
-      'Hari pertama ospek, kamu pamit subuh-subuh pakai kemeja yang kebesaran.',
-      'Semester tiga, lampu kamarmu masih nyala waktu azan subuh.',
-      "Waktu nilaimu jatuh, kamu cuma bilang, 'Nggak apa-apa, Bu. Aku ulang.'",
-      'Revisi skripsi ke-7. Kamu diam seharian, lalu mulai lagi dari bab satu.',
-      'Sidang selesai. Telepon pertamamu ke rumah, suaramu gemetar.',
+      'Semester satu, perpustakaan pusat. Kamu numpang colokan, aku numpang kenalan.',
+      'Statistik bikin kamu nangis. Aku nggak paham statistik, jadi aku bawain martabak.',
+      'KKN dua bulan tanpa sinyal. Tiap jam sembilan malam, kamu naik bukit cuma buat neleponku.',
+      'Revisi bab empat yang ketujuh. Kamu diam seharian, lalu buka laptop lagi.',
+      'Sidang selesai. Kamu keluar ruangan dan nyari aku dulu, baru nelepon Mama.',
     ],
     message:
-      'Nak, tadi kita jalan pelan-pelan dari hari pertamamu sampai hari ini. Dulu kemejamu kebesaran, sekarang toganya pas sekali.\n\nKami nggak selalu ada di setiap malam begadangmu, tapi kami tahu lampu kamarmu masih nyala. Doa kami juga.\n\nTerima kasih sudah bertahan, bahkan di hari-hari kamu ingin berhenti. Ke mana pun kamu melangkah setelah ini, pintu rumah selalu terbuka, dan kami akan selalu jadi orang pertama yang bangga.',
+      'Nin, tadi kita jalan lagi dari colokan perpustakaan itu sampai hari ini. Empat tahun, satu skripsi, dan martabak yang udah nggak kehitung.\n\nAku nggak selalu bisa bantu. Aku nggak ngerti statistik, nggak bisa ngerapiin daftar pustaka, dan pernah salah nyebut judul skripsimu di depan teman-temanmu. Tapi aku selalu bisa nunggu. Di luar perpustakaan, di luar ruang sidang, di ujung telepon jam sembilan malam.\n\nHari ini kamu keluar pakai toga, dan aku bangga sampai bingung naruh bangganya di mana.\n\nHabis ini, ke mana pun kamu melangkah, aku tetap nunggu di luar pintunya. Bawa martabak. Selamat wisuda, Sayang.',
     photos: PHOTOS,
-    captions: ['Subuh di stasiun. Kemejanya masih kebesaran.', 'Meja yang lampunya jarang padam.', 'Perpustakaan, tempat kamu mulai lagi dari awal.', 'Kopi ketiga malam itu. Bab satu lagi.', 'Akhirnya, toganya pas.'],
+    captions: ['Colokan dekat rak psikologi. Tempat semuanya mulai.', 'Meja penuh rumus. Martabaknya habis duluan.', 'Stasiun, hari kamu berangkat KKN. Aku pura-pura nggak sedih.', 'Kopi ketiga di kafe langganan. Bab empat lagi.', 'Akhirnya, toganya kamu pakai.'],
   },
   i18n: {
     ms: {
@@ -59,20 +59,20 @@ export const meta: TemplateMeta = {
         message: { label: 'Isi gulungan' },
       },
       sample: {
-        to: 'Haziq Danial',
-        from: 'Abah & Mak',
-        title: 'Tahniah, Along!',
+        to: 'Nur Batrisya',
+        from: 'Amirul',
+        title: 'Tahniah, sayang. Awak dah berjaya!',
         notes: [
-          'Hari pertama minggu suai kenal, Along keluar awal pagi pakai kemeja yang kebesaran.',
-          'Semester tiga, lampu bilik Along masih menyala waktu azan Subuh.',
-          "Masa keputusan jatuh, Along cuma cakap, 'Tak apa, Mak. Along ulang.'",
-          'Pembetulan tesis kali ketujuh. Along diam sehari, kemudian mula semula dari bab satu.',
-          'Habis viva, panggilan pertama Along ke rumah, suara Along bergetar.',
+          'Semester satu, perpustakaan utama. Awak tumpang plag, saya tumpang berkenalan.',
+          'Statistik buat awak menangis. Saya tak faham statistik, jadi saya bawakan roti john.',
+          'LI di pedalaman, tiada line. Pukul sembilan malam, awak panjat bukit untuk call saya.',
+          'Pembetulan bab empat kali ketujuh. Awak diam sehari, kemudian buka laptop semula.',
+          'Habis viva, awak keluar bilik dan cari saya dulu, baru telefon Mak.',
         ],
         message:
-          'Along, tadi kita berjalan perlahan dari hari pertama Along sampai hari ini. Dulu kemeja Along kebesaran, sekarang jubah konvo itu muat sangat.\n\nKami tak selalu ada setiap malam Along berjaga, tapi kami tahu lampu bilik Along masih menyala. Doa kami pun begitu.\n\nTerima kasih sebab bertahan, walaupun pada hari-hari Along rasa nak berhenti. Ke mana pun Along melangkah lepas ni, pintu rumah sentiasa terbuka, dan kami akan sentiasa jadi orang pertama yang bangga.',
+          'Batrisya, tadi kita berjalan semula dari plag di perpustakaan tu sampai hari ini. Empat tahun, satu tesis, dan roti john yang dah tak terkira.\n\nSaya tak selalu boleh tolong. Saya tak faham statistik, tak reti susun rujukan, dan pernah tersalah sebut tajuk tesis awak depan kawan-kawan awak. Tapi saya selalu boleh tunggu. Di luar perpustakaan, di luar bilik viva, di hujung talian pukul sembilan malam.\n\nHari ini awak keluar dengan jubah konvo, dan saya bangga sampai tak tahu nak letak bangga tu di mana.\n\nLepas ni, ke mana pun awak melangkah, saya tetap tunggu di luar pintunya. Bawa roti john. Tahniah, sayang.',
         photos: PHOTOS,
-        captions: ['Subuh di stesen. Kemejanya masih longgar.', 'Meja yang lampunya jarang padam.', 'Perpustakaan, tempat Along mula semula.', 'Kopi ketiga malam tu. Bab satu lagi.', 'Akhirnya, topi tu sampai juga.'],
+        captions: ['Plag dekat rak psikologi. Tempat semuanya bermula.', 'Meja penuh formula. Roti john habis dulu.', 'Stesen, hari awak bertolak untuk latihan industri. Saya buat-buat tak sedih.', 'Kopi ketiga di kafe biasa. Bab empat lagi.', 'Akhirnya, topi tu sampai juga.'],
       },
     },
     en: {
@@ -92,20 +92,20 @@ export const meta: TemplateMeta = {
         message: { label: 'Scroll message' },
       },
       sample: {
-        to: 'Daniel, B.Sc.',
-        from: 'Mom & Dad',
-        title: 'Congrats, graduate!',
+        to: 'Freya, B.A.',
+        from: 'Josh',
+        title: 'Congrats, my favorite graduate!',
         notes: [
-          'Orientation day, you left at dawn in a shirt two sizes too big.',
-          'Junior year, your bedroom light was still on at sunrise.',
-          "When your grades slipped, you just said, 'It's okay, Mom. I'll retake it.'",
-          'Thesis draft number seven. You went quiet for a day, then started again from chapter one.',
-          'Defense done. Your first call was home, and your voice was shaking.',
+          'Freshman year, the main library. You needed an outlet. I needed an excuse to say hi.',
+          "Statistics made you cry. I don't understand statistics either, so I brought pizza.",
+          'Your field placement had zero signal. Every night at nine, you climbed a hill to call me.',
+          'Chapter four, draft seven. You went quiet for a day, then opened the laptop again.',
+          'Defense done. You walked out and looked for me first, then called your mom.',
         ],
         message:
-          "Sweetheart, we just walked the whole road again, from your first day to this one. Back then your shirt was too big. Today the gown fits perfectly.\n\nWe weren't there for every late night, but we always knew your light was still on. So were our prayers.\n\nThank you for holding on, even on the days you wanted to stop. Wherever you go from here, the door at home is always open, and we'll always be the first ones to be proud of you.",
+          "Freya, we just walked the whole road again, from that library outlet to today. Four years, one thesis, and more pizza than either of us will admit.\n\nI couldn't always help. I don't understand statistics, I can't format a bibliography, and I once got your thesis title wrong in front of your friends. But I could always wait. Outside the library, outside the defense room, on the other end of a 9 p.m. phone call.\n\nToday you walked out in a gown, and I'm so proud I don't know where to put it all.\n\nWherever you go from here, I'll be waiting outside that door too. With pizza. Congratulations, love.",
         photos: PHOTOS,
-        captions: ['Dawn at the station. The shirt still too big.', 'The desk whose lamp rarely went off.', 'The library, where you started over.', 'Third coffee that night. Chapter one, again.', 'Finally, the cap fits.'],
+        captions: ['The outlet by the psychology shelves. Where it all started.', 'A desk full of formulas. The pizza went first.', 'The station, the day you left for your placement. I pretended I was fine.', 'Third coffee at our usual café. Chapter four, again.', 'Finally, the cap fits.'],
       },
     },
   },

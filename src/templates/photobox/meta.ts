@@ -1,6 +1,6 @@
 import type { TemplateMeta } from '../types';
 
-const PHOTOS = ['/contoh/meja-belajar.webp', '/contoh/bakso.webp', '/contoh/piknik.webp', '/contoh/topi-wisuda.webp'];
+const PHOTOS = ['/contoh/dua-cangkir.webp', '/contoh/karcis.webp', '/contoh/sepeda.webp', '/contoh/gandengan.webp'];
 
 export const meta: TemplateMeta = {
   id: 'photobox',
@@ -33,17 +33,17 @@ export const meta: TemplateMeta = {
     { key: 'message', label: 'Surat di balik strip', hint: 'Muncul setelah stripnya dibalik.', max: 900, multiline: true },
   ],
   sample: {
-    to: 'Tiara',
+    to: 'Raffi',
     from: 'Jihan',
-    title: 'Sahabat sampai tua, titik.',
+    title: 'Strip ke-12. Masih kamu.',
     notes: [
-      'Belajar bareng: 10% belajar, 90% gosip.',
-      'Bakso tiap habis ujian. Tradisi suci.',
-      'Piknik darurat pas skripsi mentok.',
-      'Lulus juga! Togamu miring, btw.',
+      'Ngopi dulu. Kuemu aku curi.',
+      'Nonton. Kamu tidur di menit ke-20.',
+      'Sepedaan sore. Kamu ngos-ngosan.',
+      'Pulang gandengan, sengaja pelan.',
     ],
     message:
-      'Empat tahun, Ra. Dari kenalan gara-gara salah masuk kelas, sampai sekarang kamu hafal pesanan baksoku: tanpa seledri, sambal dua sendok, kuah dipisah.\n\nMakasih sudah jadi orang pertama yang kukabari tiap ada kabar baik, kabar buruk, dan kabar nggak penting sama sekali. Terutama yang nggak penting.\n\nHabis ini kita beda kota, tapi janji ya: tiap ketemu, wajib foto di photobox. Muka jelek tetap dihitung. Selamat wisuda, sahabatku.',
+      'Selamat setahun, Raf.\n\nIni strip ke-12. Satu tiap bulan, dari kencan pertama waktu kamu kaku kayak tiang listrik, sampai sekarang kamu sudah berani bikin tanduk kelinci di atas kepalaku. Semuanya aku selipin di dompet, sampai dompetnya nggak bisa ditutup.\n\nMakasih sudah selalu ingat bawa receh buat mesinnya, sabar nungguin aku benerin poni, dan tetap mau pose muka jelek walaupun yang paling jelek selalu kamu.\n\nTahun depan kita isi dua belas strip lagi, ya. Muka jelek tetap dihitung.',
     photos: PHOTOS,
   },
   i18n: {
@@ -64,17 +64,17 @@ export const meta: TemplateMeta = {
         message: { label: 'Surat di belakang strip', hint: 'Muncul selepas stripnya diterbalikkan.' },
       },
       sample: {
-        to: 'Qistina',
-        from: 'Iman',
-        title: 'Kawan sampai tua, noktah.',
+        to: 'Harith',
+        from: 'Alisya',
+        title: 'Strip ke-12. Tetap awak.',
         notes: [
-          'Study group: 10% belajar, 90% gosip.',
-          'Bakso lepas setiap exam. Tradisi suci.',
-          'Berkelah kecemasan masa tesis sangkut.',
-          'Grad juga! Topi awak senget, btw.',
+          'Kopi dulu. Kek awak saya curi.',
+          'Wayang. Awak tertidur minit ke-20.',
+          'Berbasikal petang. Awak yang semput.',
+          'Balik pegang tangan, sengaja lambat.',
         ],
         message:
-          'Empat tahun, Qis. Daripada kenal sebab tersalah masuk kelas, sampai sekarang awak hafal pesanan bakso saya: tak nak daun sup, sambal dua sudu, kuah asing.\n\nTerima kasih sebab jadi orang pertama yang saya beritahu setiap kali ada berita baik, berita buruk, dan berita yang langsung tak penting. Terutamanya yang tak penting.\n\nLepas ni kita lain bandar, tapi janji ya: setiap kali jumpa, wajib bergambar di photobox. Muka buruk pun dikira. Selamat berkonvo, sahabatku.',
+          'Selamat setahun, Harith.\n\nIni strip ke-12. Satu setiap bulan, daripada janji temu pertama masa awak kaku macam tiang lampu, sampai sekarang awak dah berani buat telinga arnab atas kepala saya. Semuanya saya selit dalam dompet, sampai dompet tu tak boleh tutup.\n\nTerima kasih sebab selalu ingat bawa syiling untuk mesin tu, sabar tunggu saya betulkan tudung, dan tetap sudi buat muka buruk walaupun yang paling buruk selalunya awak.\n\nTahun depan kita isi dua belas strip lagi, ya. Muka buruk pun dikira.',
         photos: PHOTOS,
       },
     },
@@ -95,17 +95,17 @@ export const meta: TemplateMeta = {
         message: { label: 'Letter on the back', hint: 'Appears once the strip is flipped over.' },
       },
       sample: {
-        to: 'Zoe',
-        from: 'Mia',
-        title: 'Best friends, full stop.',
+        to: 'Lucas',
+        from: 'Ava',
+        title: 'Strip no. 12. Still you.',
         notes: [
-          'Study group: 10% study, 90% gossip.',
-          'Noodles after every exam. Sacred.',
-          'Emergency picnic, thesis on fire.',
-          'We made it! Your cap is crooked.',
+          'Coffee first. I stole your cake.',
+          'Movie. You were asleep by minute 20.',
+          'Bike ride. You were the one panting.',
+          'Walking home, holding hands, slowly.',
         ],
         message:
-          "Four years, Zoe. We met because I walked into the wrong classroom, and now you know my noodle order by heart: no celery, two spoons of chili, soup on the side.\n\nThank you for being the first person I text with good news, bad news, and news that does not matter at all. Especially that last kind.\n\nWe will be in different cities soon, so promise me this: every time we meet, we find a photo booth. Ugly faces still count. Happy graduation, my best friend.",
+          "Happy one year, Lucas.\n\nThis is strip number twelve. One every month, from our first date when you stood stiff as a lamppost, to now, when you sneak bunny ears behind my head. I keep every single one in my wallet, and it does not close anymore.\n\nThank you for always remembering coins for the machine, for waiting while I fix my hair, and for pulling ugly faces even though yours is always the ugliest.\n\nNext year we fill twelve more. Ugly faces still count.",
         photos: PHOTOS,
       },
     },

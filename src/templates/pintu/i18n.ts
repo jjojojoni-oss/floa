@@ -27,7 +27,7 @@ const id = {
   photoAlt: 'Foto di garis ke-{i}',
   // seluruh kusen
   titleFallback: 'Terima kasih untuk semuanya',
-  wideSub: 'Tingginya berhenti. Terima kasihnya belum.',
+  wideSub: 'Tingginya berhenti. Sayangnya nambah terus.',
   next: 'Lanjut',
   // surat
   hintLetter: 'Ada yang terselip di kusen. Tarik.',
@@ -68,7 +68,7 @@ export const TEXT: Record<Locale, PintuText> = {
     seeAll: 'Tengok semuanya',
     photoAlt: 'Foto pada garis ke-{i}',
     titleFallback: 'Terima kasih untuk semuanya',
-    wideSub: 'Tingginya berhenti. Terima kasihnya belum.',
+    wideSub: 'Tingginya dah berhenti. Rasa sayangnya belum.',
     next: 'Teruskan',
     hintLetter: 'Ada sesuatu terselit di bingkai. Tarik.',
     letterLabel: 'Tarik surat yang terselit di bingkai pintu',
@@ -103,7 +103,7 @@ export const TEXT: Record<Locale, PintuText> = {
     seeAll: 'See all of it',
     photoAlt: 'Photo at mark {i}',
     titleFallback: 'Thank you for everything',
-    wideSub: "The growing stopped. The thank-yous didn't.",
+    wideSub: "The growing stopped. The love didn't.",
     next: 'Continue',
     hintLetter: 'Something is tucked in the frame. Pull it.',
     letterLabel: 'Pull out the letter tucked into the door frame',

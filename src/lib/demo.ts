@@ -35,9 +35,9 @@ const DEMO: Record<string, DemoExtra> = {
     hint: { id: 'Pesananku di kencan pertama kita', ms: 'Pesanan aku masa janji temu pertama', en: 'What I ordered on our first date' },
   },
   polaroid: {
-    song: { id: '6WUqv9T3RPTHHNKw0zVJuM', title: 'Sahabat Sejati', artist: 'Sheila On 7' },
+    song: { id: '2pb1TmG342aDAPgJFRyfIW', title: 'I Remember', artist: 'Mocca' },
     password: '2019',
-    hint: { id: 'Tahun kita pertama ngekos bareng', ms: 'Tahun pertama kita menyewa bersama', en: 'The year we first moved in together' },
+    hint: { id: 'Tahun kita jadian', ms: 'Tahun kita mula bersama', en: 'The year we got together' },
   },
   mau: {
     song: { id: '1a2Y5fGmSfqgysvDL5hT1q', title: 'Dia', artist: "MALIQ & D'Essentials" },
@@ -92,7 +92,7 @@ const DEMO: Record<string, DemoExtra> = {
   toples: {
     song: { id: '3AJwUDP919kvQ9QcozQPxg', title: 'Yellow', artist: 'Coldplay' },
     password: '365',
-    hint: { id: 'Jumlah hari dalam setahun', ms: 'Bilangan hari dalam setahun', en: 'Days in a year' },
+    hint: { id: 'Berapa hari setahun aku sayang kamu', ms: 'Berapa hari setahun saya sayang awak', en: 'How many days a year I love you' },
   },
   gacha: {
     song: { id: '0Dr1tLTnNDbFDCXJfeqEAs', title: 'Malu Malu Tapi Nyaman', artist: 'Lyodra' },
@@ -105,7 +105,7 @@ const DEMO: Record<string, DemoExtra> = {
     hint: { id: 'Jam matahari terbenam (JJMM)', ms: 'Waktu matahari terbenam (JJMM)', en: 'Sunset time (HHMM)' },
   },
   photobox: {
-    song: { id: '6WUqv9T3RPTHHNKw0zVJuM', title: 'Sahabat Sejati', artist: 'Sheila On 7' },
+    song: { id: '754kgU5rWscRTfvlsuEwFp', title: 'Kiss Me', artist: 'Sixpence None The Richer' },
     password: '321',
     hint: { id: 'Hitungan mundur sebelum jepret', ms: 'Kiraan sebelum gambar diambil', en: 'The countdown before the flash' },
   },
@@ -125,7 +125,7 @@ const DEMO: Record<string, DemoExtra> = {
     hint: { id: 'Jam waktu aku mulai ngetik (JJMM)', ms: 'Waktu aku mula menaip (JJMM)', en: 'When I started typing (HHMM)' },
   },
   petaharta: {
-    song: { id: '6WUqv9T3RPTHHNKw0zVJuM', title: 'Sahabat Sejati', artist: 'Sheila On 7' },
+    song: { id: '7geh51STedQfizitdiNPCg', title: 'Kita Bikin Romantis', artist: "MALIQ & D'Essentials" },
     password: { id: 'harta', ms: 'harta', en: 'treasure' },
     hint: { id: 'Yang dicari di ujung peta', ms: 'Yang dicari di hujung peta', en: 'What waits at the end of the map' },
   },
@@ -137,7 +137,7 @@ const DEMO: Record<string, DemoExtra> = {
   rumah: {
     song: { id: '3XlwQDhJ2jEzP4zStUAWuW', title: 'Tempat Yang Kau Mau', artist: 'Man Osman & Niken Larasati' },
     password: { id: 'pulang', ms: 'pulang', en: 'home' },
-    hint: { id: 'Yang selalu aku mau tiap kangen rumah', ms: 'Yang selalu aku mahu bila rindu rumah', en: 'Where my heart always wants to go' },
+    hint: { id: 'Kalau capek, aku cuma mau … ke kamu', ms: 'Bila penat, saya cuma nak … pada awak', en: 'What you already are to me' },
   },
 };
 

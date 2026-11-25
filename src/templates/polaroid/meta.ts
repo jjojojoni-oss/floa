@@ -1,7 +1,7 @@
 import type { TemplateMeta } from '../types';
 
 /** Urutan foto contoh mengikuti ceritanya; foto terakhir jadi "yang paling spesial". */
-const PHOTOS = ['/contoh/sate-pinggir-jalan.webp', '/contoh/kopi-dan-kue.webp', '/contoh/kota-tua.webp', '/contoh/pantai-pasir.webp', '/contoh/senja-pantai.webp', '/contoh/bromo-senja.webp'];
+const PHOTOS = ['/contoh/sate-pinggir-jalan.webp', '/contoh/dua-cangkir.webp', '/contoh/kota-tua.webp', '/contoh/pantai-pasir.webp', '/contoh/bromo-senja.webp', '/contoh/gandengan.webp'];
 
 export const meta: TemplateMeta = {
   id: 'polaroid',
@@ -27,19 +27,19 @@ export const meta: TemplateMeta = {
     { key: 'message', label: 'Surat di paling bawah', max: 900, multiline: true },
   ],
   sample: {
-    to: 'Geng Kosan',
+    to: 'Arga',
     from: 'Tari',
-    title: 'Makasih buat semuanya.',
+    title: 'Semua foto terbaikku ada kamunya.',
     notes: [
-      'Sate depan kos, Agustus 2019 – Malam pertama pindahan. Semua masih jaim, belum ada yang berani nambah.',
-      'Warung kopi depan kampus – Kopi ketiga minggu itu. Tugasnya belum dimulai, ceritanya sudah ke mana-mana.',
-      'Titik Nol, Desember 2020 – Katanya cuma lihat-lihat ke Malioboro. Pulangnya bawa tiga kantong belanja.',
-      'Pantai Indrayanti, 2021 – Payung kita terbang, kita yang lari ngejar. Fotonya blur semua, tapi aku suka.',
-      'Parangtritis, 2022 – Nyasar dua jam, tapi dapat sunset. Kalian bilang itu memang rencananya.',
-      'Bromo, Juni 2023 – Liburan yang direncanain dua tahun. Dingin banget, tapi nggak ada yang mau tidur duluan.',
+      'Bakso bakar depan kampus, Maret 2019 – Kencan pertama yang katamu "cuma makan". Kamu gugup sampai tusuknya patah.',
+      'Kafe dekat kosku, Mei 2019 – Kamu nembak di sini. Aku kelamaan jawab, kopimu kamu aduk terus sampai dingin.',
+      'Malioboro, Desember 2020 – Motormu mogok, kita dorong berdua sampai bengkel. Katamu itu olahraga pasangan.',
+      'Pantai Indrayanti, 2021 – Sandalku hanyut, kamu nekat ngejar. Pulangnya kita nyeker berdua.',
+      'Bromo, Juni 2023 – Jam tiga pagi, dingin banget. Kamu kasih jaketmu, terus menggigil sambil bilang nggak apa-apa.',
+      'Kondangan sepupumu, 2025 – Pertama kali kenalan sama keluarga besarmu. Tanganmu keringetan, tapi nggak kamu lepas.',
     ],
     message:
-      'Empat tahun, satu dapur, dan rice cooker yang sampai sekarang nggak jelas punya siapa.\n\nFoto-foto ini sengaja aku cetak, soalnya di galeri HP semuanya ketimbun tangkapan layar tugas. Ternyata kalau dipegang begini, rasanya beda.\n\nAku nggak tahu nanti kita bakal kerja di kota mana. Yang aku tahu, grup ini jangan sampai sepi.\n\nMakasih sudah jadi keluarga yang aku pilih sendiri.',
+      'Foto-foto ini sengaja aku cetak. Di galeri HP mereka ketimbun tangkapan layar dan foto struk, padahal isinya bagian terbaik hidupku sejak 2019.\n\nAku suka lihat urutannya. Dari kita yang masih jaim di depan bakso bakar, sampai kamu yang sekarang hafal aku nggak suka daun bawang dan pasti kedinginan di mana pun.\n\nMakasih sudah sabar nungguin jawabanku waktu itu. Dan makasih sudah tetap di sini, bahkan di hari-hari aku lagi nyebelin.\n\nMasih banyak foto yang belum kita ambil. Aku mau semuanya sama kamu.',
     photos: PHOTOS,
   },
   i18n: {
@@ -60,19 +60,19 @@ export const meta: TemplateMeta = {
         message: { label: 'Surat di paling bawah' },
       },
       sample: {
-        to: 'Geng Rumah Sewa',
+        to: 'Luqman',
         from: 'Syaza',
-        title: 'Terima kasih untuk semuanya.',
+        title: 'Semua gambar terbaik saya ada awak.',
         notes: [
-          'Gerai sate depan rumah sewa, Ogos 2019 – Malam pertama pindah. Semua masih malu-malu, tak ada yang berani tambah.',
-          'Kedai kopi depan kampus – Kopi O ketiga minggu tu. Assignment belum mula, cerita dah sampai ke mana-mana.',
-          'Jalan TAR, Disember 2020 – Katanya nak tengok-tengok je. Balik bawa tiga beg plastik.',
-          'Pantai Cenang, 2021 – Payung kita terbang, kita yang lari kejar. Gambar semua kabur, tapi aku suka.',
-          'Port Dickson, 2022 – Sesat dua jam, tapi dapat tengok matahari terbenam. Korang kata memang plan.',
-          'Bromo, Jun 2023 – Percutian yang dirancang dua tahun. Sejuk gila, tapi tak ada yang nak tidur dulu.',
+          'Gerai satay Kajang, Mac 2019 – Janji temu pertama yang awak kata "makan je". Awak gugup sampai lidi satay patah.',
+          'Kafe dekat kolej, Mei 2019 – Awak luah perasaan di sini. Saya lambat jawab, awak kacau kopi sampai sejuk.',
+          'Dataran Merdeka, Disember 2020 – Motor awak rosak, kita tolak berdua sampai bengkel. Awak kata ni senaman pasangan.',
+          'Pantai Cenang, 2021 – Selipar saya hanyut, awak nekad kejar. Baliknya kita berkaki ayam berdua.',
+          'Bromo, Jun 2023 – Pukul tiga pagi, sejuk gila. Awak bagi jaket awak, lepas tu menggigil sambil kata okey je.',
+          'Kenduri sepupu awak, 2025 – Kali pertama jumpa keluarga besar awak. Tangan awak berpeluh, tapi tak dilepaskan.',
         ],
         message:
-          'Empat tahun, satu dapur, dan rice cooker yang sampai sekarang tak tahu siapa punya.\n\nGambar-gambar ni sengaja aku cetak, sebab dalam galeri telefon semuanya tenggelam bawah screenshot assignment. Rupanya bila dipegang macam ni, rasanya lain.\n\nAku tak tahu nanti kita kerja kat bandar mana. Yang aku tahu, group ni jangan sampai senyap.\n\nTerima kasih sebab jadi keluarga yang aku pilih sendiri.',
+          'Gambar-gambar ni sengaja saya cetak. Dalam galeri telefon semuanya tenggelam bawah screenshot dan gambar resit, padahal inilah bahagian terbaik hidup saya sejak 2019.\n\nSaya suka tengok susunannya. Daripada kita yang masih malu-malu depan gerai satay, sampai awak yang sekarang hafal saya tak makan daun bawang dan mesti kesejukan di mana-mana.\n\nTerima kasih sebab sabar tunggu jawapan saya dulu. Dan terima kasih sebab tetap ada, walaupun pada hari-hari saya menjengkelkan.\n\nMasih banyak gambar yang belum kita ambil. Saya nak semuanya dengan awak.',
         photos: PHOTOS,
       },
     },
@@ -93,19 +93,19 @@ export const meta: TemplateMeta = {
         message: { label: 'Letter at the bottom' },
       },
       sample: {
-        to: 'The Roomies',
-        from: 'Chloe',
-        title: 'Thank you for everything.',
+        to: 'Callum',
+        from: 'Tessa',
+        title: 'Every good photo has you in it.',
         notes: [
-          'Satay outside our first flat, August 2019 – Moving-in night. Best behaviour all round, nobody dared order seconds.',
-          'The café by campus – Third coffee that week. The essay hadn’t started, the gossip had.',
-          'The old town, December 2020 – “Just looking,” you said. We came home with three bags.',
-          'The beach, summer 2021 – Our umbrella flew off and we all chased it. Every photo is blurry. I love them.',
-          'The coast road, 2022 – Two hours lost, one perfect sunset. You all swore it was the plan.',
-          'Bromo, June 2023 – The trip we planned for two years. Freezing, and still nobody wanted to sleep first.',
+          'Street food by campus, March 2019 – Our first date. "Just dinner," you said. You were so nervous you snapped the skewer.',
+          'The café near my dorm, May 2019 – You asked me out here. I took so long to answer, you stirred your coffee cold.',
+          'The old town, December 2020 – Your scooter died, so we pushed it to a garage together. You called it couples cardio.',
+          'The beach, summer 2021 – My sandal floated off and you went in after it. We walked home barefoot, both of us.',
+          'Bromo, June 2023 – Three in the morning, freezing. You gave me your jacket, then shivered and swore you were fine.',
+          'Your cousin’s wedding, 2025 – Meeting your whole family. Your hand was sweaty. You never let go of mine.',
         ],
         message:
-          "Four years, one kitchen, and a rice cooker nobody remembers buying.\n\nI printed these on purpose, because on my phone they're buried under screenshots of assignments. Holding them like this feels different.\n\nI don't know which cities we'll end up working in. All I know is this group chat can never go quiet.\n\nThank you for being the family I got to choose.",
+          "I printed these on purpose. On my phone they're buried under screenshots and photos of receipts, and they're the best parts of my life since 2019.\n\nI love seeing them in order. From the two of us being awkward over street food, to you knowing I hate spring onions and that I'll be cold wherever we go.\n\nThank you for waiting for my answer back then. And thank you for staying, even on the days I'm impossible.\n\nThere are so many photos we haven't taken yet. I want all of them with you.",
         photos: PHOTOS,
       },
     },
