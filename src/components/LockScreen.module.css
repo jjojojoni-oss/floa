@@ -236,7 +236,9 @@
   border-radius: 0.9em;
   padding: 0 1em;
   text-align: center;
-  font-size: 1.05em;
+  /* minimal 16px: iPhone (Safari dan Chrome) otomatis memperbesar layar saat kolom isian yang lebih kecil diketuk,
+     dan layarnya tetap ter-zoom sesudahnya */
+  font-size: max(16px, 1.05em);
   font-weight: 600;
   color: #3a231b;
   background: rgba(255, 253, 249, 0.95);
