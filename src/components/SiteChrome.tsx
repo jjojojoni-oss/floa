@@ -37,8 +37,9 @@ export function LangSwitcher({ className = '' }: { className?: string }) {
 
 export function SiteHeader() {
   const t = useT();
+  // di HP header diberi jarak dari bilah alamat browser supaya logo & tombolnya tidak mepet
   return (
-    <header className="flex h-16 items-center justify-between gap-2 sm:h-20">
+    <header className="flex h-16 items-center justify-between gap-2 max-sm:mt-3 sm:h-20">
       <Link href="/" aria-label={t.nav.home} className="glass rounded-full py-2 pl-2.5 pr-4">
         <Logo />
       </Link>
