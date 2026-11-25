@@ -14,6 +14,7 @@ import { meta as lilin } from './lilin/meta';
 import { meta as mau } from './mau/meta';
 import { meta as memories } from './memories/meta';
 import { meta as petaharta } from './petaharta/meta';
+import { meta as rumah } from './rumah/meta';
 import { meta as photobox } from './photobox/meta';
 import { meta as pintu } from './pintu/meta';
 import { meta as mesintik } from './mesintik/meta';
@@ -26,7 +27,11 @@ import { meta as toples } from './toples/meta';
 import { meta as vinyl } from './vinyl/meta';
 
 /** Urutan di sini = urutan di katalog. Teks bawaannya Bahasa Indonesia; pakai localizeMeta untuk bahasa lain. */
-export const TEMPLATES: TemplateMeta[] = [buket, lilin, lampion, amplop, polaroid, mau, plester, toga, memories, bento, scrapbook, anniversary, vinyl, paspor, bioskop, toples, gacha, botol, photobox, kotakmusik, pintu, mesintik, petaharta, bolakaca];
+export const TEMPLATES: TemplateMeta[] = [buket, lilin, lampion, amplop, polaroid, mau, plester, toga, memories, bento, scrapbook, anniversary, vinyl, paspor, bioskop, toples, gacha, botol, photobox, pintu, mesintik, petaharta, bolakaca, rumah];
+
+/** Template yang sudah tidak dijual: tidak tampil di katalog, sitemap, atau halaman statis, tetapi kado (dan draf)
+ *  yang sudah dibuat dengannya tetap bisa dibuka lewat getTemplate. */
+const RETIRED: TemplateMeta[] = [kotakmusik];
 
 const OCCASION_LABELS: Record<OccasionId, Record<Locale, string>> = {
   ultah: { id: 'Ulang tahun', ms: 'Hari jadi', en: 'Birthday' },
@@ -60,6 +65,6 @@ export function localizeMeta(meta: TemplateMeta, locale: Locale): TemplateMeta {
 }
 
 export function getTemplate(id: string, locale: Locale = 'id'): TemplateMeta | undefined {
-  const m = TEMPLATES.find((t) => t.id === id);
+  const m = TEMPLATES.find((t) => t.id === id) ?? RETIRED.find((t) => t.id === id);
   return m ? localizeMeta(m, locale) : undefined;
 }

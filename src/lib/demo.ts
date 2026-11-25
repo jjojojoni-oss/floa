@@ -134,6 +134,11 @@ const DEMO: Record<string, DemoExtra> = {
     password: '1900',
     hint: { id: 'Jam lampu jendelanya nyala (JJMM)', ms: 'Waktu lampu tingkap menyala (JJMM)', en: 'When the window light comes on (HHMM)' },
   },
+  rumah: {
+    song: { id: '3XlwQDhJ2jEzP4zStUAWuW', title: 'Tempat Yang Kau Mau', artist: 'Man Osman & Niken Larasati' },
+    password: { id: 'pulang', ms: 'pulang', en: 'home' },
+    hint: { id: 'Yang selalu aku mau tiap kangen rumah', ms: 'Yang selalu aku mahu bila rindu rumah', en: 'Where my heart always wants to go' },
+  },
 };
 
 export type DemoLock = { password: string; hint: string; shape: string | null };

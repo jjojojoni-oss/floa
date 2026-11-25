@@ -21,6 +21,7 @@ import KotakMusik from './kotakmusik/Cover';
 import Pintu from './pintu/Cover';
 import Mesintik from './mesintik/Cover';
 import Petaharta from './petaharta/Cover';
+import Rumah from './rumah/Cover';
 import Toples from './toples/Cover';
 import Vinyl from './vinyl/Cover';
 
@@ -50,4 +51,5 @@ export const COVERS: Record<string, ComponentType> = {
   mesintik: Mesintik,
   petaharta: Petaharta,
   bolakaca: Bolakaca,
+  rumah: Rumah,
 };
