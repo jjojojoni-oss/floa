@@ -37,9 +37,11 @@ export function LangSwitcher({ className = '' }: { className?: string }) {
 
 export function SiteHeader() {
   const t = useT();
-  // di HP header diberi jarak dari bilah alamat browser supaya logo & tombolnya tidak mepet
+  // di HP header diberi jarak dari bilah alamat browser supaya logo & tombolnya tidak mepet. Pakai padding (dengan
+  // tinggi yang ditambah), BUKAN margin: margin atas "bocor" ke pembungkus halaman sehingga lukisan latarnya ikut turun
+  // dan menyisakan strip putih di paling atas.
   return (
-    <header className="flex h-16 items-center justify-between gap-2 max-sm:mt-3 sm:h-20">
+    <header className="flex h-[4.75rem] items-center justify-between gap-2 pt-3 sm:h-20 sm:pt-0">
       <Link href="/" aria-label={t.nav.home} className="glass rounded-full py-2 pl-2.5 pr-4">
         <Logo />
       </Link>
