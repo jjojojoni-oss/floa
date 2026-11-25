@@ -15,7 +15,6 @@ import { MusicPlayer } from './MusicPlayer';
 export function GiftView({ slug, templateId, data: initial, lock }: { slug: string; templateId: string; data: GiftData | null; lock: Lock | null }) {
   const meta = getTemplate(templateId)!;
   const [data, setData] = useState<GiftData | null>(initial);
-  const [unlocked, setUnlocked] = useState(false);
 
   if (!data && lock) {
     return (
@@ -23,10 +22,7 @@ export function GiftView({ slug, templateId, data: initial, lock }: { slug: stri
         <LockScreen
           slug={slug}
           lock={lock}
-          onOpen={(d) => {
-            setData(d);
-            setUnlocked(true);
-          }}
+          onOpen={(d) => setData(d)}
         />
       </GiftFrame>
     );
@@ -36,7 +32,7 @@ export function GiftView({ slug, templateId, data: initial, lock }: { slug: stri
   return (
     <GiftFrame bg={meta.palette.bg}>
       <TemplatePlayer id={meta.id} data={data} mode="live" />
-      {data.music ? <MusicPlayer music={data.music} start={unlocked ? 'now' : 'tap'} /> : null}
+      {data.music ? <MusicPlayer music={data.music} /> : null}
     </GiftFrame>
   );
 }

@@ -2,6 +2,7 @@
 
 import { type CSSProperties, type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from 'react';
 import { fmt } from '@/i18n/fmt';
+import { announceGiftOpen } from '@/lib/giftOpen';
 import type { GiftData } from '../types';
 import { Hint, Stage, cx, haptic, sfx, useArtReady, useKitText, useTimers } from './index';
 import { TapCue } from './TapCue';
@@ -94,6 +95,8 @@ export function GiftWrap({
       return;
     }
     setPhase('untie');
+    // pitanya lepas: lagu latar mulai di sini (masih di dalam tarikan, supaya HP mengizinkan)
+    announceGiftOpen();
     sfx.untie();
     haptic(24);
     later(() => {
@@ -243,6 +246,7 @@ export function GiftWrap({
           className={s.wrapSkip}
           onClick={(e) => {
             e.stopPropagation();
+            announceGiftOpen();
             leave();
           }}
         >

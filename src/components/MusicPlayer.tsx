@@ -1,7 +1,8 @@
 'use client';
 
-import { type MutableRefObject, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useT } from '@/i18n/client';
+import { onGiftOpen } from '@/lib/giftOpen';
 import { spotifyUri } from '@/lib/music';
 import { isMuted, subscribeMuted } from '@/templates/kit/sfx';
 import type { GiftMusic } from '@/templates/types';
@@ -54,27 +55,15 @@ function loadSpotify(): Promise<IFrameAPI> {
 }
 
 /**
- * Lagu latar kado dari Spotify, selalu diputar otomatis. Pemutarnya disimpan sebagai tombol bulat kecil di kiri
- * atas; lagu mulai pada ketukan pertama penerima (browser melarang suara sebelum ada ketukan), atau langsung
- * kalau `start="now"` (mis. setelah kado terkunci dibuka, karena ketukan "Buka" sudah dihitung). Kalau Spotify
- * belum siap atau browser menolak, ketukan-ketukan berikutnya di kado mencoba lagi sampai lagunya pernah berbunyi;
- * kalau tetap tidak bisa, pemutarnya dibuka (sekali) supaya penerima bisa menekan ▶ sendiri.
- * `armed={false}`: pemutarnya sudah dimuat (tersembunyi, mis. selama layar kunci demo) tapi belum boleh berbunyi,
- * supaya begitu kuncinya terbuka lagunya bisa langsung mulai tanpa menunggu Spotify dimuat.
- * `primeRef`: diisi fungsi untuk memulai lagu dari dalam sebuah ketukan, juga selagi belum `armed` (demo: ketukan
- * yang membuka kunci), karena HP hanya mengizinkan suara yang dimulai di dalam ketukan itu sendiri.
+ * Lagu latar kado dari Spotify, selalu diputar otomatis TEPAT saat pita bingkisan berhasil ditarik (atau bingkisannya
+ * dilewati): kit/Wrap mengumumkannya (announceGiftOpen) dari dalam tarikan itu, dan HP hanya mengizinkan suara yang dimulai dari
+ * dalam sebuah ketukan. Sebelum itu (layar kunci, tarikan pertama yang membandel) lagunya diam. Kalau browser
+ * menolak (mis. Spotify belum siap), ketukan-ketukan berikutnya mencoba lagi sampai lagunya pernah berbunyi; di
+ * desktop, kalau 8 detik tetap tidak bunyi, pemutarnya dibuka supaya penerima bisa menekan ▶ sendiri.
+ * `armed={false}`: pemutarnya sudah dimuat (mis. selama layar kunci demo) tapi tombolnya belum ditampilkan, supaya
+ * Spotify sudah siap saat pitanya ditarik.
  */
-export function MusicPlayer({
-  music,
-  start = 'tap',
-  armed = true,
-  primeRef,
-}: {
-  music: GiftMusic;
-  start?: 'tap' | 'now';
-  armed?: boolean;
-  primeRef?: MutableRefObject<(() => void) | null>;
-}) {
+export function MusicPlayer({ music, armed = true }: { music: GiftMusic; armed?: boolean }) {
   const t = useT();
   const hostRef = useRef<HTMLDivElement>(null);
   const ctrlRef = useRef<Controller | null>(null);
@@ -165,46 +154,36 @@ export function MusicPlayer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [music.type, music.id]);
 
-  // mulai: langsung (kado terkunci baru dibuka) atau pada ketukan pertama di mana pun di kado. Selama lagunya belum
-  // pernah berbunyi (Spotify masih dimuat, atau browser menolak), tiap ketukan berikutnya mencoba lagi; jedanya
-  // dijaga supaya lagu yang sedang memuat tidak diulang dari awal.
-  // Didengarkan saat jari DIANGKAT (pointerup), bukan saat menyentuh: di layar sentuh hanya pointerup/touchend/click
-  // yang dihitung browser sebagai izin memutar suara (pointerdown hanya berlaku untuk mouse). Inilah sebabnya dulu
-  // lagunya otomatis di desktop tapi di HP penerima harus menekan ▶ sendiri.
-  // dipanggil dari dalam ketukan pembuka kunci (lihat primeRef)
-  useEffect(() => {
-    if (!primeRef) return;
-    primeRef.current = () => {
-      if (!everPlayed.current && !playingRef.current) tryPlay();
-    };
-    return () => {
-      primeRef.current = null;
-    };
-  });
-
+  // mulai: tepat saat bingkisan terbuka (diumumkan dari dalam tarikan pita). Sesudah itu, selama lagunya
+  // belum pernah berbunyi (Spotify masih dimuat, atau browser menolak), tiap ketukan berikutnya mencoba lagi.
+  // Ketukan didengarkan saat jari DIANGKAT (pointerup): di layar sentuh hanya pointerup/touchend/click yang dihitung
+  // browser sebagai izin memutar suara (pointerdown hanya berlaku untuk mouse). Jeda 400 ms hanya mencegah dua
+  // percobaan dari ketukan yang sama selagi Spotify belum sempat melapor.
   useEffect(() => {
     if (!armed) return;
-    // (kalau ketukan pembuka kunci baru saja memulainya, jangan diulang dari awal)
-    if (start === 'now' && !everPlayed.current && !playingRef.current && !(started.current && Date.now() - lastTry.current < 400)) tryPlay();
+    const opened = { current: false };
+    const onOpen = () => {
+      opened.current = true;
+      if (!everPlayed.current && !playingRef.current) tryPlay();
+    };
     const onTap = (e: Event) => {
+      if (!opened.current) return;
       if (e instanceof KeyboardEvent && e.key !== 'Enter' && e.key !== ' ') return;
       if (everPlayed.current || playingRef.current) return;
-      // Jeda sangat pendek: hanya untuk ketukan yang sama (atau dua ketukan beruntun) selagi Spotify belum sempat
-      // melapor. Lagu yang benar-benar diterima Spotify langsung terlihat lewat playingRef (status putar), jadi jeda
-      // yang lebih panjang tidak perlu dan justru melewatkan ketukan pita yang datang cepat sesudah percobaan yang
-      // ditolak (itu yang membuat beberapa template di HP baru berbunyi jauh sesudahnya).
       if (started.current && Date.now() - lastTry.current < 400) return;
       tryPlay();
     };
     const opts = { capture: true } as const;
+    const offOpen = onGiftOpen(onOpen);
     document.addEventListener('pointerup', onTap, opts);
     document.addEventListener('keydown', onTap, opts);
     return () => {
+      offOpen();
       document.removeEventListener('pointerup', onTap, opts);
       document.removeEventListener('keydown', onTap, opts);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [start, armed]);
+  }, [armed]);
 
   // tombol suara di pojok kanan atas juga mengatur musiknya
   useEffect(() => {
