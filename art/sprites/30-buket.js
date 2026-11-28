@@ -79,7 +79,7 @@
   const HEADS = [['aster', 170, 266, 176], ['kenikir', 430, 266, 176], ['dahlia', 300, 180, 222], ['kamboja', 232, 362, 166], ['sepatu', 378, 362, 180]];
 
   // kartu katalog: buket utuh di atas langit pagi
-  F.sprites['cover-buket'] = { w: 480, h: 600, seed: 75, draw(svg, R) {
+  F.sprites['cover-buket-mekar'] = { w: 480, h: 600, seed: 75, draw(svg, R) {
     const sky = el('g', { transform: 'scale(0.62)' }, svg);
     F.latar.sky(sky, R, [[0, '#f9d3c2'], [0.45, '#fce6d2'], [1, '#f4ecd6']], { n: 320, sun: { x: 180, y: 250, r: 60 }, glow: '#fff6da' });
     F.latar.clouds(sky, R, '#ffffff', [[520, 170, 420, 80, 0.6], [200, 520, 340, 60, 0.4]]);

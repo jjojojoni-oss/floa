@@ -15,7 +15,9 @@ const config: NextConfig = {
         ],
       },
       {
-        // lukisan tidak berubah antar rilis kecuali namanya ikut berubah
+        // lukisan tidak berubah antar rilis kecuali namanya ikut berubah: browser menyimpannya 30 hari, jadi lukisan
+        // yang ISINYA diubah wajib diberi NAMA BARU (mis. bg-kereta-malam menggantikan bg-anniversary), kalau tidak
+        // pengunjung lama terus melihat versi lamanya
         source: '/art/:file*',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=2592000, stale-while-revalidate=86400' }],
       },

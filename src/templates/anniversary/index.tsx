@@ -10,12 +10,12 @@ import { LOCALE_TAG, TEXT } from './i18n';
 import { meta } from './meta';
 import s from './style.module.css';
 
-const BACKDROP = '/art/bg-anniversary.webp';
+const BACKDROP = '/art/bg-kereta-malam.webp';
 /** layar pertama (peron malam): ditunggu sampai siap supaya adegannya muncul utuh */
 const ART = [
-  'bg-anniversary',
+  'bg-kereta-malam',
   'anniversary-atap',
-  'anniversary-papan',
+  'anniversary-papan-stasiun',
   'anniversary-jam-peron',
   'anniversary-gerbong',
   'anniversary-pintu',
@@ -191,7 +191,7 @@ function Digits({ value, className }: { value: string; className?: string }) {
 function StationSign({ small, name, sub, className }: { small: string; name: string; sub?: string; className?: string }) {
   return (
     <div className={cx(s.sign, className)}>
-      <Sprite name="anniversary-papan" className={s.signArt} />
+      <Sprite name="anniversary-papan-stasiun" className={s.signArt} />
       <div className={s.signText}>
         <span className={s.signSmall}>{small}</span>
         <b className={cx(s.signName, name.length > 14 && s.long, name.length > 19 && s.xl)}>{name}</b>

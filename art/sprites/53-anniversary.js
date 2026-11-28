@@ -446,9 +446,9 @@
   /* ───────────────────────────── daftar sprite ───────────────────────────── */
   const scaled = (name, w, h, seed, draw, k = 0.5) => { F.sprites[name] = { w: Math.round(w * k), h: Math.round(h * k), viewBox: `0 0 ${w} ${h}`, seed, draw }; };
 
-  F.sprites['bg-anniversary'] = { w: W, h: H, seed: 531, scale: 1, draw(svg, R) { night(svg, R); } };
+  F.sprites['bg-kereta-malam'] = { w: W, h: H, seed: 531, scale: 1, draw(svg, R) { night(svg, R); } };
   scaled('anniversary-atap', AW, AH, 532, (svg, R) => canopy(svg, R), 0.36);
-  scaled('anniversary-papan', PW, PH, 533, (svg, R) => signBoard(svg, R), 0.52);
+  scaled('anniversary-papan-stasiun', PW, PH, 533, (svg, R) => signBoard(svg, R), 0.52);
   scaled('anniversary-jam-peron', JW, JH, 534, (svg, R) => clock(svg, R), 0.5);
   scaled('anniversary-gerbong', GW, GH, 535, (svg, R) => carriage(svg, R), 0.36);
   scaled('anniversary-pintu', DW, DH, 536, (svg, R) => doorLeaf(svg, R));
@@ -1119,7 +1119,7 @@
   }
   scaled('anniversary-papan-besar', BBW, BBH, 556, (svg, R) => bigBoard(svg, R), 0.36);
 
-  F.sprites['cover-anniversary'] = { w: 480, h: 600, seed: 555, draw(svg, R) {
+  F.sprites['cover-kereta-malam'] = { w: 480, h: 600, seed: 555, draw(svg, R) {
     night(el('g', { transform: 'translate(0 -40) scale(0.6154)' }, svg), R, { hillsOn: false });
     // gerbong menunggu, pintunya terbuka & hangat
     carriage(el('g', { transform: 'translate(-150 200) scale(0.56)' }, svg), R);

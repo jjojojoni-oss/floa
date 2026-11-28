@@ -260,6 +260,14 @@ export function Stage({ children, bg, ink, accent, backdrop, className, style }:
 
 /* ───────────────────────── seni lukis ───────────────────────── */
 
+/** Terang/gelapnya warna tinta (#rrggbb), untuk memilih bayangan judul di layar surat. */
+function inkTone(hex?: string): 'light' | 'dark' | null {
+  const m = hex ? /^#([0-9a-f]{6})$/i.exec(hex.trim()) : null;
+  if (!m) return null;
+  const n = parseInt(m[1], 16);
+  return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255 > 0.6 ? 'light' : 'dark';
+}
+
 export function backdropUrl(name: string) {
   return name.startsWith('/') || name.startsWith('http') ? name : `/art/bg-${name}.webp`;
 }
@@ -680,6 +688,9 @@ export function Finale({
   // bagian setelah surat menunggu pertanyaan penutup dijawab dulu (kalau ada)
   const settled = done && (!ask || !!answer);
 
+  // tinta terang di atas lukisan → judul diberi bayangan gelap; tinta gelap → sinar terang tipis. Supaya judul tetap
+  // terbaca di bagian lukisan yang ramai (bintang, bulan, bunga), atau kalau lukisannya tidak/terlambat termuat.
+  const tone = inkTone(theme?.ink);
   const vars = {
     '--f-bg': theme?.bg,
     '--f-ink': theme?.ink,
@@ -711,7 +722,7 @@ export function Finale({
 
   return (
     <>
-      <div className={s.finale} style={vars} data-finale ref={rootRef}>
+      <div className={cx(s.finale, tone === 'light' && s.inkLight, tone === 'dark' && s.inkDark)} style={vars} data-finale ref={rootRef}>
         <div className={s.finaleBody}>
           <div className={s.eyebrow}>{eyebrow}</div>
           {data.title ? <h1 className={s.fTitle}>{data.title}</h1> : null}
